@@ -122,7 +122,8 @@ bool Sonic2::relocateLevels(bool unsafe)
   Kosinski kosinski(file);
   vector<uint8_t> mapBuffer(0xFFFFF);
 
-  for (int levelIdx = 0; levelIdx < 20; levelIdx++) {
+  uint32_t newLevelOffset = 68;
+  for (uint16_t levelIdx = 0; levelIdx < 20; levelIdx++) {
     LOG << "Relocating level " << levelIdx;
 
     const uint32_t zoneIdxLoc = levelSelectAddr + levelIdx * 2;
@@ -147,7 +148,6 @@ bool Sonic2::relocateLevels(bool unsafe)
     }
 
     // write new location to buffer
-    const uint16_t newLevelOffset = 68 + maxMapSize * levelIdx;
     buffer[zoneIdx * 4 + actIdx * 2] = (newLevelOffset >> 8) & 0xFF;
     buffer[zoneIdx * 4 + actIdx * 2 + 1] = newLevelOffset & 0xFF;
 
@@ -156,6 +156,8 @@ bool Sonic2::relocateLevels(bool unsafe)
     LOG << "Copying " << bytesToCopy << " bytes to 0x" << hex << newLevelOffset;
     file.seekg(tilesAddr);
     file.read(reinterpret_cast<char*>(buffer.data() + newLevelOffset), bytesToCopy);
+
+    newLevelOffset += bytesToCopy;
   }
 
   m_rom->write32BitAddr(romSize, levelLayoutDirAddrLoc);
