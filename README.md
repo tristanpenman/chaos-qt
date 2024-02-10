@@ -16,9 +16,21 @@ Levels can also be zoomed in and out while editing, as seen in this screenshot o
 
 The version of the code you're looking at now is a partially complete C++ / Qt port.
 
+## Dependencies
+
+Building Chaos requires Qt 5 or 6 development tools to be installed, as well as CMake.
+
+On Ubuntu:
+
+    sudo apt install qt6-base-dev cmake
+
+You may also need to install these two libraries. Without these, QtWidgets may not be found:
+
+    sudo apt install libgl1-mesa-dev libglvnd-dev
+
 ## Build
 
-This version of the code can be built using Qt versions 5 and 6. Assuming you have Qt and CMake installed, the basic build steps are as follows:
+Once you have Qt and CMake installed, the basic build steps are as follows:
 
     git clone --recurse-submodules https://github.com/tristanpenman/chaos.git
     cd chaos/qt
