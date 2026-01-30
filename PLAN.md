@@ -1,0 +1,24 @@
+# Plan
+
+- General improvements
+  - Ask to save unsaved changes when exiting
+  - Keyboard shortcuts
+  - Zoom in/out menu items
+  - Figure out how to read level names and locations from ROM files
+  - Support for loading levels from decompilations
+  - Level modification support
+    - Toolbar
+    - Relocate levels in Sonic 3 ROM
+    - Selection rectangle, replace all tiles
+    - Copy and paste
+  - Sprite preview support
+    - Implement nemesis de-/compression
+- New functionality
+  - Sonic 2 disassembly support
+  - Sonic and Knuckles disassembly support
+  - Sonic 3 and Knuckles disassembly support
+  - Sonic 1 disassembly support
+  - Sonic Mania support
+  - Pattern editing
+  - Live preview for pattern and chunk editing
+  - Audio extraction (maybe)
