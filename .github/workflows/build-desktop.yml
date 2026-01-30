@@ -1,0 +1,52 @@
+name: Build Desktop Apps
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            qt_host: mac
+            qt_arch: clang_64
+            artifact_path: build/Chaos.app
+            artifact_name: Chaos-macOS
+          - os: windows-latest
+            qt_host: windows
+            qt_arch: win64_msvc2019_64
+            artifact_path: build/Release/Chaos.exe
+            artifact_name: Chaos-Windows
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 6.5.3
+          host: ${{ matrix.qt_host }}
+          arch: ${{ matrix.qt_arch }}
+          cache: true
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
