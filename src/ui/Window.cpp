@@ -598,10 +598,12 @@ void Window::createEditMenu()
   auto editMenu = menuBar()->addMenu(tr("&Edit"));
 
   m_undoAction = new QAction(tr("Undo"));
+  m_undoAction->setShortcuts(QKeySequence::Undo);
   m_undoAction->setDisabled(true);
   connect(m_undoAction, SIGNAL(triggered()), this, SLOT(undo()));
 
   m_redoAction = new QAction(tr("Redo"));
+  m_redoAction->setShortcuts(QKeySequence::Redo);
   m_redoAction->setDisabled(true);
   connect(m_redoAction, SIGNAL(triggered()), this, SLOT(redo()));
 
