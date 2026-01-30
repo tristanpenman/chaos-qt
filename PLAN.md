@@ -1,7 +1,7 @@
 # Plan
 
 - General improvements
-  - Ask to save unsaved changes when exiting
+  - ~~Ask to save unsaved changes when exiting~~
   - Keyboard shortcuts
   - Zoom in/out menu items
   - Figure out how to read level names and locations from ROM files

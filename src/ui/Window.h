@@ -8,6 +8,7 @@
 class QHBoxLayout;
 class QPushButton;
 class QStatusBar;
+class QCloseEvent;
 
 class BlockInspector;
 class ChunkInspector;
@@ -59,13 +60,18 @@ public slots:
   void showRomInfo();
   void relocateLevels();
 
+protected:
+  void closeEvent(QCloseEvent* event) override;
+
 private slots:
   void levelSelected(int levelIdx);
   void currentTile(uint16_t x, uint16_t y, uint8_t value);
   void noTile();
   void undosRedosChanged(size_t undos, size_t redos);
+  void mapModified();
 
 private:
+  bool trySaveRom();
   void createFileMenu();
   void createEditMenu();
   void createViewMenu();
@@ -110,4 +116,5 @@ private:
   std::shared_ptr<Game> m_game;
   std::shared_ptr<Level> m_level;
   unsigned int m_levelIdx;
+  bool m_hasUnsavedChanges;
 };

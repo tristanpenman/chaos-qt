@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <QAction>
+#include <QCloseEvent>
 #include <QFileDialog>
 #include <QGuiApplication>
 #include <QLayout>
@@ -59,6 +60,7 @@ Window::Window()
   , m_game(nullptr)
   , m_level(nullptr)
   , m_levelIdx(0)
+  , m_hasUnsavedChanges(false)
 {
   setWindowTitle("Chaos");
   setMinimumSize(320, 240);
@@ -226,25 +228,7 @@ void Window::showLevelSelectDialog()
 
 void Window::saveRom()
 {
-  try {
-    if (m_game->save(m_levelIdx, *m_level)) {
-        QMessageBox::information(this,
-          tr("Save ROM"),
-          tr("Level saved successfully."),
-          QMessageBox::StandardButton::Ok);
-    } else {
-      QMessageBox::warning(this,
-          tr("Save ROM"),
-          tr("There was not enough space to save this level. You may need to relocate the levels in this ROM."),
-          QMessageBox::StandardButton::Ok);
-    }
-  } catch (const exception& e) {
-    // show other error occurred
-    QMessageBox::warning(this,
-        tr("Save ROM"),
-        tr("Something went wrong while saving this level: ") + e.what(),
-        QMessageBox::StandardButton::Ok);
-  }
+  trySaveRom();
 }
 
 void Window::showExportBinaryDialog()
@@ -449,7 +433,10 @@ void Window::levelSelected(int levelIdx)
   connect(m_mapEditor, SIGNAL(currentTile(uint16_t,uint16_t,uint8_t)), this, SLOT(currentTile(uint16_t,uint16_t,uint8_t)));
   connect(m_mapEditor, SIGNAL(noTile()), this, SLOT(noTile()));
   connect(m_mapEditor, SIGNAL(undosRedosChanged(size_t,size_t)), this, SLOT(undosRedosChanged(size_t,size_t)));
+  connect(m_mapEditor, SIGNAL(mapModified()), this, SLOT(mapModified()));
   this->setCentralWidget(m_mapEditor);
+
+  m_hasUnsavedChanges = false;
 }
 
 void Window::currentTile(uint16_t x, uint16_t y, uint8_t value)
@@ -475,6 +462,85 @@ void Window::undosRedosChanged(size_t undos, size_t redos)
 
   m_undoAction->setEnabled(undos > 0);
   m_redoAction->setEnabled(redos > 0);
+}
+
+void Window::mapModified()
+{
+  m_hasUnsavedChanges = true;
+}
+
+bool Window::trySaveRom()
+{
+  if (!m_game || !m_level) {
+    return false;
+  }
+
+  try {
+    if (m_game->save(m_levelIdx, *m_level)) {
+      QMessageBox::information(this,
+          tr("Save ROM"),
+          tr("Level saved successfully."),
+          QMessageBox::StandardButton::Ok);
+      m_hasUnsavedChanges = false;
+      return true;
+    }
+
+    QMessageBox::warning(this,
+        tr("Save ROM"),
+        tr("There was not enough space to save this level. You may need to relocate the levels in this ROM."),
+        QMessageBox::StandardButton::Ok);
+    return false;
+  } catch (const exception& e) {
+    // show other error occurred
+    QMessageBox::warning(this,
+        tr("Save ROM"),
+        tr("Something went wrong while saving this level: ") + e.what(),
+        QMessageBox::StandardButton::Ok);
+    return false;
+  }
+}
+
+void Window::closeEvent(QCloseEvent* event)
+{
+  if (!m_hasUnsavedChanges || !m_level) {
+    event->accept();
+    return;
+  }
+
+  if (!m_game || !m_game->canSave()) {
+    const auto reply = QMessageBox::question(this,
+        tr("Quit"),
+        tr("You have unsaved changes that will be lost.\n\nAre you sure you want to quit?"),
+        QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+      event->accept();
+    } else {
+      event->ignore();
+    }
+    return;
+  }
+
+  const auto reply = QMessageBox::warning(this,
+      tr("Quit"),
+      tr("You have unsaved changes.\n\nDo you want to save them before quitting?"),
+      QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+      QMessageBox::Save);
+
+  switch (reply) {
+  case QMessageBox::Save:
+    if (trySaveRom()) {
+      event->accept();
+    } else {
+      event->ignore();
+    }
+    break;
+  case QMessageBox::Discard:
+    event->accept();
+    break;
+  default:
+    event->ignore();
+    break;
+  }
 }
 
 void Window::createFileMenu()

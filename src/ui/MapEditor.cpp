@@ -250,6 +250,7 @@ bool MapEditor::handleMouseRelease()
   }
 
   emit undosRedosChanged(m_undoCommands.size(), m_redoCommands.size());
+  emit mapModified();
 
   return true;
 }
