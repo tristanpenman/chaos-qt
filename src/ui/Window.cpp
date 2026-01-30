@@ -193,7 +193,15 @@ void Window::showOpenRomDialog()
     }
   }
 
-  const QString fileName = QFileDialog::getOpenFileName(this, tr("Open ROM"), QString(), QString("*.bin"));
+  QFileDialog dialog(this, tr("Open ROM"), QString(), tr("ROM Files (*.bin)"));
+  dialog.setFileMode(QFileDialog::ExistingFile);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  dialog.setOption(QFileDialog::DontUseNativeDialog, true);
+#endif
+  if (!dialog.exec()) {
+    return;
+  }
+  const QString fileName = dialog.selectedFiles().value(0);
   if (!fileName.isEmpty()) {
     m_level.reset();
 
@@ -237,7 +245,15 @@ void Window::showExportBinaryDialog()
     return;
   }
 
-  const auto fileName = QFileDialog::getSaveFileName(this, tr("Export Binary"), QString(), QString("*.bin"));
+  QFileDialog dialog(this, tr("Export Binary"), QString(), tr("Binary Files (*.bin)"));
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  dialog.setOption(QFileDialog::DontUseNativeDialog, true);
+#endif
+  if (!dialog.exec()) {
+    return;
+  }
+  const auto fileName = dialog.selectedFiles().value(0);
   if (fileName.isEmpty()) {
     return;
   }
@@ -251,7 +267,15 @@ void Window::showExportPngDialog()
     return;
   }
 
-  const auto fileName = QFileDialog::getSaveFileName(this, tr("Export PNG"), QString(), QString("*.png"));
+  QFileDialog dialog(this, tr("Export PNG"), QString(), tr("PNG Files (*.png)"));
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  dialog.setOption(QFileDialog::DontUseNativeDialog, true);
+#endif
+  if (!dialog.exec()) {
+    return;
+  }
+  const auto fileName = dialog.selectedFiles().value(0);
   if (fileName.isEmpty()) {
     return;
   }
