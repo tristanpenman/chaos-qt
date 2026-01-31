@@ -1,28 +1,19 @@
-cmake_minimum_required(VERSION 3.16)
-project(Chaos VERSION 1.0)
+cmake_minimum_required(VERSION 3.20)
+project(Chaos VERSION 1.0 LANGUAGES CXX)
 
 set(COPYRIGHT "Copyright (c) 2023 Tristan Penman")
 set(IDENTIFIER "com.tristanpenman.chaos")
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
 endif()
-
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # -----------------------------------------------------------------------------
 #
 # Main executable
 #
 # -----------------------------------------------------------------------------
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
 set(PROJECT_SOURCES
     src/main.cpp
@@ -114,6 +105,13 @@ else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
 endif()
 
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    AUTOMOC ON
+    AUTORCC ON
+    AUTOUIC ON
+)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -125,10 +123,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 #
 # -----------------------------------------------------------------------------
 
-set(CMAKE_AUTOMOC OFF)
-set(CMAKE_AUTORCC OFF)
-set(CMAKE_AUTOUIC OFF)
-
+set(gtest_force_shared_crt ON CACHE BOOL "Use shared CRT for GoogleTest." FORCE)
 add_subdirectory(thirdparty/googletest)
 
 set(TEST_SOURCES
@@ -142,16 +137,14 @@ set(TEST_SOURCES
     test/TestKosinskiWriter.cpp
 )
 
-set(TEST_LIBS gtest gtest_main)
-
-set(gtest_force_shared_crt ON)
-
-include_directories(src SYSTEM
-    thirdparty/googletest/include
-)
-
 add_executable(${PROJECT_NAME}Test ${TEST_SOURCES})
 
 target_link_libraries(${PROJECT_NAME}Test PRIVATE
-    ${TEST_LIBS}
+    gtest
+    gtest_main
+)
+
+target_compile_features(${PROJECT_NAME}Test PRIVATE cxx_std_17)
+target_include_directories(${PROJECT_NAME}Test SYSTEM PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
