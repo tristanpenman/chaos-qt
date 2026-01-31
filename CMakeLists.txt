@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(Chaos VERSION 1.0 LANGUAGES CXX)
 
-set(COPYRIGHT "Copyright (c) 2023 Tristan Penman")
+set(COPYRIGHT "Copyright (c) 2026 Tristan Penman")
 set(IDENTIFIER "com.tristanpenman.chaos")
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
