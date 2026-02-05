@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void KosinskiWriter::writeByte(char byte)
+void KosinskiWriter::writeByte(uint8_t byte)
 {
   m_buffer.push_back(byte);
 }
@@ -181,7 +181,7 @@ KosinskiWriter::Result KosinskiWriter::compress(ostream& file,
       addBit(0);
       addBit(((length - 2) >> 1) & 1);
       addBit((length - 2) & 1);
-      writeByte(offset);
+      writeByte(static_cast<uint8_t>(offset));
 
     } else {
       addBit(1);
@@ -197,11 +197,11 @@ KosinskiWriter::Result KosinskiWriter::compress(ostream& file,
 
       lo = offset & 0xFF;
 
-      writeByte(lo);
-      writeByte(hi);
+      writeByte(static_cast<uint8_t>(lo));
+      writeByte(static_cast<uint8_t>(hi));
 
       if (length > 9) {
-        writeByte(length - 1);
+        writeByte(static_cast<uint8_t>(length - 1));
       }
     }
 
@@ -214,9 +214,9 @@ KosinskiWriter::Result KosinskiWriter::compress(ostream& file,
 
   int hi = (offset >> 5) & 0xF8;
   int lo = offset & 0x00FF;
-  writeByte(lo);
-  writeByte(hi);
-  writeByte(0);
+  writeByte(static_cast<uint8_t>(lo));
+  writeByte(static_cast<uint8_t>(hi));
+  writeByte(static_cast<uint8_t>(0));
 
   // write final bitfield
   m_buffer[m_bitfieldPos] = m_bitfield & 0xff;
