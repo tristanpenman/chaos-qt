@@ -2,7 +2,7 @@
 
 - General improvements
   - ~~Ask to save unsaved changes when exiting~~
-  - Keyboard shortcuts
+  - ~~Keyboard shortcuts~~
   - Zoom in/out menu items
   - Figure out how to read level names and locations from ROM files
   - Support for loading levels from decompilations

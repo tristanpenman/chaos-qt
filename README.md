@@ -28,6 +28,10 @@ You may also need to install these two libraries. Without these, QtWidgets may n
 
     sudo apt install libgl1-mesa-dev libglvnd-dev
 
+On macOS, CMake and Qt can be installed using [homebrew](https://brew.sh/):
+
+    brew install cmake qt
+
 ## Build
 
 Once you have Qt and CMake installed, the basic build steps are as follows:
@@ -45,7 +49,13 @@ On macOS, this will build an application bundle called `Chaos.app`. The test sui
 
 ## Documentation
 
-Included in the [doc](./doc) directory is Brett Kosinski's [write up](./doc/kosinski.txt) of the compression algorithm used.
+### Kosinski compression
+
+Included in the [doc](./doc) directory is Brett Kosinski's [write up](./doc/kosinski.txt) of the compression algorithm used for level and tile data. This can also be found online [here](https://b-ark.ca/Sonic_2_Compression_Scheme).
+
+### Nemesis compression
+
+The other compression algorithm commonly used in Sonic The Hedgehog games on Mega Drive / Genesis is [Nemesis compression](https://segaretro.org/Nemesis_compression), named after the individual who first reverse engineered it.
 
 ## License
 
