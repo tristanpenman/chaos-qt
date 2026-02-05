@@ -28,12 +28,17 @@ PencilCommand::Result PencilCommand::commit()
     const auto y = entry.first.y;
     const auto value = entry.second;
 
+    const auto layerValue = static_cast<uint8_t>(layer);
+    const auto xValue = static_cast<uint16_t>(x);
+    const auto yValue = static_cast<uint16_t>(y);
+    const auto newValue = static_cast<uint8_t>(value);
+
     // save old value to undo command
-    const auto oldValue = m_map.getValue(layer, x, y);
+    const auto oldValue = m_map.getValue(layerValue, xValue, yValue);
     undoCommand->addChange(layer, x, y, oldValue);
 
     // commit changes
-    m_map.setValue(layer, x, y, value);
+    m_map.setValue(layerValue, xValue, yValue, newValue);
     changes.push_back({ layer, x, y, value });
   }
 

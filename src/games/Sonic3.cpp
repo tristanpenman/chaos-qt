@@ -4,6 +4,7 @@
 #include "Sonic3.h"
 #include "Sonic3Level.h"
 
+#undef LOG
 #define LOG Logger("Sonic3")
 
 static constexpr const uint32_t levelLayoutDirAddr = 0x81360;  // Layout pointers are found here
@@ -64,15 +65,15 @@ shared_ptr<Level> Sonic3::loadLevel(unsigned int levelIdx)
   const uint32_t extendedBlocksAddr = getExtendedBlocksAddr(levelIdx);
   const uint32_t mapAddr = getTilesAddr(levelIdx);
 
-  LOG << "Character palette addr: 0x" << hex << characterPaletteAddr;
-  LOG << "Level palettes addr: 0x" << hex << levelPalettesAddr;
-  LOG << "Patterns addr: 0x" << hex << patternsAddr;
-  LOG << "Extended patterns addr: 0x" << hex << extendedPatternsAddr;
-  LOG << "Chunks addr: 0x" << hex << chunksAddr;
-  LOG << "Extended chunks addr: 0x" << hex << extendedChunksAddr;
-  LOG << "Blocks addr: 0x" << hex << blocksAddr;
-  LOG << "Extended blocks addr: 0x" << hex << extendedBlocksAddr;
-  LOG << "Map addr: 0x" << hex << mapAddr;
+  LOG() << "Character palette addr: 0x" << hex << characterPaletteAddr;
+  LOG() << "Level palettes addr: 0x" << hex << levelPalettesAddr;
+  LOG() << "Patterns addr: 0x" << hex << patternsAddr;
+  LOG() << "Extended patterns addr: 0x" << hex << extendedPatternsAddr;
+  LOG() << "Chunks addr: 0x" << hex << chunksAddr;
+  LOG() << "Extended chunks addr: 0x" << hex << extendedChunksAddr;
+  LOG() << "Blocks addr: 0x" << hex << blocksAddr;
+  LOG() << "Extended blocks addr: 0x" << hex << extendedBlocksAddr;
+  LOG() << "Map addr: 0x" << hex << mapAddr;
 
   return make_shared<Sonic3Level>(*m_rom,
                                   characterPaletteAddr,

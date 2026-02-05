@@ -11,8 +11,6 @@
 
 #include "ui/Window.h"
 
-#define LOG Logger("main")
-
 std::fstream log_file;
 
 int main(int argc, char *argv[])
@@ -43,10 +41,10 @@ int main(int argc, char *argv[])
       log_file.open(target.toStdString(), std::ios::out);
       if (log_file.good()) {
         Logger::configure(log_file);
-        LOG << "Begin log";
+        LOG() << "Begin log";
       } else {
         Logger::configure();
-        LOG << "Failed to open log file; falling back to STDOUT";
+        LOG() << "Failed to open log file; falling back to STDOUT";
       }
     }
   }

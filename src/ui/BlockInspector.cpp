@@ -11,6 +11,7 @@
 
 #include "BlockInspector.h"
 
+#undef LOG
 #define LOG Logger("BlockInspector")
 
 using namespace std;
@@ -92,7 +93,7 @@ void BlockInspector::drawChunk(QImage& image, const Chunk& chunk, int dx, int dy
 
 void BlockInspector::drawBlock(size_t index)
 {
-  LOG << "Drawing block " << index;
+  LOG() << "Drawing block " << index;
 
   const Block& block = m_level->getBlock(index);
 
@@ -107,17 +108,17 @@ void BlockInspector::drawBlock(size_t index)
         const auto& chunk = m_level->getChunk(chunkIndex);
         drawChunk(image, chunk, dx * 16, dy * 16, chunkDesc.getHFlip(), chunkDesc.getVFlip());
       } catch (const exception& e) {
-        LOG << "Failed to draw chunk " << chunkIndex << ": " << e.what();
+        LOG() << "Failed to draw chunk " << chunkIndex << ": " << e.what();
       }
     }
   }
 
   // copy to pixmap
-  LOG << "Copying block image to pixmap";
+  LOG() << "Copying block image to pixmap";
   if (m_pixmap->convertFromImage(image)) {
     m_label->setPixmap(*m_pixmap);
   } else {
-    LOG << "Failed to copy image to pixmap";
+    LOG() << "Failed to copy image to pixmap";
   }
 }
 

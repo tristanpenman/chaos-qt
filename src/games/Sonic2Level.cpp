@@ -12,6 +12,7 @@
 
 #include "Sonic2Level.h"
 
+#undef LOG
 #define LOG Logger("Sonic2Level")
 
 static constexpr uint8_t MAP_LAYERS = 2;
@@ -63,7 +64,7 @@ const Pattern& Sonic2Level::getPattern(size_t index) const
 const Chunk& Sonic2Level::getChunk(size_t index) const
 {
   if (index >= m_chunkCount) {
-    throw runtime_error("Invalid chunk index");
+    throw runtime_error("Invalid chunk index " + std::to_string(index));
   }
 
   return m_chunks[index];
@@ -126,7 +127,7 @@ void Sonic2Level::loadPatterns(Rom& rom, uint32_t patternsAddr)
     m_patterns[i].fromSegaFormat(&buffer[i * Pattern::PATTERN_SIZE_IN_ROM]);
   }
 
-  LOG << "Pattern count: " << m_patternCount << " (" << result.second << " bytes)";
+  LOG() << "Pattern count: " << m_patternCount << " (" << result.second << " bytes)";
 }
 
 void Sonic2Level::loadChunks(Rom& rom, uint32_t chunksAddr)
@@ -155,7 +156,7 @@ void Sonic2Level::loadChunks(Rom& rom, uint32_t chunksAddr)
     m_chunks[i].fromSegaFormat(&buffer[i * Chunk::CHUNK_SIZE_IN_ROM]);
   }
 
-  LOG << "Chunk count: " << m_chunkCount << " (" << result.second << " bytes)";
+  LOG() << "Chunk count: " << m_chunkCount << " (" << result.second << " bytes)";
 }
 
 void Sonic2Level::loadBlocks(Rom& rom, uint32_t blocksAddr)
@@ -183,7 +184,7 @@ void Sonic2Level::loadBlocks(Rom& rom, uint32_t blocksAddr)
     m_blocks[i].fromSegaFormat(&buffer[i * Block::BLOCK_SIZE_IN_ROM]);
   }
 
-  LOG << "Block count: " << m_blockCount << " (" << result.second << " bytes)";
+  LOG() << "Block count: " << m_blockCount << " (" << result.second << " bytes)";
 }
 
 void Sonic2Level::loadMap(Rom& rom, uint32_t mapAddr)

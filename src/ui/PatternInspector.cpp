@@ -14,6 +14,7 @@
 
 #include "PatternInspector.h"
 
+#undef LOG
 #define LOG Logger("PatternInspector")
 
 using namespace std;
@@ -72,7 +73,7 @@ void PatternInspector::drawPattern(QImage& image, const Pattern& pattern, const 
 
 void PatternInspector::drawPatterns(size_t paletteIndex)
 {
-  LOG << "Drawing patterns using palette " << paletteIndex;
+  LOG() << "Drawing patterns using palette " << paletteIndex;
 
   const Palette& palette = m_level->getPalette(paletteIndex);
 
@@ -89,11 +90,11 @@ void PatternInspector::drawPatterns(size_t paletteIndex)
   }
 
   // copy to pixmap
-  LOG << "Copying pattern image to pixmap";
+  LOG() << "Copying pattern image to pixmap";
   if (m_pixmap->convertFromImage(image)) {
     m_label->setPixmap(*m_pixmap);
   } else {
-    LOG << "Failed to copy image to pixmap";
+    LOG() << "Failed to copy image to pixmap";
   }
 }
 

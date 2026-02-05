@@ -24,6 +24,7 @@
 
 #include "MapEditor.h"
 
+#undef LOG
 #define LOG Logger("MapEditor")
 
 #define MAX_UNDO_COMMANDS 20
@@ -46,7 +47,7 @@ MapEditor::MapEditor(QWidget *parent, shared_ptr<Level>& level)
   setLayout(hbox);
 
   // render block artwork into pixmaps
-  LOG << "Drawing blocks";
+  LOG() << "Drawing blocks";
   const size_t blockCount = m_level->getBlockCount();
   m_blocks = new QPixmap*[blockCount];
   for (size_t i = 0; i < blockCount; i++) {
@@ -110,7 +111,7 @@ void MapEditor::undo()
   auto redoCommand = applyCommand(*undoCommand);
   m_redoCommands.push_front(redoCommand);
   if (m_redoCommands.size() > MAX_UNDO_COMMANDS) {
-    LOG << "Dropping redo command";
+    LOG() << "Dropping redo command";
     m_redoCommands.pop_back();
   }
 
@@ -129,7 +130,7 @@ void MapEditor::redo()
   auto undoCommand = applyCommand(*redoCommand);
   m_undoCommands.push_front(undoCommand);
   if (m_undoCommands.size() > MAX_UNDO_COMMANDS) {
-    LOG << "Dropping undo command";
+    LOG() << "Dropping undo command";
     m_undoCommands.pop_back();
   }
 
@@ -206,8 +207,9 @@ shared_ptr<Command> MapEditor::applyCommand(Command& command)
 
   // apply changes to visible tiles
   for (const auto& change : result.changes) {
-    const auto offset = change.y * m_level->getMap().getWidth() + change.x;
-    m_tiles[offset]->setPixmap(*m_blocks[change.value]);
+    const auto offset = static_cast<size_t>(change.y) * m_level->getMap().getWidth()
+        + static_cast<size_t>(change.x);
+    m_tiles[offset]->setPixmap(*m_blocks[static_cast<size_t>(change.value)]);
   }
 
   return result.undoCommand;
@@ -221,12 +223,13 @@ bool MapEditor::handleMousePress()
   }
 
   // update tile
-  const auto offset = m_highlightY * m_level->getMap().getWidth() + m_highlightX;
+  const auto offset = static_cast<size_t>(m_highlightY) * m_level->getMap().getWidth()
+      + static_cast<size_t>(m_highlightX);
   m_tiles[offset]->setPixmap(*m_blocks[m_selectedBlock]);
 
   // start command
   m_pencilCommand = std::make_shared<PencilCommand>(m_level->getMap());
-  m_pencilCommand->addChange(0, m_highlightX, m_highlightY, m_selectedBlock);
+  m_pencilCommand->addChange(0, m_highlightX, m_highlightY, static_cast<int>(m_selectedBlock));
 
   return true;
 }
@@ -245,7 +248,7 @@ bool MapEditor::handleMouseRelease()
   m_redoCommands.clear();
   m_undoCommands.push_front(result.undoCommand);
   if (m_undoCommands.size() > MAX_UNDO_COMMANDS) {
-    LOG << "Dropping undo command";
+    LOG() << "Dropping undo command";
     m_undoCommands.pop_back();
   }
 
@@ -270,9 +273,10 @@ void MapEditor::handleMove(const QPointF& pos)
 
   if (highlightX != m_highlightX || highlightY != m_highlightY) {
     if (m_pencilCommand) {
-      const auto offset = m_highlightY * map.getWidth() + m_highlightX;
+      const auto offset = static_cast<size_t>(m_highlightY) * map.getWidth()
+          + static_cast<size_t>(m_highlightX);
       m_tiles[offset]->setPixmap(*m_blocks[m_selectedBlock]);
-      m_pencilCommand->addChange(0, m_highlightX, m_highlightY, m_selectedBlock);
+      m_pencilCommand->addChange(0, m_highlightX, m_highlightY, static_cast<int>(m_selectedBlock));
     }
 
     m_highlightX = highlightX;
@@ -343,7 +347,7 @@ void MapEditor::drawBlock(QPixmap& pixmap, size_t index)
         const auto& chunk = m_level->getChunk(chunkIndex);
         drawChunk(image, chunk, dx * 16, dy * 16, chunkDesc.getHFlip(), chunkDesc.getVFlip());
       } catch (const exception& e) {
-        LOG << "Failed to draw chunk: " << e.what();
+        LOG() << "Failed to draw chunk: " << e.what();
       }
     }
   }

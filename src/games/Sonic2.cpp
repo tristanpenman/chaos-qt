@@ -7,6 +7,7 @@
 #include "Sonic2.h"
 #include "Sonic2Level.h"
 
+#undef LOG
 #define LOG Logger("Sonic2")
 
 using namespace std;
@@ -74,12 +75,12 @@ shared_ptr<Level> Sonic2::loadLevel(unsigned int levelIdx)
   const auto blocksAddr = getBlocksAddr(levelIdx);
   const auto mapAddr = getTilesAddr(levelIdx);
 
-  LOG << "Character palette addr: 0x" << hex << characterPaletteAddr;
-  LOG << "Level palettes addr: 0x" << hex << levelPalettesAddr;
-  LOG << "Patterns addr: 0x" << hex << patternsAddr;
-  LOG << "Chunks addr: 0x" << hex << chunksAddr;
-  LOG << "Blocks addr: 0x" << hex << blocksAddr;
-  LOG << "Map addr: 0x" << hex << mapAddr;
+  LOG() << "Character palette addr: 0x" << hex << characterPaletteAddr;
+  LOG() << "Level palettes addr: 0x" << hex << levelPalettesAddr;
+  LOG() << "Patterns addr: 0x" << hex << patternsAddr;
+  LOG() << "Chunks addr: 0x" << hex << chunksAddr;
+  LOG() << "Blocks addr: 0x" << hex << blocksAddr;
+  LOG() << "Map addr: 0x" << hex << mapAddr;
 
   return make_shared<Sonic2Level>(*m_rom,
                                   characterPaletteAddr,
@@ -102,19 +103,19 @@ bool Sonic2::canSave() const
 
 bool Sonic2::relocateLevels(bool unsafe)
 {
-  LOG << "Relocating levels in " << (unsafe ? "unsafe" : "safe") << " mode";
+  LOG() << "Relocating levels in " << (unsafe ? "unsafe" : "safe") << " mode";
 
   // check rom size
   const auto romSize = m_rom->getSize();
   if (romSize != defaultRomSize && !unsafe) {
-    LOG << "Rom size does not match default; giving up";
+    LOG() << "Rom size does not match default; giving up";
     return false;
   }
 
   // check level layout directory address
   const auto levelLayoutDirAddr = m_rom->read32BitAddr(levelLayoutDirAddrLoc);
   if (levelLayoutDirAddr != defaultLevelLayoutDirAddr && !unsafe) {
-    LOG << "Level layout directory is not at expected location; giving up";
+    LOG() << "Level layout directory is not at expected location; giving up";
     return false;
   }
 
@@ -131,7 +132,7 @@ bool Sonic2::relocateLevels(bool unsafe)
 
   uint32_t newLevelOffset = 68;
   for (uint16_t levelIdx = 0; levelIdx < 20; levelIdx++) {
-    LOG << "Relocating level " << levelIdx;
+    LOG() << "Relocating level " << levelIdx;
 
     const uint32_t zoneIdxLoc = levelSelectAddr + levelIdx * 2;
     const uint8_t zoneIdx = m_rom->readByte(zoneIdxLoc);
@@ -139,11 +140,11 @@ bool Sonic2::relocateLevels(bool unsafe)
     const uint32_t actIdxLoc = zoneIdxLoc + 1;
     const uint8_t actIdx = m_rom->readByte(actIdxLoc);
 
-    const uint32_t levelLayoutDirAddr = m_rom->read32BitAddr(levelLayoutDirAddrLoc);
-    const uint32_t levelOffsetLoc = levelLayoutDirAddr + zoneIdx * 4 + actIdx * 2;
+    const uint32_t layoutDirAddr = m_rom->read32BitAddr(levelLayoutDirAddrLoc);
+    const uint32_t levelOffsetLoc = layoutDirAddr + zoneIdx * 4 + actIdx * 2;
     const uint16_t levelOffset = m_rom->read16BitAddr(levelOffsetLoc);
 
-    const uint32_t tilesAddr = levelLayoutDirAddr + levelOffset;
+    const uint32_t tilesAddr = layoutDirAddr + levelOffset;
 
     // figure out how many bytes to copy
     file.seekg(tilesAddr);
@@ -159,12 +160,13 @@ bool Sonic2::relocateLevels(bool unsafe)
     buffer[zoneIdx * 4 + actIdx * 2 + 1] = newLevelOffset & 0xFF;
 
     // copy however much data was read by the decompressor
-    const auto bytesToCopy = static_cast<uint32_t>(file.tellg()) - tilesAddr;
-    LOG << "Copying " << bytesToCopy << " bytes to 0x" << hex << newLevelOffset;
+    const auto bytesToCopy = static_cast<size_t>(file.tellg()) - tilesAddr;
+    LOG() << "Copying " << bytesToCopy << " bytes to 0x" << hex << newLevelOffset;
     file.seekg(tilesAddr);
-    file.read(reinterpret_cast<char*>(buffer.data() + newLevelOffset), bytesToCopy);
+    file.read(reinterpret_cast<char*>(buffer.data() + newLevelOffset),
+              static_cast<std::streamsize>(bytesToCopy));
 
-    newLevelOffset += bytesToCopy;
+    newLevelOffset += static_cast<uint32_t>(bytesToCopy);
   }
 
   m_rom->write32BitAddr(romSize, levelLayoutDirAddrLoc);
@@ -173,12 +175,12 @@ bool Sonic2::relocateLevels(bool unsafe)
 
   // write new rom size
   const auto newAddrRange = romSize + bufferSize - 1;
-  LOG << "Writing new address range: " << newAddrRange;
+  LOG() << "Writing new address range: " << newAddrRange;
   m_rom->writeSize(newAddrRange);
 
   // write new checksum
   const auto checksum = m_rom->calculateChecksum();
-  LOG << "Writing new checksum: " << checksum;
+  LOG() << "Writing new checksum: " << checksum;
   m_rom->writeChecksum(checksum);
 
   return true;
@@ -193,19 +195,19 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
   // if levels have not been relocated, check how much space we have
   const auto levelLayoutDirAddr = m_rom->read32BitAddr(levelLayoutDirAddrLoc);
   if (levelLayoutDirAddr == defaultLevelLayoutDirAddr) {
-    LOG << "Levels have not been relocated; checking how much space is available...";
+    LOG() << "Levels have not been relocated; checking how much space is available...";
 
     std::vector<uint8_t> buffer(0xFFFF);
     KosinskiReader reader;
     file.seekg(tilesAddr);
     auto result = reader.decompress(file, buffer.data(), buffer.size());
     if (!result.first) {
-      LOG << "Failed to fully extract existing level at location 0x" << hex << tilesAddr;
+      LOG() << "Failed to fully extract existing level at location 0x" << hex << tilesAddr;
       return false;
     }
 
     limit = size_t(file.tellg()) - tilesAddr;
-    LOG << "Total space available is " << *limit << " bytes";
+    LOG() << "Total space available is " << *limit << " bytes";
   }
 
   auto& map = level.getMap();
@@ -216,13 +218,13 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
   file.seekp(tilesAddr);
   auto result = writer.compress(file, data, dataSize, limit);
   if (!result.first) {
-    LOG << "Failed to write level data at location 0x" << hex << tilesAddr << "; not enough space";
+    LOG() << "Failed to write level data at location 0x" << hex << tilesAddr << "; not enough space";
     return false;
   }
 
-  LOG << "Wrote " << result.second << " bytes to location 0x" << hex << tilesAddr;
+  LOG() << "Wrote " << result.second << " bytes to location 0x" << hex << tilesAddr;
 
-  LOG << "Updating checksum...";
+  LOG() << "Updating checksum...";
   m_rom->writeChecksum(m_rom->calculateChecksum());
 
   return true;

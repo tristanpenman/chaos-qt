@@ -15,6 +15,7 @@
 
 #include "ChunkInspector.h"
 
+#undef LOG
 #define LOG Logger("ChunkInspector")
 
 using namespace std;
@@ -94,7 +95,7 @@ void ChunkInspector::drawChunk(QImage& image, const Chunk& chunk, int dx, int dy
 
 void ChunkInspector::drawChunks()
 {
-  LOG << "Drawing chunks";
+  LOG() << "Drawing chunks";
 
   // image to draw to
   QImage image(m_pixmap->width(), m_pixmap->height(), QImage::Format_RGB888);
@@ -109,10 +110,10 @@ void ChunkInspector::drawChunks()
   }
 
   // copy to pixmap
-  LOG << "Copying pattern image to pixmap";
+  LOG() << "Copying pattern image to pixmap";
   if (m_pixmap->convertFromImage(image)) {
     m_label->setPixmap(*m_pixmap);
   } else {
-    LOG << "Failed to copy image to pixmap";
+    LOG() << "Failed to copy image to pixmap";
   }
 }

@@ -30,6 +30,7 @@
 
 #include "Window.h"
 
+#undef LOG
 #define LOG Logger("Window")
 
 using namespace std;
@@ -122,8 +123,8 @@ bool Window::openRom(const QString &path)
     return false;
   }
 
-  LOG << "ROM identified";
-  LOG << "Domestic name: '" << m_rom->readDomesticName() << "'";
+  LOG() << "ROM identified";
+  LOG() << "Domestic name: '" << m_rom->readDomesticName() << "'";
 
   m_levelSelectAction->setEnabled(true);
   m_levelSelectButton->setEnabled(true);
@@ -433,7 +434,7 @@ void Window::levelSelected(int levelIdx)
     return;
   }
 
-  LOG << "Loading level: " << levelIdx << " (" << m_game->getTitleCards()[levelIdx] << ")";
+  LOG() << "Loading level: " << levelIdx << " (" << m_game->getTitleCards()[levelIdx] << ")";
 
   m_level = m_game->loadLevel(levelIdx);
   if (!m_level) {
@@ -482,7 +483,7 @@ void Window::noTile()
 
 void Window::undosRedosChanged(size_t undos, size_t redos)
 {
-  LOG << "Undos: " << undos << ", redos: " << redos;
+  LOG() << "Undos: " << undos << ", redos: " << redos;
 
   m_undoAction->setEnabled(undos > 0);
   m_redoAction->setEnabled(redos > 0);

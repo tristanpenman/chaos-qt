@@ -14,6 +14,7 @@
 
 #include "BlockSelector.h"
 
+#undef LOG
 #define LOG Logger("BlockSelector")
 
 static constexpr int BLOCK_SPACING = 5;
@@ -126,7 +127,7 @@ void BlockSelector::handleClick(const QPoint& pos)
 
   if (tileOffset < 128) {
     const int tile = y / (128 + BLOCK_SPACING);
-    LOG << "Selected block " << tile;
+    LOG() << "Selected block " << tile;
     m_selectedBlock = tile;
     m_selected->setPixmap(*m_blocks[tile]);
     emit blockSelected(tile);

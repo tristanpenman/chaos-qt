@@ -11,6 +11,7 @@
 
 #include "Sonic3Level.h"
 
+#undef LOG
 #define LOG Logger("Sonic3Level")
 
 using namespace std;
@@ -182,7 +183,7 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
     }
   }
 
-  LOG << "Pattern count: " << m_patternCount << " (total: " << total << " bytes)";
+  LOG() << "Pattern count: " << m_patternCount << " (total: " << total << " bytes)";
 }
 
 void Sonic3Level::loadChunks(Rom& rom, uint32_t baseChunksAddr, uint32_t extChunksAddr)
@@ -233,7 +234,7 @@ void Sonic3Level::loadChunks(Rom& rom, uint32_t baseChunksAddr, uint32_t extChun
     total += result.second;
   }
 
-  LOG << "Chunk count: " << m_chunkCount << " (total: " << total << " bytes)";
+  LOG() << "Chunk count: " << m_chunkCount << " (total: " << total << " bytes)";
 }
 
 void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBlocksAddr)
@@ -282,7 +283,7 @@ void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBloc
     }
   }
 
-  LOG << "Block count: " << m_blockCount << " (total: " << total << " bytes)";
+  LOG() << "Block count: " << m_blockCount << " (total: " << total << " bytes)";
 }
 
 void Sonic3Level::loadMap(Rom& rom, uint32_t mapAddr)
@@ -316,5 +317,5 @@ void Sonic3Level::loadMap(Rom& rom, uint32_t mapAddr)
     }
   }
 
-  LOG << "Map size: " << mapWidth << "x" << mapHeight;
+  LOG() << "Map size: " << mapWidth << "x" << mapHeight;
 }
