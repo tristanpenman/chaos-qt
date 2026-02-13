@@ -169,12 +169,12 @@ bool Sonic2::relocateLevels(bool unsafe)
     newLevelOffset += static_cast<uint32_t>(bytesToCopy);
   }
 
-  m_rom->write32BitAddr(romSize, levelLayoutDirAddrLoc);
+  m_rom->write32BitAddr(static_cast<uint32_t>(romSize), levelLayoutDirAddrLoc);
   file.seek(romSize);
   file.write(reinterpret_cast<const char*>(buffer.data()), static_cast<qint64>(bufferSize));
 
   // write new rom size
-  const auto newAddrRange = romSize + bufferSize - 1;
+  const auto newAddrRange = static_cast<uint32_t>(romSize + bufferSize - 1);
   LOG() << "Writing new address range: " << newAddrRange;
   m_rom->writeSize(newAddrRange);
 
