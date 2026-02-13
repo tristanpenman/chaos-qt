@@ -140,7 +140,8 @@ set(TEST_SOURCES
 add_executable(${PROJECT_NAME}Test ${TEST_SOURCES})
 
 target_link_libraries(${PROJECT_NAME}Test PRIVATE
-    gtest
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Widgets
     gtest_main
 )
 

@@ -107,7 +107,7 @@ void Sonic2Level::loadPatterns(Rom& rom, uint32_t patternsAddr)
 
   // decompress patterns
   auto& file = rom.getFile();
-  file.seekg(patternsAddr);
+  file.seek(patternsAddr);
   KosinskiReader reader;
   std::vector<uint8_t> buffer(PATTERN_BUFFER_SIZE);
   auto result = reader.decompress(file, buffer.data(), PATTERN_BUFFER_SIZE);
@@ -136,7 +136,7 @@ void Sonic2Level::loadChunks(Rom& rom, uint32_t chunksAddr)
 
   // decompress chunks
   auto& file = rom.getFile();
-  file.seekg(chunksAddr);
+  file.seek(chunksAddr);
   KosinskiReader reader;
   vector<uint8_t> buffer(CHUNK_BUFFER_SIZE);
   auto result = reader.decompress(file, buffer.data(), CHUNK_BUFFER_SIZE);
@@ -165,7 +165,7 @@ void Sonic2Level::loadBlocks(Rom& rom, uint32_t blocksAddr)
 
   // decompress blocks
   auto& file = rom.getFile();
-  file.seekg(blocksAddr);
+  file.seek(blocksAddr);
   KosinskiReader reader;
   vector<uint8_t> buffer(BLOCK_BUFFER_SIZE);
   auto result = reader.decompress(file, buffer.data(), BLOCK_BUFFER_SIZE);
@@ -192,7 +192,7 @@ void Sonic2Level::loadMap(Rom& rom, uint32_t mapAddr)
   static constexpr size_t MAP_BUFFER_SIZE = 0xFFFF; // 64KB
 
   auto& file = rom.getFile();
-  file.seekg(mapAddr);
+  file.seek(mapAddr);
   vector<unsigned char> buffer(MAP_BUFFER_SIZE);
 
   KosinskiReader reader;

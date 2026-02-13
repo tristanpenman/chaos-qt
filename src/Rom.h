@@ -1,17 +1,19 @@
 #pragma once
 
-#include <fstream>
 #include <optional>
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <iosfwd>
+
+#include <QFile>
 
 class Rom
 {
 public:
   bool open(const std::string& path);
 
-  std::fstream& getFile();
+  QFile& getFile();
 
   size_t getSize();
 
@@ -36,5 +38,5 @@ public:
   void write32BitAddr(uint32_t addr, std::streamoff offset);
 
 private:
-  std::fstream m_file;
+  QFile m_file;
 };

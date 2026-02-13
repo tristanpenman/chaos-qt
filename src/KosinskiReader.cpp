@@ -1,4 +1,3 @@
-#include <fstream>
 #include <sstream>
 
 #include "KosinskiReader.h"
@@ -12,7 +11,7 @@ KosinskiReader::KosinskiReader()
 
 }
 
-uint8_t KosinskiReader::getBit(istream& file)
+uint8_t KosinskiReader::getBit(QIODevice& file)
 {
   const uint8_t bit = static_cast<uint8_t>(m_bitfield) & 1;
 
@@ -22,9 +21,9 @@ uint8_t KosinskiReader::getBit(istream& file)
   // Ensure that there are more bits to read
   if (m_bitcount == 0) {
     loadBitfield(file);
-    if (file.eof()) {
+    if (file.atEnd()) {
       std::stringstream ss("Unexpected end of file at offset ");
-      ss << file.tellg();
+      ss << file.pos();
       throw std::runtime_error(ss.str());
     }
   }
@@ -32,7 +31,7 @@ uint8_t KosinskiReader::getBit(istream& file)
   return bit;
 }
 
-void KosinskiReader::loadBitfield(istream& file)
+void KosinskiReader::loadBitfield(QIODevice& file)
 {
   m_bitfield  = static_cast<uint16_t>(readByte(file));
   m_bitfield |= static_cast<uint16_t>(readByte(file)) << 8;
@@ -40,22 +39,23 @@ void KosinskiReader::loadBitfield(istream& file)
   m_bitcount = 16;
 }
 
-uint8_t KosinskiReader::readByte(istream& file)
+uint8_t KosinskiReader::readByte(QIODevice& file)
 {
-  const auto offset = file.tellg();
-  const auto byte = static_cast<uint8_t>(file.get());
+  const auto offset = file.pos();
+  char byte = 0;
+  const auto bytesRead = file.read(&byte, 1);
 
-  if (file.eof()) {
+  if (bytesRead != 1) {
     stringstream ss;
     ss << "Unexpected end of file at offset ";
-    ss << int(offset);
+    ss << offset;
     throw runtime_error(ss.str());
   }
 
-  return byte;
+  return static_cast<uint8_t>(byte);
 }
 
-KosinskiReader::Result KosinskiReader::decompress(istream& file, uint8_t buffer[], size_t bufferSize)
+KosinskiReader::Result KosinskiReader::decompress(QIODevice& file, uint8_t buffer[], size_t bufferSize)
 {
   if (buffer == nullptr) {
     return Result(false, 0);

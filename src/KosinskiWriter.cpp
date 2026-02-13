@@ -1,5 +1,3 @@
-#include <ostream>
-
 #include "KosinskiWriter.h"
 
 using namespace std;
@@ -62,7 +60,7 @@ int32_t KosinskiWriter::findSegment(const uint8_t data[], int32_t pos, int32_t l
   }
 }
 
-KosinskiWriter::Result KosinskiWriter::compress(ostream& file,
+KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
                                                 const uint8_t data[],
                                                 size_t dataSize,
                                                 optional<size_t> byteLimit)
@@ -226,8 +224,7 @@ KosinskiWriter::Result KosinskiWriter::compress(ostream& file,
     return Result(false, m_buffer.size());
   }
 
-  file.write(reinterpret_cast<char *>(m_buffer.data()), m_buffer.size());
-  file.flush();
+  file.write(reinterpret_cast<const char*>(m_buffer.data()), static_cast<qint64>(m_buffer.size()));
 
   return Result(true, m_buffer.size());
 }

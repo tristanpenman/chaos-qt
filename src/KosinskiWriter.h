@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cstdint>
-#include <iosfwd>
 #include <optional>
 #include <vector>
+
+#include <QIODevice>
 
 /**
  * RLE compressor for level and art data
@@ -18,14 +19,14 @@ public:
   /**
    * Compress data to an output stream
    *
-   * Compressed data will be written to the put position of the provided \c std::fstream. An
+   * Compressed data will be written to the current position of the provided \c QIODevice. An
    * optional byte limit can be provided, and compression will fail if this limit would be exceeded.
    *
    * The return value will be \c true if compression was successful, or \c false if the byte limit
    * would be exceeded. Data will only be written to the output stream if the byte limit is not
    * exceeded. Any other errors will result in an exception being thrown.
    */
-  Result compress(std::ostream&,
+  Result compress(QIODevice&,
                   const uint8_t data[],
                   size_t dataSize,
                   std::optional<size_t> byteLimit = std::nullopt);

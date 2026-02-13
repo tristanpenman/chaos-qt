@@ -147,7 +147,7 @@ bool Sonic2::relocateLevels(bool unsafe)
     const uint32_t tilesAddr = layoutDirAddr + levelOffset;
 
     // figure out how many bytes to copy
-    file.seekg(tilesAddr);
+    file.seek(tilesAddr);
     const auto result = reader.decompress(file, mapBuffer.data(), mapBuffer.size());
     if (!result.first) {
       stringstream ss;
@@ -160,18 +160,18 @@ bool Sonic2::relocateLevels(bool unsafe)
     buffer[zoneIdx * 4 + actIdx * 2 + 1] = newLevelOffset & 0xFF;
 
     // copy however much data was read by the decompressor
-    const auto bytesToCopy = static_cast<size_t>(file.tellg()) - tilesAddr;
+    const auto bytesToCopy = static_cast<size_t>(file.pos()) - tilesAddr;
     LOG() << "Copying " << bytesToCopy << " bytes to 0x" << hex << newLevelOffset;
-    file.seekg(tilesAddr);
+    file.seek(tilesAddr);
     file.read(reinterpret_cast<char*>(buffer.data() + newLevelOffset),
-              static_cast<std::streamsize>(bytesToCopy));
+              static_cast<qint64>(bytesToCopy));
 
     newLevelOffset += static_cast<uint32_t>(bytesToCopy);
   }
 
   m_rom->write32BitAddr(romSize, levelLayoutDirAddrLoc);
-  file.seekp(romSize);
-  file.write(reinterpret_cast<char*>(buffer.data()), bufferSize);
+  file.seek(romSize);
+  file.write(reinterpret_cast<const char*>(buffer.data()), static_cast<qint64>(bufferSize));
 
   // write new rom size
   const auto newAddrRange = romSize + bufferSize - 1;
@@ -199,14 +199,14 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
 
     std::vector<uint8_t> buffer(0xFFFF);
     KosinskiReader reader;
-    file.seekg(tilesAddr);
+    file.seek(tilesAddr);
     auto result = reader.decompress(file, buffer.data(), buffer.size());
     if (!result.first) {
       LOG() << "Failed to fully extract existing level at location 0x" << hex << tilesAddr;
       return false;
     }
 
-    limit = size_t(file.tellg()) - tilesAddr;
+    limit = size_t(file.pos()) - tilesAddr;
     LOG() << "Total space available is " << *limit << " bytes";
   }
 
@@ -215,7 +215,7 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
   auto dataSize = map.getHeight() * map.getWidth() * map.getLayerCount();
 
   KosinskiWriter writer;
-  file.seekp(tilesAddr);
+  file.seek(tilesAddr);
   auto result = writer.compress(file, data, dataSize, limit);
   if (!result.first) {
     LOG() << "Failed to write level data at location 0x" << hex << tilesAddr << "; not enough space";

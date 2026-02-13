@@ -1,9 +1,9 @@
-#include <fstream>
 #include <iostream>
 
 #include <QAction>
 #include <QCloseEvent>
 #include <QFileDialog>
+#include <QFile>
 #include <QGuiApplication>
 #include <QLayout>
 #include <QMainWindow>
@@ -151,8 +151,8 @@ void Window::openLevel(const QString& level)
 
 void Window::exportBinary(const QString& fileName)
 {
-  fstream file(fileName.toStdString(), ios::out | ios::binary);
-  if (file.bad()) {
+  QFile file(fileName);
+  if (!file.open(QIODevice::WriteOnly)) {
     showError(tr("Export Binary"), tr("Failed to open file"));
     return;
   }
@@ -163,7 +163,8 @@ void Window::exportBinary(const QString& fileName)
     for (auto x = 0; x < map.getWidth(); x++) {
       for (auto l = 0; l < 2; l++) {
         auto value = map.getValue(l, x, y);
-        file.put(static_cast<char>(value));
+        const char byte = static_cast<char>(value);
+        file.write(&byte, 1);
       }
     }
   }

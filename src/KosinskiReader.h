@@ -2,7 +2,8 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <iosfwd>
+
+#include <QIODevice>
 
 /**
  * RLE decompressor for level and art data
@@ -30,17 +31,17 @@ public:
    *
    * Any other errors will result in an exception being thrown.
    */
-  Result decompress(std::istream&, uint8_t buffer[], size_t bufferSize);
+  Result decompress(QIODevice&, uint8_t buffer[], size_t bufferSize);
 
 private:
   /// Load the next bitfield from the input stream
-  void loadBitfield(std::istream& file);
+  void loadBitfield(QIODevice& file);
 
   /// Get one bit from the bitfield, and reload the next bitfield if we run out of bits
-  uint8_t getBit(std::istream& file);
+  uint8_t getBit(QIODevice& file);
 
   /// Read one byte from the input stream, and throw an exception if we reach eof
-  uint8_t readByte(std::istream& file);
+  uint8_t readByte(QIODevice& file);
 
   uint16_t m_bitfield;
   uint16_t m_bitcount;

@@ -1,5 +1,4 @@
 #include <cstring>
-#include <fstream>
 #include <stdexcept>
 
 #include "Palette.h"

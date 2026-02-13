@@ -1,4 +1,3 @@
-#include <fstream>
 
 #include "../Block.h"
 #include "../Chunk.h"
@@ -122,7 +121,7 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
 
   {
     // base patterns
-    file.seekg(basePatternsAddr + 2);
+    file.seek(basePatternsAddr + 2);
     while (total < baseDataSize) {
       // decompress module
       auto result = reader.decompress(file, buffer.data(), PATTERN_BUFFER_SIZE);
@@ -143,11 +142,11 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
       // modules are padded with zeroes
       char b = 0;
       while (b == 0) {
-        b = static_cast<char>(file.get());
+        file.getChar(&b);
       }
 
       // Set read address to the next packet/module
-      file.seekg(-1, ios::cur);
+      file.seek(file.pos() - 1);
 
       total += result.second;
     }
@@ -155,7 +154,7 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
 
   {
     // extended patterns
-    file.seekg(extPatternsAddr + 2);
+    file.seek(extPatternsAddr + 2);
     while (total < baseDataSize + extDataSize) {
       auto result = reader.decompress(file, buffer.data(), PATTERN_BUFFER_SIZE);
       if (!result.first) {
@@ -173,11 +172,11 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
 
       char b = 0;
       while (b == 0) {
-        b = static_cast<char>(file.get());
+        file.getChar(&b);
       }
 
       // Set read address to the next packet/module
-      file.seekg(-1, ios::cur);
+      file.seek(file.pos() - 1);
 
       total += result.second;
     }
@@ -198,7 +197,7 @@ void Sonic3Level::loadChunks(Rom& rom, uint32_t baseChunksAddr, uint32_t extChun
 
   {
     // decompress base chunks
-    file.seekg(baseChunksAddr);
+    file.seek(baseChunksAddr);
     auto result = reader.decompress(file, buffer.data(), CHUNK_BUFFER_SIZE);
     if (!result.first) {
       throw runtime_error("Base chunk decompression error");
@@ -214,7 +213,7 @@ void Sonic3Level::loadChunks(Rom& rom, uint32_t baseChunksAddr, uint32_t extChun
 
   {
     // decompress extended chunks
-    file.seekg(extChunksAddr);
+    file.seek(extChunksAddr);
     auto result = reader.decompress(file, buffer.data() + total, CHUNK_BUFFER_SIZE - total);
     if (!result.first) {
       throw runtime_error("Extended chunk decompression error");
@@ -249,7 +248,7 @@ void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBloc
 
   {
     // decompress base blocks
-    file.seekg(baseBlocksAddr);
+    file.seek(baseBlocksAddr);
     auto result = reader.decompress(file, buffer.data(), BLOCK_BUFFER_SIZE);
     if (!result.first) {
       throw runtime_error("Base block decompression error");
@@ -265,7 +264,7 @@ void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBloc
 
   {
     // decompress extended blocks
-    file.seekg(extBlocksAddr);
+    file.seek(extBlocksAddr);
     auto result = reader.decompress(file, buffer.data() + total, BLOCK_BUFFER_SIZE - total);
     if (!result.first) {
       throw runtime_error("Extended block decompression error");
@@ -307,8 +306,8 @@ void Sonic3Level::loadMap(Rom& rom, uint32_t mapAddr)
 
   // read rows
   for (uint16_t rowIndex = 0; rowIndex < rowCountFg; rowIndex++) {
-    const streamoff rowOffset = rom.read16BitAddr(ptrTableAddr + rowIndex * 4) - 0x8000;
-    file.seekg(ptrTableAddr + rowOffset);
+    const qint64 rowOffset = rom.read16BitAddr(ptrTableAddr + rowIndex * 4) - 0x8000;
+    file.seek(ptrTableAddr + rowOffset);
     file.read(reinterpret_cast<char*>(buffer.data()), bufferSize);
 
     // set tiles
