@@ -21,63 +21,63 @@
 class BlockDesc
 {
 public:
-  BlockDesc();
+    BlockDesc();
 
-  uint16_t get() const;
-  uint16_t getBlockIndex() const;
+    uint16_t get() const;
+    uint16_t getBlockIndex() const;
 
-  bool getHFlip() const;
-  bool getVFlip() const;
+    bool getHFlip() const;
+    bool getVFlip() const;
 
-  void set(uint16_t);
-  void set(BlockDesc& desc);
+    void set(uint16_t);
+    void set(BlockDesc& desc);
 
-  static size_t getIndexSize();
+    static size_t getIndexSize();
 
 private:
-  BlockDesc(const BlockDesc&) = delete;
-  BlockDesc& operator=(const BlockDesc&) = delete;
+    BlockDesc(const BlockDesc&) = delete;
+    BlockDesc& operator=(const BlockDesc&) = delete;
 
-  uint16_t m_index;
+    uint16_t m_index;
 };
 
 inline BlockDesc::BlockDesc()
-  : m_index(0)
+    : m_index(0)
 {
 
 }
 
 inline uint16_t BlockDesc::get() const
 {
-  return m_index;
+    return m_index;
 }
 
 inline uint16_t BlockDesc::getBlockIndex() const
 {
-  return m_index & 0x3FF;
+    return m_index & 0x3FF;
 }
 
 inline bool BlockDesc::getHFlip() const
 {
-  return (m_index & 0x400) != 0;
+    return (m_index & 0x400) != 0;
 }
 
 inline bool BlockDesc::getVFlip() const
 {
-  return (m_index & 0x800) != 0;
+    return (m_index & 0x800) != 0;
 }
 
 inline void BlockDesc::set(uint16_t value)
 {
-  m_index = value;
+    m_index = value;
 }
 
 inline void BlockDesc::set(BlockDesc& desc)
 {
-  m_index = desc.m_index;
+    m_index = desc.m_index;
 }
 
 inline size_t BlockDesc::getIndexSize()
 {
-  return sizeof(uint16_t);
+    return sizeof(uint16_t);
 }

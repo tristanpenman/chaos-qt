@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <stdexcept>
@@ -17,37 +18,37 @@
 class Palette
 {
 public:
-  static constexpr uint8_t BYTES_PER_COLOR = 2;
-  static constexpr uint8_t PALETTE_SIZE = 16;
-  static constexpr uint8_t PALETTE_SIZE_IN_ROM = BYTES_PER_COLOR * PALETTE_SIZE;
+    static constexpr uint8_t BYTES_PER_COLOR = 2;
+    static constexpr uint8_t PALETTE_SIZE = 16;
+    static constexpr uint8_t PALETTE_SIZE_IN_ROM = BYTES_PER_COLOR * PALETTE_SIZE;
 
-  struct Color
-  {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
+    struct Color
+    {
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
 
-    void fromSegaFormat(char bytes[BYTES_PER_COLOR]);
-    void toSegaFormat(char bytes[BYTES_PER_COLOR]) const;
-  };
+        void fromSegaFormat(char bytes[BYTES_PER_COLOR]);
+        void toSegaFormat(char bytes[BYTES_PER_COLOR]) const;
+    };
 
-  Palette();
+    Palette();
 
-  void fromSegaFormat(char bytes[PALETTE_SIZE_IN_ROM]);
-  void toSegaFormat(char bytes[PALETTE_SIZE_IN_ROM]) const;
+    void fromSegaFormat(char bytes[PALETTE_SIZE_IN_ROM]);
+    void toSegaFormat(char bytes[PALETTE_SIZE_IN_ROM]) const;
 
-  size_t getColorCount() const;
-  const Color& getColor(size_t index) const;
-  void setColor(size_t index, const Color& color);
+    size_t getColorCount() const;
+    const Color& getColor(size_t index) const;
+    void setColor(size_t index, const Color& color);
 
 private:
-  Palette(const Palette&) = delete;
-  Palette& operator=(const Palette&) = delete;
+    Palette(const Palette&) = delete;
+    Palette& operator=(const Palette&) = delete;
 
-  Color m_colors[PALETTE_SIZE];
+    Color m_colors[PALETTE_SIZE];
 };
 
 inline size_t Palette::getColorCount() const
 {
-  return PALETTE_SIZE;
+    return PALETTE_SIZE;
 }

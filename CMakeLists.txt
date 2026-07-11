@@ -46,34 +46,34 @@ FetchContent_MakeAvailable(googletest)
 # -----------------------------------------------------------------------------
 
 set(PROJECT_SOURCES
-    src/main.cpp
-    src/Chunk.cpp
+    src/main.cc
+    src/Chunk.cc
     src/Chunk.h
     src/Command.h
-    src/Block.cpp
+    src/Block.cc
     src/Block.h
     src/BlockDesc.h
     src/Game.h
-    src/GameFactory.cpp
+    src/GameFactory.cc
     src/GameFactory.h
-    src/KosinskiReader.cpp
+    src/KosinskiReader.cc
     src/KosinskiReader.h
-    src/KosinskiWriter.cpp
+    src/KosinskiWriter.cc
     src/KosinskiWriter.h
     src/Level.h
-    src/Logger.cpp
+    src/Logger.cc
     src/Logger.h
-    src/Map.cpp
+    src/Map.cc
     src/Map.h
-    src/Palette.cpp
+    src/Palette.cc
     src/Palette.h
-    src/Pattern.cpp
+    src/Pattern.cc
     src/Pattern.h
     src/PatternDesc.h
-    src/Rom.cpp
+    src/Rom.cc
     src/Rom.h
     src/RingGroup.h
-    src/commands/PencilCommand.cpp
+    src/commands/PencilCommand.cc
     src/commands/PencilCommand.h
     src/games/Sonic2Rom.cc
     src/games/Sonic2Rom.h
@@ -171,9 +171,9 @@ endif()
 
 set(TEST_SOURCES
     src/KosinskiReader.h
-    src/KosinskiReader.cpp
+    src/KosinskiReader.cc
     src/KosinskiWriter.h
-    src/KosinskiWriter.cpp
+    src/KosinskiWriter.cc
     src/games/Sonic2RingLayout.h
     src/games/Sonic2RingLayout.cc
     src/RingGroup.h

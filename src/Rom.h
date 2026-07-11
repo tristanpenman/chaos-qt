@@ -1,42 +1,43 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+#include <iosfwd>
 #include <optional>
 #include <string>
 #include <vector>
-#include <cstdint>
-#include <iosfwd>
 
 #include <QFile>
 
 class Rom
 {
 public:
-  bool open(const std::string& path);
+    bool open(const std::string& path);
 
-  QFile& getFile();
+    QFile& getFile();
 
-  size_t getSize();
+    size_t getSize();
 
-  uint32_t readAddrRange();
-  void writeSize(uint32_t size);
+    uint32_t readAddrRange();
+    void writeSize(uint32_t size);
 
-  uint16_t calculateChecksum();
-  uint16_t readChecksum();
-  void writeChecksum(uint16_t checksum);
+    uint16_t calculateChecksum();
+    uint16_t readChecksum();
+    void writeChecksum(uint16_t checksum);
 
-  std::string readDomesticName();
-  std::string readInternationalName();
+    std::string readDomesticName();
+    std::string readInternationalName();
 
-  uint8_t readByte(std::streamoff offset);
+    uint8_t readByte(std::streamoff offset);
 
-  std::vector<char> readBytes(std::streamoff offset, size_t count);
+    std::vector<char> readBytes(std::streamoff offset, size_t count);
 
-  uint16_t read16BitAddr(std::streamoff offset);
-  uint32_t read32BitAddr(std::streamoff offset);
+    uint16_t read16BitAddr(std::streamoff offset);
+    uint32_t read32BitAddr(std::streamoff offset);
 
-  void write16BitAddr(uint16_t addr, std::streamoff offset);
-  void write32BitAddr(uint32_t addr, std::streamoff offset);
+    void write16BitAddr(uint16_t addr, std::streamoff offset);
+    void write32BitAddr(uint32_t addr, std::streamoff offset);
 
 private:
-  QFile m_file;
+    QFile m_file;
 };

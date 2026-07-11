@@ -1,10 +1,10 @@
 #pragma once
 
 #include <atomic>
+#include <mutex>
 #include <ostream>
 #include <sstream>
 #include <string>
-#include <mutex>
 
 /**
  * Simple streaming logger
@@ -43,59 +43,59 @@
 class Logger
 {
 public:
-  enum class Level
-  {
-    Verbose = 0,
-    Info = 1,
-    Warning = 2,
-    Error = 3
-  };
-
-  class Writer
-  {
-  public:
-    Writer(Logger &logger, Level level);
-    ~Writer();
-
-    template<typename T>
-    Writer& operator<<(T const & value)
+    enum class Level
     {
-      if (m_enabled) {
-        m_ss << value;
-      }
+        Verbose = 0,
+        Info = 1,
+        Warning = 2,
+        Error = 3
+    };
 
-      return *this;
+    class Writer
+    {
+    public:
+        Writer(Logger& logger, Level level);
+        ~Writer();
+
+        template<typename T>
+        Writer& operator<<(const T& value)
+        {
+            if (m_enabled) {
+                m_ss << value;
+            }
+
+            return *this;
+        }
+
+    private:
+        Logger& m_logger;
+        std::stringstream m_ss;
+        bool m_enabled{false};
+    };
+
+    explicit Logger(std::string name = {});
+
+    Writer operator()(const Level level = Level::Info)
+    {
+        return Writer{*this, level};
     }
 
-  private:
-    Logger &m_logger;
-    std::stringstream m_ss;
-    bool m_enabled{false};
-  };
+    static void configure();
+    static void configure(std::ostream& os);
+    static void configure(Level minLevel);
+    static void configure(std::ostream& os, Level minLevel);
 
-  explicit Logger(std::string name = {});
-
-  Writer operator()(const Level level = Level::Info)
-  {
-    return Writer{*this, level};
-  }
-
-  static void configure();
-  static void configure(std::ostream& os);
-  static void configure(Level minLevel);
-  static void configure(std::ostream& os, Level minLevel);
-
-  static bool verbose()
-  {
-    return m_minLevel.load() <= Level::Verbose;
-  }
+    static bool verbose()
+    {
+        return m_minLevel.load() <= Level::Verbose;
+    }
 
 private:
-  static std::atomic<std::ostream*> m_os;
-  static std::atomic<Level> m_minLevel;
-  static std::mutex m_mutex;
+    static std::atomic<std::ostream*> m_os;
+    static std::atomic<Level> m_minLevel;
+    static std::mutex m_mutex;
 
-  std::string m_name;
+    std::string m_name;
 };
 
 #define LOG     Logger()
