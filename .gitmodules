@@ -1,3 +1,6 @@
 [submodule "s2disasm"]
-	path = s2disasm
+	path = disasm/s2disasm
 	url = https://github.com/sonicretro/s2disasm.git
+[submodule "skdisasm"]
+	path = disasm/skdisasm
+	url = https://github.com/sonicretro/skdisasm.git
