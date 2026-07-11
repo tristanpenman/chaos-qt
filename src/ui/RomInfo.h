@@ -9,8 +9,8 @@ class Rom;
 
 class RomInfo : public QDialog
 {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  RomInfo(QWidget *parent, Rom& rom, Game& game);
+    RomInfo(QWidget* parent, Rom& rom, Game& game);
 };

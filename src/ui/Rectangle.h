@@ -7,7 +7,7 @@
 class Rectangle : public QGraphicsItem
 {
 public:
-    Rectangle(int width, int height, const QColor& colour);
+    Rectangle(int width, int height, const QColor& color);
 
     void setColor(const QColor& color);
     void setSize(int width, int height);
@@ -18,36 +18,36 @@ private:
     QRectF m_boundingRect;
     QColor m_color;
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
 };
 
 inline Rectangle::Rectangle(int width, int height, const QColor& color)
-  : QGraphicsItem()
-  , m_boundingRect(0, 0, width, height)
-  , m_color(color)
+    : QGraphicsItem()
+    , m_boundingRect(0, 0, width, height)
+    , m_color(color)
 {
 
 }
 
-inline void Rectangle::setColor(const QColor &color)
+inline void Rectangle::setColor(const QColor& color)
 {
-  m_color = color;
+    m_color = color;
 }
 
 inline void Rectangle::setSize(int width, int height)
 {
-  m_boundingRect.setWidth(width);
-  m_boundingRect.setHeight(height);
+    m_boundingRect.setWidth(width);
+    m_boundingRect.setHeight(height);
 }
 
 inline QRectF Rectangle::boundingRect() const
 {
-  return m_boundingRect;
+    return m_boundingRect;
 }
 
-inline void Rectangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+inline void Rectangle::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
-  painter->setPen(Qt::NoPen);
-  painter->setBrush(m_color);
-  painter->drawRect(m_boundingRect);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(m_color);
+    painter->drawRect(m_boundingRect);
 }

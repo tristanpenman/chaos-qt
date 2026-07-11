@@ -14,23 +14,23 @@ class Pattern;
 
 class PatternInspector : public QDialog
 {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  PatternInspector(QWidget *parent, const std::shared_ptr<Level>& level);
+    PatternInspector(QWidget* parent, const std::shared_ptr<Level>& level);
 
-  void refresh();
+    void refresh();
 
 private:
-  void drawPattern(QImage& image, const Pattern&, const Palette&, int dx, int dy);
-  void drawPatterns(size_t paletteIndex);
+    void drawPattern(QImage& image, const Pattern&, const Palette&, int dx, int dy);
+    void drawPatterns(size_t paletteIndex);
 
-  std::shared_ptr<Level> m_level;
+    std::shared_ptr<Level> m_level;
 
-  QLabel* m_label;
-  QPixmap* m_pixmap;
-  size_t m_paletteIndex;
+    QLabel* m_label;
+    QPixmap* m_pixmap;
+    size_t m_paletteIndex;
 
 private slots:
-  void paletteChanged(int);
+    void paletteChanged(int);
 };

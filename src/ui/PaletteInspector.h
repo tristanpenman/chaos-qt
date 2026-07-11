@@ -8,11 +8,11 @@ class Level;
 
 class PaletteInspector : public QDialog
 {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  PaletteInspector(QWidget *parent, const std::shared_ptr<Level>& level);
+    PaletteInspector(QWidget* parent, const std::shared_ptr<Level>& level);
 
 private:
-  std::shared_ptr<Level> m_level;
+    std::shared_ptr<Level> m_level;
 };

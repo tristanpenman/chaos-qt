@@ -32,24 +32,24 @@
  */
 class ZoomSupport : public QObject
 {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  ZoomSupport(QGraphicsView* view);
+    ZoomSupport(QGraphicsView* view);
 
-  void gentleZoom(double factor);
-  void setModifiers(Qt::KeyboardModifiers modifiers);
-  void setZoomFactorBase(double value);
+    void gentleZoom(double factor);
+    void setModifiers(Qt::KeyboardModifiers modifiers);
+    void setZoomFactorBase(double value);
 
 private:
-  bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event);
 
-  QGraphicsView* m_view;
-  Qt::KeyboardModifiers m_modifiers;
-  double m_zoomFactorBase;
-  QPointF m_targetScenePos;
-  QPointF m_targetViewportPos;
+    QGraphicsView* m_view;
+    Qt::KeyboardModifiers m_modifiers;
+    double m_zoomFactorBase;
+    QPointF m_targetScenePos;
+    QPointF m_targetViewportPos;
 
 signals:
-  void zoomed();
+    void zoomed();
 };

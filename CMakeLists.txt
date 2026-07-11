@@ -87,34 +87,34 @@ set(PROJECT_SOURCES
     src/games/Sonic3Rom.h
     src/games/Sonic3Level.cc
     src/games/Sonic3Level.h
-    src/ui/ChunkInspector.cpp
+    src/ui/ChunkInspector.cc
     src/ui/ChunkInspector.h
-    src/ui/ChunkSelector.cpp
+    src/ui/ChunkSelector.cc
     src/ui/ChunkSelector.h
-    src/ui/BlockEditor.cpp
+    src/ui/BlockEditor.cc
     src/ui/BlockEditor.h
-    src/ui/BlockInspector.cpp
+    src/ui/BlockInspector.cc
     src/ui/BlockInspector.h
-    src/ui/LevelSelect.cpp
+    src/ui/LevelSelect.cc
     src/ui/LevelSelect.h
-    src/ui/MapEditor.cpp
+    src/ui/MapEditor.cc
     src/ui/MapEditor.h
-    src/ui/PaletteEditor.cpp
+    src/ui/PaletteEditor.cc
     src/ui/PaletteEditor.h
-    src/ui/PaletteInspector.cpp
+    src/ui/PaletteInspector.cc
     src/ui/PaletteInspector.h
-    src/ui/PatternEditor.cpp
+    src/ui/PatternEditor.cc
     src/ui/PatternEditor.h
-    src/ui/PatternInspector.cpp
+    src/ui/PatternInspector.cc
     src/ui/PatternInspector.h
     src/ui/Rectangle.h
-    src/ui/RomInfo.cpp
+    src/ui/RomInfo.cc
     src/ui/RomInfo.h
-    src/ui/ChunkEditor.cpp
+    src/ui/ChunkEditor.cc
     src/ui/ChunkEditor.h
-    src/ui/Window.cpp
+    src/ui/Window.cc
     src/ui/Window.h
-    src/ui/ZoomSupport.cpp
+    src/ui/ZoomSupport.cc
     src/ui/ZoomSupport.h
 )
 
