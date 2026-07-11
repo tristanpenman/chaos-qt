@@ -1,11 +1,11 @@
 #include "../Logger.h"
 #include "../Rom.h"
 
-#include "Sonic3.h"
+#include "Sonic3Rom.h"
 #include "Sonic3Level.h"
 
 #undef LOG
-#define LOG Logger("Sonic3")
+#define LOG Logger("Sonic3Rom")
 
 static constexpr const uint32_t levelLayoutDirAddr = 0x81360;  // Layout pointers are found here
 static constexpr const uint32_t levelSelectIndex = 0x6A8E;     // Level select order
@@ -15,25 +15,25 @@ static constexpr const uint32_t levelPaletteDir = 0x8BF54;     // Directory of p
 
 using namespace std;
 
-Sonic3::Sonic3(const shared_ptr<Rom>& rom)
+Sonic3Rom::Sonic3Rom(const shared_ptr<Rom>& rom)
   : m_rom(rom)
 {
 
 }
 
-bool Sonic3::isCompatible()
+bool Sonic3Rom::isCompatible()
 {
   const auto name = m_rom->readDomesticName();
 
   return name.find("SONIC THE") != name.npos && name.find("HEDGEHOG 3") != name.npos;
 }
 
-const char* Sonic3::getIdentifier() const
+const char* Sonic3Rom::getIdentifier() const
 {
-  return "Sonic3";
+  return "Sonic3Rom";
 }
 
-vector<string> Sonic3::getTitleCards()
+vector<string> Sonic3Rom::getTitleCards()
 {
   return {
     "Angel Island Zone - Act 1",
@@ -53,7 +53,7 @@ vector<string> Sonic3::getTitleCards()
   };
 }
 
-shared_ptr<Level> Sonic3::loadLevel(unsigned int levelIdx)
+shared_ptr<Level> Sonic3Rom::loadLevel(unsigned int levelIdx)
 {
   const auto characterPaletteAddr = getCharacterPaletteAddr();
   const auto levelPalettesAddr = getLevelPalettesAddr(levelIdx);
@@ -87,27 +87,27 @@ shared_ptr<Level> Sonic3::loadLevel(unsigned int levelIdx)
                                   mapAddr);
 }
 
-bool Sonic3::canRelocateLevels() const
+bool Sonic3Rom::canRelocateLevels() const
 {
   return false;
 }
 
-bool Sonic3::canSave() const
+bool Sonic3Rom::canSave() const
 {
   return false;
 }
 
-bool Sonic3::relocateLevels(bool)
+bool Sonic3Rom::relocateLevels(bool)
 {
   throw std::runtime_error("Not implemented");
 }
 
-bool Sonic3::save(unsigned int, Level &)
+bool Sonic3Rom::save(unsigned int, Level &)
 {
   return false;
 }
 
-uint32_t Sonic3::getDataAddress(unsigned int levelIdx, unsigned int entryOffset)
+uint32_t Sonic3Rom::getDataAddress(unsigned int levelIdx, unsigned int entryOffset)
 {
   const uint32_t zoneIndexLoc = levelSelectIndex + levelIdx * 2;
   const uint32_t zoneIndex = m_rom->readByte(zoneIndexLoc);
@@ -123,12 +123,12 @@ uint32_t Sonic3::getDataAddress(unsigned int levelIdx, unsigned int entryOffset)
   return m_rom->read32BitAddr(dataAddrLoc);
 }
 
-uint32_t Sonic3::getCharacterPaletteAddr()
+uint32_t Sonic3Rom::getCharacterPaletteAddr()
 {
   return 0x8C234;
 }
 
-uint32_t Sonic3::getLevelPalettesAddr(unsigned int levelIdx)
+uint32_t Sonic3Rom::getLevelPalettesAddr(unsigned int levelIdx)
 {
   const uint32_t dataAddr = getDataAddress(levelIdx, 8);
   const uint32_t paletteIdx = dataAddr >> 24;
@@ -137,39 +137,39 @@ uint32_t Sonic3::getLevelPalettesAddr(unsigned int levelIdx)
   return m_rom->read32BitAddr(paletteAddrLoc);
 }
 
-uint32_t Sonic3::getChunksAddr(unsigned int levelIdx)
+uint32_t Sonic3Rom::getChunksAddr(unsigned int levelIdx)
 {
   return getDataAddress(levelIdx, 16) & 0xFFFFFF;
 }
 
-uint32_t Sonic3::getBlocksAddr(unsigned int levelIdx)
+uint32_t Sonic3Rom::getBlocksAddr(unsigned int levelIdx)
 {
   return getDataAddress(levelIdx, 8) & 0xFFFFFF;
 }
 
-uint32_t Sonic3::getPatternsAddr(unsigned int levelIdx)
+uint32_t Sonic3Rom::getPatternsAddr(unsigned int levelIdx)
 {
   return getDataAddress(levelIdx, 0) & 0xFFFFFF;
 }
 
-uint32_t Sonic3::getTilesAddr(unsigned int levelIdx)
+uint32_t Sonic3Rom::getTilesAddr(unsigned int levelIdx)
 {
   const uint32_t tilesAddrLoc = levelLayoutDirAddr + levelIdx * 4;
 
   return m_rom->read32BitAddr(tilesAddrLoc);
 }
 
-uint32_t Sonic3::getExtendedChunksAddr(unsigned int levelIdx)
+uint32_t Sonic3Rom::getExtendedChunksAddr(unsigned int levelIdx)
 {
   return getDataAddress(levelIdx, 20) & 0xFFFFFF;
 }
 
-uint32_t Sonic3::getExtendedBlocksAddr(unsigned int levelIdx)
+uint32_t Sonic3Rom::getExtendedBlocksAddr(unsigned int levelIdx)
 {
   return getDataAddress(levelIdx, 12) & 0xFFFFFF;
 }
 
-uint32_t Sonic3::getExtendedPatternsAddr(unsigned int levelIdx)
+uint32_t Sonic3Rom::getExtendedPatternsAddr(unsigned int levelIdx)
 {
   return getDataAddress(levelIdx, 4) & 0xFFFFFF;
 }

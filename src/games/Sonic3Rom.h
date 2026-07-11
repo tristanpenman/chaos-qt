@@ -6,10 +6,10 @@
 
 class Rom;
 
-class Sonic3 : public Game
+class Sonic3Rom : public Game
 {
 public:
-  Sonic3(const std::shared_ptr<Rom>& rom);
+  Sonic3Rom(const std::shared_ptr<Rom>& rom);
 
   bool isCompatible() override;
   const char* getIdentifier() const override;

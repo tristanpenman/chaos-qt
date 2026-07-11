@@ -66,9 +66,9 @@ Only a decoder is needed. Placement editing does not require recompressing art.
 
 ### 1. Locate level data
 
-- Support the canonical ROM revision handled by `Sonic2` first.
+- Support the canonical ROM revision handled by `Sonic2Rom` first.
 - Identify it using header data and a known table signature; reject other layouts clearly.
-- Keep revision-specific addresses in `src/games/Sonic2.cpp`.
+- Keep revision-specific addresses in `src/games/Sonic2Rom.cpp`.
 - Resolve bounded object and ring regions through pointer tables where possible.
 - Determine writable capacity from region boundaries, not terminators.
 - Test Emerald Hill Acts 1/2 and Chemical Plant Act 1. Known Act 1 offsets are `0xE684A`/`0xE4344` for Emerald Hill and `0xEA9D2`/`0xE5E2C` for Chemical Plant (objects/rings).
@@ -78,7 +78,7 @@ Only a decoder is needed. Placement editing does not require recompressing art.
 - Add non-Qt models such as `ObjectPlacement`, `RingGroup`, and `LevelObjects`.
 - Use bounded readers with errors for truncation, missing terminators, invalid bits, and unsorted X positions.
 - Add serializers and exact round-trip tests now, even if the first UI is read-only.
-- Load placements through `Sonic2::loadLevel` and report malformed layers.
+- Load placements through `Sonic2Rom::loadLevel` and report malformed layers.
 
 ### 3. Decode Nemesis art
 
@@ -132,7 +132,7 @@ Start with Sonic 2 springs (`0x41`), spikes (`0x36`), monitors (`0x26`), and rin
 
 - Grow the Sonic 2 catalog by zone and usage frequency.
 - Add standalone Sonic 3 only after its address tables are understood. Do not reuse Sonic 3 & Knuckles addresses.
-- Keep Sonic 3 read-only while `Sonic3::canSave()` is false. Reuse Kosinski decoding where appropriate, but implement its mapping, ring, and DPLC formats explicitly.
+- Keep Sonic 3 read-only while `Sonic3Rom::canSave()` is false. Reuse Kosinski decoding where appropriate, but implement its mapping, ring, and DPLC formats explicitly.
 - Map disassembly labels and files into the same model interfaces.
 
 ## First-release target

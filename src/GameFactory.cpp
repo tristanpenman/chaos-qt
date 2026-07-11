@@ -1,6 +1,6 @@
-#include "games/Sonic2.h"
+#include "games/Sonic2Rom.h"
 #include "games/Sonic2Disassembly.h"
-#include "games/Sonic3.h"
+#include "games/Sonic3Rom.h"
 
 #include "GameFactory.h"
 
@@ -42,14 +42,14 @@ QStringList disassemblyIniCandidates(const QString& path)
 
 shared_ptr<Game> GameFactory::build(const shared_ptr<Rom>& rom)
 {
-  // try Sonic2
-  shared_ptr<Game> game = make_shared<Sonic2>(rom);
+  // try Sonic2Rom
+  shared_ptr<Game> game = make_shared<Sonic2Rom>(rom);
   if (game->isCompatible()) {
     return game;
   }
 
-  // try Sonic3
-  game.reset(new Sonic3(rom));
+  // try Sonic3Rom
+  game.reset(new Sonic3Rom(rom));
   if (game->isCompatible()) {
     return game;
   }

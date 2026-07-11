@@ -75,16 +75,16 @@ set(PROJECT_SOURCES
     src/RingGroup.h
     src/commands/PencilCommand.cpp
     src/commands/PencilCommand.h
-    src/games/Sonic2.cpp
-    src/games/Sonic2.h
+    src/games/Sonic2Rom.cpp
+    src/games/Sonic2Rom.h
     src/games/Sonic2Disassembly.cpp
     src/games/Sonic2Disassembly.h
     src/games/Sonic2Level.cpp
     src/games/Sonic2Level.h
     src/games/Sonic2RingLayout.cpp
     src/games/Sonic2RingLayout.h
-    src/games/Sonic3.cpp
-    src/games/Sonic3.h
+    src/games/Sonic3Rom.cpp
+    src/games/Sonic3Rom.h
     src/games/Sonic3Level.cpp
     src/games/Sonic3Level.h
     src/ui/ChunkInspector.cpp

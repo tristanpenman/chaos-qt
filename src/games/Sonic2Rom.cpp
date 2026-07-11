@@ -12,11 +12,11 @@
 #include "../Pattern.h"
 #include "../Rom.h"
 
-#include "Sonic2.h"
+#include "Sonic2Rom.h"
 #include "Sonic2Level.h"
 
 #undef LOG
-#define LOG Logger("Sonic2")
+#define LOG Logger("Sonic2Rom")
 
 using namespace std;
 
@@ -33,25 +33,25 @@ static constexpr uint32_t ringLayoutDirAddrLoc = 0x172D0;       // Pointer to di
 static constexpr uint32_t ringLayoutDirEntryCount = 34;
 static constexpr uint32_t maxRingLayoutSize = 0x10000;
 
-Sonic2::Sonic2(const shared_ptr<Rom>& rom)
+Sonic2Rom::Sonic2Rom(const shared_ptr<Rom>& rom)
   : m_rom(rom)
 {
 
 }
 
-bool Sonic2::isCompatible()
+bool Sonic2Rom::isCompatible()
 {
   const auto name = m_rom->readDomesticName();
 
   return name.find("SONIC THE") != name.npos && name.find("HEDGEHOG 2") != name.npos;
 }
 
-const char* Sonic2::getIdentifier() const
+const char* Sonic2Rom::getIdentifier() const
 {
-  return "Sonic2";
+  return "Sonic2Rom";
 }
 
-vector<string> Sonic2::getTitleCards()
+vector<string> Sonic2Rom::getTitleCards()
 {
   return {
     "Emerald Hill Zone - Act 1",
@@ -77,7 +77,7 @@ vector<string> Sonic2::getTitleCards()
   };
 }
 
-shared_ptr<Level> Sonic2::loadLevel(unsigned int levelIdx)
+shared_ptr<Level> Sonic2Rom::loadLevel(unsigned int levelIdx)
 {
   const auto characterPaletteAddr = getCharacterPaletteAddr();
   const auto levelPalettesAddr = getLevelPalettesAddr(levelIdx);
@@ -106,17 +106,17 @@ shared_ptr<Level> Sonic2::loadLevel(unsigned int levelIdx)
                                   ringsRegion.size);
 }
 
-bool Sonic2::canRelocateLevels() const
+bool Sonic2Rom::canRelocateLevels() const
 {
   return true;
 }
 
-bool Sonic2::canSave() const
+bool Sonic2Rom::canSave() const
 {
   return true;
 }
 
-bool Sonic2::relocateLevels(bool unsafe)
+bool Sonic2Rom::relocateLevels(bool unsafe)
 {
   LOG() << "Relocating levels in " << (unsafe ? "unsafe" : "safe") << " mode";
 
@@ -201,7 +201,7 @@ bool Sonic2::relocateLevels(bool unsafe)
   return true;
 }
 
-bool Sonic2::save(unsigned int levelIdx, Level& level)
+bool Sonic2Rom::save(unsigned int levelIdx, Level& level)
 {
   auto tilesAddr = getTilesAddr(levelIdx);
   auto characterPaletteAddr = getCharacterPaletteAddr();
@@ -365,7 +365,7 @@ bool Sonic2::save(unsigned int levelIdx, Level& level)
   return true;
 }
 
-uint32_t Sonic2::getDataAddress(unsigned int levelIdx, unsigned int entryOffset)
+uint32_t Sonic2Rom::getDataAddress(unsigned int levelIdx, unsigned int entryOffset)
 {
   const uint32_t levelDataIdxLoc = levelSelectAddr + levelIdx * 2;
   const uint8_t levelDataIdx = m_rom->readByte(levelDataIdxLoc);
@@ -377,12 +377,12 @@ uint32_t Sonic2::getDataAddress(unsigned int levelIdx, unsigned int entryOffset)
   return m_rom->read32BitAddr(dataAddrLoc);
 }
 
-uint32_t Sonic2::getCharacterPaletteAddr()
+uint32_t Sonic2Rom::getCharacterPaletteAddr()
 {
   return sonicTailsPaletteAddr;
 }
 
-uint32_t Sonic2::getLevelPalettesAddr(unsigned int levelIdx)
+uint32_t Sonic2Rom::getLevelPalettesAddr(unsigned int levelIdx)
 {
   const uint32_t dataAddr = getDataAddress(levelIdx, 8);
   const uint32_t paletteIndex = dataAddr >> 24;
@@ -391,22 +391,22 @@ uint32_t Sonic2::getLevelPalettesAddr(unsigned int levelIdx)
   return m_rom->read32BitAddr(paletteAddrLoc);
 }
 
-uint32_t Sonic2::getChunksAddr(unsigned int levelIdx)
+uint32_t Sonic2Rom::getChunksAddr(unsigned int levelIdx)
 {
   return getDataAddress(levelIdx, 8) & 0xFFFFFF;
 }
 
-uint32_t Sonic2::getBlocksAddr(unsigned int levelIdx)
+uint32_t Sonic2Rom::getBlocksAddr(unsigned int levelIdx)
 {
   return getDataAddress(levelIdx, 4) & 0xFFFFFF;
 }
 
-uint32_t Sonic2::getPatternsAddr(unsigned int levelIdx)
+uint32_t Sonic2Rom::getPatternsAddr(unsigned int levelIdx)
 {
   return getDataAddress(levelIdx, 0) & 0xFFFFFF;
 }
 
-uint32_t Sonic2::getTilesAddr(unsigned int levelIdx)
+uint32_t Sonic2Rom::getTilesAddr(unsigned int levelIdx)
 {
   const uint32_t zoneIdxLoc = levelSelectAddr + levelIdx * 2;
   const uint8_t zoneIdx = m_rom->readByte(zoneIdxLoc);
@@ -421,7 +421,7 @@ uint32_t Sonic2::getTilesAddr(unsigned int levelIdx)
   return levelLayoutDirAddr + levelOffset;
 }
 
-Sonic2::DataRegion Sonic2::getRingsRegion(uint32_t levelIdx)
+Sonic2Rom::DataRegion Sonic2Rom::getRingsRegion(uint32_t levelIdx)
 {
   const uint32_t levelSelectEntry = levelSelectAddr + levelIdx * 2;
   const uint32_t zoneIdx = m_rom->readByte(levelSelectEntry);

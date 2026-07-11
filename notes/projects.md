@@ -2,7 +2,7 @@
 
 ## Design sketch
 
-The `Game` interface is the abstraction used by the rest of the application. It exposes compatibility checks, level names, level loading and save capabilities without specifying where the game data comes from. Although the current `Sonic2` and `Sonic3` implementations own a `Rom`, resolve hard-coded pointer tables and construct `Level` objects that read directly from that ROM, the interface itself should be adaptable to games backed by disassemblies.
+The `Game` interface is the abstraction used by the rest of the application. It exposes compatibility checks, level names, level loading and save capabilities without specifying where the game data comes from. Although the current `Sonic2Rom` and `Sonic3Rom` implementations own a `Rom`, resolve hard-coded pointer tables and construct `Level` objects that read directly from that ROM, the interface itself should be adaptable to games backed by disassemblies.
 
 A disassembly spreads a game's data across many files. Projects are intended to make those individual components easier to identify, locate and manage as a unit. A project records the game and disassembly layout it targets, its root directory and the files that provide components such as palettes, patterns, blocks, chunks and maps.
 
