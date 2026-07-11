@@ -11,14 +11,16 @@
     - Relocate levels in Sonic 3 ROM
     - Selection rectangle, replace all tiles
     - Copy and paste
-  - Sprite preview support
-    - Implement nemesis de-/compression
+  - Sprite support
+    - ~~Show ring groups in Sonic 2 ROMS~~
+    - Show ring groups in Sonic 3 and S&K ROMs~~
+    - Implement nemesis de-/compression for sprites
 - New functionality
+  - ~~Pattern editor~~
+  - ~~Chunk and block editors~~
   - Sonic 2 disassembly support (**in progress**)
   - Sonic and Knuckles disassembly support
-  - Sonic 3 and Knuckles disassembly support
   - Sonic 1 disassembly support
   - Sonic Mania support
-  - Pattern editing
   - Live preview for pattern and chunk editing
   - Audio extraction (maybe)
