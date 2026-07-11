@@ -4,7 +4,41 @@
 
 #include "GameFactory.h"
 
+#include <QDir>
+#include <QFileInfo>
+#include <QStringList>
+
 using namespace std;
+
+namespace {
+
+shared_ptr<Game> buildSonic2Disassembly(const QString& iniPath)
+{
+  shared_ptr<Game> game = make_shared<Sonic2Disassembly>(iniPath.toStdString());
+  if (game->isCompatible()) {
+    return game;
+  }
+
+  return nullptr;
+}
+
+QStringList disassemblyIniCandidates(const QString& path)
+{
+  const QFileInfo info(path);
+  if (!info.isDir()) {
+    return {path};
+  }
+
+  const QDir dir(path);
+  return {
+      dir.filePath("SonLVL INI Files/SonLVL.ini"),
+      dir.filePath("SonLVL INI Files/SonLVL - S3.ini"),
+      dir.filePath("SonLVL INI Files/SonLVL - S&K.ini"),
+      dir.filePath("SonLVL.ini"),
+  };
+}
+
+}  // namespace
 
 shared_ptr<Game> GameFactory::build(const shared_ptr<Rom>& rom)
 {
@@ -25,9 +59,10 @@ shared_ptr<Game> GameFactory::build(const shared_ptr<Rom>& rom)
 
 shared_ptr<Game> GameFactory::buildDisassembly(const string& iniPath)
 {
-  shared_ptr<Game> game = make_shared<Sonic2Disassembly>(iniPath);
-  if (game->isCompatible()) {
-    return game;
+  for (const auto& candidate : disassemblyIniCandidates(QString::fromStdString(iniPath))) {
+    if (auto game = buildSonic2Disassembly(candidate)) {
+      return game;
+    }
   }
 
   return nullptr;

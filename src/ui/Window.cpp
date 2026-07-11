@@ -276,9 +276,9 @@ void Window::showOpenRomDialog()
 
 void Window::showOpenProjectDialog()
 {
-  QFileDialog dialog(this, tr("Open Project"), QString(),
-      tr("Project Files (*.ini);;All Files (*)"));
-  dialog.setFileMode(QFileDialog::ExistingFile);
+  QFileDialog dialog(this, tr("Open Project"));
+  dialog.setFileMode(QFileDialog::Directory);
+  dialog.setOption(QFileDialog::ShowDirsOnly, true);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && !defined(Q_OS_WIN)
   dialog.setOption(QFileDialog::DontUseNativeDialog, true);
 #endif
