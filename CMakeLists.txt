@@ -75,17 +75,17 @@ set(PROJECT_SOURCES
     src/RingGroup.h
     src/commands/PencilCommand.cpp
     src/commands/PencilCommand.h
-    src/games/Sonic2Rom.cpp
+    src/games/Sonic2Rom.cc
     src/games/Sonic2Rom.h
-    src/games/Sonic2Disassembly.cpp
+    src/games/Sonic2Disassembly.cc
     src/games/Sonic2Disassembly.h
-    src/games/Sonic2Level.cpp
+    src/games/Sonic2Level.cc
     src/games/Sonic2Level.h
-    src/games/Sonic2RingLayout.cpp
+    src/games/Sonic2RingLayout.cc
     src/games/Sonic2RingLayout.h
-    src/games/Sonic3Rom.cpp
+    src/games/Sonic3Rom.cc
     src/games/Sonic3Rom.h
-    src/games/Sonic3Level.cpp
+    src/games/Sonic3Level.cc
     src/games/Sonic3Level.h
     src/ui/ChunkInspector.cpp
     src/ui/ChunkInspector.h
@@ -175,7 +175,7 @@ set(TEST_SOURCES
     src/KosinskiWriter.h
     src/KosinskiWriter.cpp
     src/games/Sonic2RingLayout.h
-    src/games/Sonic2RingLayout.cpp
+    src/games/Sonic2RingLayout.cc
     src/RingGroup.h
     test/data/ehz1.kosinski.h
     test/data/ehz1.raw.h

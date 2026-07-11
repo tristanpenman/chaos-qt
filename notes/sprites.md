@@ -68,7 +68,7 @@ Only a decoder is needed. Placement editing does not require recompressing art.
 
 - Support the canonical ROM revision handled by `Sonic2Rom` first.
 - Identify it using header data and a known table signature; reject other layouts clearly.
-- Keep revision-specific addresses in `src/games/Sonic2Rom.cpp`.
+- Keep revision-specific addresses in `src/games/Sonic2Rom.cc`.
 - Resolve bounded object and ring regions through pointer tables where possible.
 - Determine writable capacity from region boundaries, not terminators.
 - Test Emerald Hill Acts 1/2 and Chemical Plant Act 1. Known Act 1 offsets are `0xE684A`/`0xE4344` for Emerald Hill and `0xEA9D2`/`0xE5E2C` for Chemical Plant (objects/rings).

@@ -1,4 +1,7 @@
+#include <cstddef>
+#include <cstdint>
 #include <stdexcept>
+#include <vector>
 
 #include "Sonic2RingLayout.h"
 
