@@ -60,6 +60,7 @@ Window::Window()
   , m_romInfo(nullptr)
   , m_mapEditor(nullptr)
   , m_openRomAction(nullptr)
+  , m_openProjectAction(nullptr)
   , m_levelSelectAction(nullptr)
   , m_saveRomAction(nullptr)
   , m_exportBinaryAction(nullptr)
@@ -142,6 +143,9 @@ Window::Window()
 
 bool Window::openRom(const QString &path)
 {
+  m_rom.reset();
+  m_game.reset();
+
   m_rom = make_shared<Rom>();
   if (!m_rom->open(path.toStdString())) {
     showError(tr("ROM Error"), tr("Failed to open ROM file"));
@@ -163,7 +167,43 @@ bool Window::openRom(const QString &path)
 
   m_levelSelectAction->setEnabled(true);
   m_levelSelectButton->setEnabled(true);
+  m_saveRomAction->setEnabled(false);
   m_relocateLevelsAction->setEnabled(m_game->canRelocateLevels());
+  m_romInfoAction->setEnabled(false);
+
+  if (m_romInfo) {
+    delete m_romInfo;
+    m_romInfo = nullptr;
+  }
+
+  return true;
+}
+
+bool Window::openProject(const QString& path)
+{
+  m_rom.reset();
+  m_game.reset();
+
+  try {
+    m_game = GameFactory::buildDisassembly(path.toStdString());
+  } catch (const exception& e) {
+    showError(tr("Project Error"), tr("Failed to open project: ") + e.what());
+    return false;
+  }
+
+  if (!m_game) {
+    showError(tr("Project Error"),
+        tr("Failed to identify a supported Sonic 2 or Sonic 3 disassembly project."));
+    return false;
+  }
+
+  LOG() << "Project identified: " << m_game->getIdentifier();
+
+  m_levelSelectAction->setEnabled(true);
+  m_levelSelectButton->setEnabled(true);
+  m_saveRomAction->setEnabled(false);
+  m_relocateLevelsAction->setEnabled(false);
+  m_romInfoAction->setEnabled(false);
 
   if (m_romInfo) {
     delete m_romInfo;
@@ -231,6 +271,23 @@ void Window::showOpenRomDialog()
   const QString fileName = dialog.selectedFiles().value(0);
   if (!fileName.isEmpty()) {
     openRomFromUserAction(fileName);
+  }
+}
+
+void Window::showOpenProjectDialog()
+{
+  QFileDialog dialog(this, tr("Open Project"), QString(),
+      tr("Project Files (*.ini);;All Files (*)"));
+  dialog.setFileMode(QFileDialog::ExistingFile);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && !defined(Q_OS_WIN)
+  dialog.setOption(QFileDialog::DontUseNativeDialog, true);
+#endif
+  if (!dialog.exec()) {
+    return;
+  }
+  const QString fileName = dialog.selectedFiles().value(0);
+  if (!fileName.isEmpty()) {
+    openProjectFromUserAction(fileName);
   }
 }
 
@@ -449,6 +506,10 @@ void Window::showChunkInspector()
 
 void Window::showRomInfo()
 {
+  if (!m_rom || !m_game) {
+    return;
+  }
+
   if (!m_romInfo) {
     m_romInfo = new RomInfo(this, *m_rom, *m_game);
   }
@@ -498,29 +559,10 @@ void Window::relocateLevels()
 
 void Window::levelSelected(int levelIdx)
 {
-  if (m_level) {
-    m_inspectorsMenu->setEnabled(false);
+  closeCurrentLevel();
 
-    delete m_paletteInspector;
-    m_paletteInspector = nullptr;
-
-    delete m_patternInspector;
-    m_patternInspector = nullptr;
-
-    delete m_blockInspector;
-    m_blockInspector = nullptr;
-
-    delete m_chunkInspector;
-    m_chunkInspector = nullptr;
-
-    delete m_mapEditor;
-    m_mapEditor = nullptr;
-  }
-
-  m_level.reset();
-
-  if (!m_rom) {
-    showError(tr("Level Error"), tr("Cannot load level until ROM has been loaded"));
+  if (!m_game) {
+    showError(tr("Level Error"), tr("Cannot load level until a ROM or project has been loaded"));
     return;
   }
 
@@ -546,7 +588,7 @@ void Window::levelSelected(int levelIdx)
   m_chunkEditorAction->setEnabled(true);
 
   m_inspectorsMenu->setEnabled(true);
-  m_romInfoAction->setEnabled(true);
+  m_romInfoAction->setEnabled(m_rom != nullptr);
 
   m_mapEditor = new MapEditor(this, m_level);
   connect(m_mapEditor, SIGNAL(currentTile(uint16_t,uint16_t,uint8_t)), this, SLOT(currentTile(uint16_t,uint16_t,uint8_t)));
@@ -660,15 +702,67 @@ bool Window::confirmCloseCurrentLevel()
   return reply != QMessageBox::No;
 }
 
+void Window::closeCurrentLevel()
+{
+  m_inspectorsMenu->setEnabled(false);
+
+  delete m_paletteInspector;
+  m_paletteInspector = nullptr;
+
+  delete m_patternInspector;
+  m_patternInspector = nullptr;
+
+  delete m_blockInspector;
+  m_blockInspector = nullptr;
+
+  delete m_chunkInspector;
+  m_chunkInspector = nullptr;
+
+  delete m_mapEditor;
+  m_mapEditor = nullptr;
+
+  m_level.reset();
+  m_hasUnsavedChanges = false;
+
+  m_saveRomAction->setEnabled(false);
+  m_exportBinaryAction->setEnabled(false);
+  m_exportPngAction->setEnabled(false);
+  m_paletteEditorAction->setEnabled(false);
+  m_patternEditorAction->setEnabled(false);
+  m_blockEditorAction->setEnabled(false);
+  m_chunkEditorAction->setEnabled(false);
+  m_actualSizeAction->setEnabled(false);
+  m_zoomInAction->setEnabled(false);
+  m_zoomOutAction->setEnabled(false);
+  m_undoAction->setEnabled(false);
+  m_redoAction->setEnabled(false);
+}
+
 bool Window::openRomFromUserAction(const QString& path)
 {
   if (!confirmCloseCurrentLevel()) {
     return false;
   }
 
-  m_level.reset();
+  closeCurrentLevel();
 
   if (!openRom(path)) {
+    return false;
+  }
+
+  showLevelSelectDialog();
+  return true;
+}
+
+bool Window::openProjectFromUserAction(const QString& path)
+{
+  if (!confirmCloseCurrentLevel()) {
+    return false;
+  }
+
+  closeCurrentLevel();
+
+  if (!openProject(path)) {
     return false;
   }
 
@@ -818,6 +912,10 @@ void Window::createFileMenu()
   m_openRomAction->setShortcuts(QKeySequence::Open);
   connect(m_openRomAction, SIGNAL(triggered()), this, SLOT(showOpenRomDialog()));
 
+  // open project
+  m_openProjectAction = new QAction(tr("Open &Project..."));
+  connect(m_openProjectAction, SIGNAL(triggered()), this, SLOT(showOpenProjectDialog()));
+
   // level select
   m_levelSelectAction = new QAction(tr("&Level Select..."));
   m_levelSelectAction->setDisabled(true);
@@ -831,6 +929,7 @@ void Window::createFileMenu()
   // file menu
   auto fileMenu = menuBar()->addMenu(tr("&File"));
   fileMenu->addAction(m_openRomAction);
+  fileMenu->addAction(m_openProjectAction);
   m_openRecentMenu = fileMenu->addMenu(tr("Open &Recent"));
   updateRecentRomActions();
   fileMenu->addSeparator()->setSeparator(true);

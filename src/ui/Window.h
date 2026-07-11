@@ -35,6 +35,7 @@ public:
   Window();
 
   bool openRom(const QString& path);
+  bool openProject(const QString& path);
   void openLevel(const QString& level);
   void exportBinary(const QString& fileName);
   void exportPng(const QString& fileName);
@@ -42,6 +43,7 @@ public:
 public slots:
   // file
   void showOpenRomDialog();
+  void showOpenProjectDialog();
   void openLastRom();
   void openRecentRom();
   void showLevelSelectDialog();
@@ -90,7 +92,9 @@ private slots:
 
 private:
   bool confirmCloseCurrentLevel();
+  void closeCurrentLevel();
   bool openRomFromUserAction(const QString& path);
+  bool openProjectFromUserAction(const QString& path);
   QStringList recentRoms() const;
   void setRecentRoms(const QStringList& paths);
   void addRecentRom(const QString& path);
@@ -119,6 +123,7 @@ private:
 
   // actions
   QAction* m_openRomAction;
+  QAction* m_openProjectAction;
   QAction* m_levelSelectAction;
   QAction* m_saveRomAction;
   QAction* m_exportBinaryAction;
