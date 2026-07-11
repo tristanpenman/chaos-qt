@@ -77,6 +77,30 @@ vector<string> Sonic2Disassembly::getTitleCards()
     return titleCards;
 }
 
+vector<ProjectResource> Sonic2Disassembly::getProjectResources() const
+{
+    vector<ProjectResource> resources;
+    for (const auto& entry : readLevelEntries()) {
+        const auto addResource = [&](const char* type, const QString& spec, const QString& compression) {
+            const auto parts = spec.split('|', Qt::SkipEmptyParts);
+            for (const auto& part : parts) {
+                resources.push_back({entry.title,
+                                     type,
+                                     resolvePath(part).toStdString(),
+                                     compression.toStdString()});
+            }
+        };
+
+        addResource("Palette", entry.paletteSpec, "none");
+        addResource("Patterns", entry.patternsSpec, entry.patternsCompression);
+        addResource("Blocks", entry.blocksSpec, entry.blocksCompression);
+        addResource("Chunks", entry.chunksSpec, entry.chunksCompression);
+        addResource("Map", entry.mapSpec, entry.mapCompression);
+    }
+
+    return resources;
+}
+
 shared_ptr<Level> Sonic2Disassembly::loadLevel(unsigned int levelIdx)
 {
     const auto levels = readLevelEntries();

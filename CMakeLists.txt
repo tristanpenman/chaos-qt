@@ -107,6 +107,8 @@ set(PROJECT_SOURCES
     src/ui/PatternEditor.h
     src/ui/PatternInspector.cc
     src/ui/PatternInspector.h
+    src/ui/ProjectExplorer.cc
+    src/ui/ProjectExplorer.h
     src/ui/Rectangle.h
     src/ui/RomInfo.cc
     src/ui/RomInfo.h

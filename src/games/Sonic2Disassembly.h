@@ -21,6 +21,7 @@ public:
     bool isCompatible() override;
     const char* getIdentifier() const override;
     std::vector<std::string> getTitleCards() override;
+    std::vector<ProjectResource> getProjectResources() const override;
     std::shared_ptr<Level> loadLevel(unsigned int levelIdx) override;
     bool canRelocateLevels() const override;
     bool canSave() const override;

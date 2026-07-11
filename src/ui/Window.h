@@ -22,6 +22,7 @@ class MapEditor;
 class PaletteEditor;
 class PaletteInspector;
 class PatternInspector;
+class ProjectExplorer;
 class Rom;
 class RomInfo;
 class BlockEditor;
@@ -65,6 +66,7 @@ public slots:
     void showPatternInspector();
     void showBlockInspector();
     void showChunkInspector();
+    void toggleProjectExplorer();
 
     // edit
     void showBlockEditor();
@@ -116,6 +118,7 @@ private:
     PatternInspector* m_patternInspector;
     BlockInspector* m_blockInspector;
     ChunkInspector* m_chunkInspector;
+    ProjectExplorer* m_projectExplorer;
     RomInfo* m_romInfo;
 
     // editor
@@ -139,6 +142,7 @@ private:
     QAction* m_zoomOutAction;
     QAction* m_relocateLevelsAction;
     QAction* m_romInfoAction;
+    QAction* m_projectExplorerAction;
 
     // misc
     QMenu* m_openRecentMenu;

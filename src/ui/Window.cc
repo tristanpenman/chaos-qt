@@ -33,6 +33,7 @@
 #include "PaletteInspector.h"
 #include "PatternEditor.h"
 #include "PatternInspector.h"
+#include "ProjectExplorer.h"
 #include "RomInfo.h"
 #include "ChunkEditor.h"
 
@@ -57,6 +58,7 @@ Window::Window()
     , m_patternInspector(nullptr)
     , m_blockInspector(nullptr)
     , m_chunkInspector(nullptr)
+    , m_projectExplorer(nullptr)
     , m_romInfo(nullptr)
     , m_mapEditor(nullptr)
     , m_openRomAction(nullptr)
@@ -76,6 +78,7 @@ Window::Window()
     , m_zoomOutAction(nullptr)
     , m_relocateLevelsAction(nullptr)
     , m_romInfoAction(nullptr)
+    , m_projectExplorerAction(nullptr)
     , m_openRecentMenu(nullptr)
     , m_inspectorsMenu(nullptr)
     , m_statusBar(nullptr)
@@ -170,6 +173,11 @@ bool Window::openRom(const QString& path)
     m_saveRomAction->setEnabled(false);
     m_relocateLevelsAction->setEnabled(m_game->canRelocateLevels());
     m_romInfoAction->setEnabled(false);
+    m_projectExplorerAction->setEnabled(false);
+    m_projectExplorerAction->setChecked(false);
+
+    delete m_projectExplorer;
+    m_projectExplorer = nullptr;
 
     if (m_romInfo) {
         delete m_romInfo;
@@ -204,6 +212,11 @@ bool Window::openProject(const QString& path)
     m_saveRomAction->setEnabled(false);
     m_relocateLevelsAction->setEnabled(false);
     m_romInfoAction->setEnabled(false);
+    m_projectExplorerAction->setEnabled(!m_game->getProjectResources().empty());
+    m_projectExplorerAction->setChecked(false);
+
+    delete m_projectExplorer;
+    m_projectExplorer = nullptr;
 
     if (m_romInfo) {
         delete m_romInfo;
@@ -504,6 +517,28 @@ void Window::showChunkInspector()
     m_chunkInspector->show();
 }
 
+void Window::toggleProjectExplorer()
+{
+    if (!m_game || !m_projectExplorerAction->isChecked()) {
+        delete m_projectExplorer;
+        m_projectExplorer = nullptr;
+        return;
+    }
+
+    if (!m_projectExplorer) {
+        m_projectExplorer = new ProjectExplorer(this, m_game->getProjectResources());
+        m_projectExplorer->setAttribute(Qt::WA_DeleteOnClose);
+        connect(m_projectExplorer, &QObject::destroyed, this, [this]() {
+            m_projectExplorer = nullptr;
+            m_projectExplorerAction->setChecked(false);
+        });
+    }
+
+    m_projectExplorer->show();
+    m_projectExplorer->raise();
+    m_projectExplorer->activateWindow();
+}
+
 void Window::showRomInfo()
 {
     if (!m_rom || !m_game) {
@@ -717,6 +752,10 @@ void Window::closeCurrentLevel()
 
     delete m_chunkInspector;
     m_chunkInspector = nullptr;
+
+    delete m_projectExplorer;
+    m_projectExplorer = nullptr;
+    m_projectExplorerAction->setChecked(false);
 
     delete m_mapEditor;
     m_mapEditor = nullptr;
@@ -980,6 +1019,14 @@ void Window::createEditMenu()
 void Window::createViewMenu()
 {
     auto viewMenu = menuBar()->addMenu(tr("&View"));
+
+    m_projectExplorerAction = new QAction(tr("Project Explorer"), this);
+    m_projectExplorerAction->setCheckable(true);
+    m_projectExplorerAction->setDisabled(true);
+    connect(m_projectExplorerAction, SIGNAL(triggered()), this, SLOT(toggleProjectExplorer()));
+
+    viewMenu->addAction(m_projectExplorerAction);
+    viewMenu->addSeparator();
 
     // wire up inspectors
     auto inspectPalettesAction = new QAction(tr("Palettes"), this);
