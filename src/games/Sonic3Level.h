@@ -9,7 +9,7 @@ class Rom;
 
 class Sonic3Level : public Level
 {
-    static constexpr size_t PALETTE_COUNT = 4;
+    static constexpr size_t kPaletteCount = 4;
 
 public:
     Sonic3Level(Rom& rom,
@@ -64,7 +64,7 @@ private:
 
 inline size_t Sonic3Level::getPaletteCount() const
 {
-    return PALETTE_COUNT;
+    return kPaletteCount;
 }
 
 inline size_t Sonic3Level::getPatternCount() const

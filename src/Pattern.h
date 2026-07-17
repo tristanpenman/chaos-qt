@@ -17,16 +17,16 @@
 class Pattern
 {
 public:
-    static constexpr uint8_t PATTERN_WIDTH = 8;
-    static constexpr uint8_t PATTERN_HEIGHT = 8;
-    static constexpr uint8_t PIXELS_PER_BYTE = 2;
-    static constexpr uint8_t PATTERN_SIZE_IN_MEM = PATTERN_WIDTH * PATTERN_HEIGHT;
-    static constexpr uint8_t PATTERN_SIZE_IN_ROM = PATTERN_SIZE_IN_MEM / PIXELS_PER_BYTE;
+    static constexpr uint8_t kPatternWidth = 8;
+    static constexpr uint8_t kPatternHeight = 8;
+    static constexpr uint8_t kPixelsPerByte = 2;
+    static constexpr uint8_t kPatternSizeInMemory = kPatternWidth * kPatternHeight;
+    static constexpr uint8_t kPatternSizeInRom = kPatternSizeInMemory / kPixelsPerByte;
 
     Pattern();
 
-    void fromSegaFormat(uint8_t bytes[PATTERN_SIZE_IN_ROM]);
-    void toSegaFormat(uint8_t bytes[PATTERN_SIZE_IN_ROM]) const;
+    void fromSegaFormat(uint8_t bytes[kPatternSizeInRom]);
+    void toSegaFormat(uint8_t bytes[kPatternSizeInRom]) const;
 
     uint8_t getPixel(uint8_t x, uint8_t y) const;
     void setPixel(uint8_t x, uint8_t y, uint8_t value);
@@ -35,5 +35,5 @@ private:
     Pattern(const Pattern&) = delete;
     Pattern& operator=(const Pattern&) = delete;
 
-    uint8_t pixels_[PATTERN_SIZE_IN_MEM];
+    uint8_t pixels_[kPatternSizeInMemory];
 };

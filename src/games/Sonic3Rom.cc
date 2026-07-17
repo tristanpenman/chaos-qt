@@ -11,11 +11,11 @@
 #undef LOG
 #define LOG Logger("Sonic3Rom")
 
-static constexpr uint32_t levelLayoutDirAddr = 0x81360;       // Layout pointers are found here
-static constexpr uint32_t levelSelectIndex = 0x6A8E;          // Level select order
-static constexpr uint32_t levelDataDir = 0x5AB0C;             // Level data pointers (patterns, blocks, chunks)
-static constexpr uint32_t levelDataDirEntrySize = 24;         // Each pointer is 4 bytes, total of 3 pointers
-static constexpr uint32_t levelPaletteDir = 0x8BF54;          // Directory of palette pointers
+static constexpr uint32_t kLevelDataDirectory = 0x5AB0C;          // Level data pointers (patterns, blocks, chunks)
+static constexpr uint32_t kLevelDataDirectoryEntrySize = 24;      // Each pointer is 4 bytes, total of 3 pointers
+static constexpr uint32_t kLevelLayoutDirectoryAddress = 0x81360; // Layout pointers are found here
+static constexpr uint32_t kLevelPaletteDirectory = 0x8BF54;       // Directory of palette pointers
+static constexpr uint32_t kLevelSelectIndex = 0x6A8E;             // Level select order
 
 using namespace std;
 
@@ -113,15 +113,15 @@ bool Sonic3Rom::save(unsigned int, Level&)
 
 uint32_t Sonic3Rom::getDataAddress(unsigned int levelIdx, unsigned int entryOffset)
 {
-    const uint32_t zoneIndexLoc = levelSelectIndex + levelIdx * 2;
+    const uint32_t zoneIndexLoc = kLevelSelectIndex + levelIdx * 2;
     const uint32_t zoneIndex = rom_->readByte(zoneIndexLoc);
 
     const uint32_t actIndexLoc = zoneIndexLoc + 1;
     const uint32_t actIndex = rom_->readByte(actIndexLoc);
 
-    const uint32_t dataAddrLoc = levelDataDir +
-        zoneIndex * levelDataDirEntrySize * 2 +
-        actIndex * levelDataDirEntrySize +
+    const uint32_t dataAddrLoc = kLevelDataDirectory +
+        zoneIndex * kLevelDataDirectoryEntrySize * 2 +
+        actIndex * kLevelDataDirectoryEntrySize +
         entryOffset;
 
     return rom_->read32BitAddr(dataAddrLoc);
@@ -136,7 +136,7 @@ uint32_t Sonic3Rom::getLevelPalettesAddr(unsigned int levelIdx)
 {
     const uint32_t dataAddr = getDataAddress(levelIdx, 8);
     const uint32_t paletteIdx = dataAddr >> 24;
-    const uint32_t paletteAddrLoc = levelPaletteDir + paletteIdx * 8;
+    const uint32_t paletteAddrLoc = kLevelPaletteDirectory + paletteIdx * 8;
 
     return rom_->read32BitAddr(paletteAddrLoc);
 }
@@ -158,7 +158,7 @@ uint32_t Sonic3Rom::getPatternsAddr(unsigned int levelIdx)
 
 uint32_t Sonic3Rom::getTilesAddr(unsigned int levelIdx)
 {
-    const uint32_t tilesAddrLoc = levelLayoutDirAddr + levelIdx * 4;
+    const uint32_t tilesAddrLoc = kLevelLayoutDirectoryAddress + levelIdx * 4;
 
     return rom_->read32BitAddr(tilesAddrLoc);
 }

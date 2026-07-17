@@ -22,10 +22,10 @@
 
 using namespace std;
 
-static constexpr int CANVAS_SCALE = 3;
-static constexpr int BLOCK_PREVIEW_SCALE = 2;
-static constexpr uint16_t H_FLIP_MASK = 0x400;
-static constexpr uint16_t V_FLIP_MASK = 0x800;
+static constexpr int kCanvasScale = 3;
+static constexpr int kBlockPreviewScale = 2;
+static constexpr uint16_t kHorizontalFlipMask = 0x400;
+static constexpr uint16_t kVerticalFlipMask = 0x800;
 
 static QColor toQColor(const Palette::Color& color)
 {
@@ -43,7 +43,7 @@ ChunkCanvas::ChunkCanvas(QWidget* parent, const shared_ptr<Level>& level, Chunk*
     , highlightX_(-1)
     , highlightY_(-1)
 {
-    setFixedSize(Chunk::CHUNK_WIDTH * CANVAS_SCALE, Chunk::CHUNK_HEIGHT * CANVAS_SCALE);
+    setFixedSize(Chunk::kChunkWidth * kCanvasScale, Chunk::kChunkHeight * kCanvasScale);
     setMouseTracking(true);
 }
 
@@ -75,8 +75,8 @@ void ChunkCanvas::mouseMoveEvent(QMouseEvent* event)
 #else
     const QPoint pos = event->pos();
 #endif
-    highlightX_ = pos.x() / (Block::BLOCK_WIDTH * CANVAS_SCALE);
-    highlightY_ = pos.y() / (Block::BLOCK_HEIGHT * CANVAS_SCALE);
+    highlightX_ = pos.x() / (Block::kBlockWidth * kCanvasScale);
+    highlightY_ = pos.y() / (Block::kBlockHeight * kCanvasScale);
     if (highlightX_ < 0 || highlightX_ >= 8 || highlightY_ < 0 || highlightY_ >= 8) {
         highlightX_ = -1;
         highlightY_ = -1;
@@ -106,40 +106,40 @@ void ChunkCanvas::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
-    painter.scale(CANVAS_SCALE, CANVAS_SCALE);
-    painter.fillRect(QRect(0, 0, Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT), Qt::black);
+    painter.scale(kCanvasScale, kCanvasScale);
+    painter.fillRect(QRect(0, 0, Chunk::kChunkWidth, Chunk::kChunkHeight), Qt::black);
 
     drawChunk(painter, chunks_[chunkIndex_]);
 
     painter.setPen(QColor(55, 55, 55));
     for (int i = 0; i <= 8; i++) {
-        painter.drawLine(i * Block::BLOCK_WIDTH, 0, i * Block::BLOCK_WIDTH, Chunk::CHUNK_HEIGHT);
-        painter.drawLine(0, i * Block::BLOCK_HEIGHT, Chunk::CHUNK_WIDTH, i * Block::BLOCK_HEIGHT);
+        painter.drawLine(i * Block::kBlockWidth, 0, i * Block::kBlockWidth, Chunk::kChunkHeight);
+        painter.drawLine(0, i * Block::kBlockHeight, Chunk::kChunkWidth, i * Block::kBlockHeight);
     }
 
     if (highlightX_ >= 0 && highlightY_ >= 0) {
-        painter.fillRect(highlightX_ * Block::BLOCK_WIDTH,
-                     highlightY_ * Block::BLOCK_HEIGHT,
-                     Block::BLOCK_WIDTH,
-                     Block::BLOCK_HEIGHT,
+        painter.fillRect(highlightX_ * Block::kBlockWidth,
+                     highlightY_ * Block::kBlockHeight,
+                     Block::kBlockWidth,
+                     Block::kBlockHeight,
                      QColor(128, 192, 255, 64));
     }
 }
 
 void ChunkCanvas::drawAt(const QPoint& pos)
 {
-    const int x = pos.x() / (Block::BLOCK_WIDTH * CANVAS_SCALE);
-    const int y = pos.y() / (Block::BLOCK_HEIGHT * CANVAS_SCALE);
+    const int x = pos.x() / (Block::kBlockWidth * kCanvasScale);
+    const int y = pos.y() / (Block::kBlockHeight * kCanvasScale);
     if (x < 0 || x >= 8 || y < 0 || y >= 8) {
         return;
     }
 
     uint16_t value = selectedBlockIndex_ & 0x3FF;
     if (hFlip_) {
-        value |= H_FLIP_MASK;
+        value |= kHorizontalFlipMask;
     }
     if (vFlip_) {
-        value |= V_FLIP_MASK;
+        value |= kVerticalFlipMask;
     }
 
     Chunk& chunk = chunks_[chunkIndex_];
@@ -159,7 +159,7 @@ void ChunkCanvas::drawChunk(QPainter& painter, const Chunk& chunk)
             const auto& blockDesc = chunk.getBlockDesc(static_cast<uint8_t>(dx), static_cast<uint8_t>(dy));
             try {
                 const auto& block = level_->getBlock(blockDesc.getBlockIndex());
-                drawBlock(painter, block, dx * Block::BLOCK_WIDTH, dy * Block::BLOCK_HEIGHT, blockDesc.getHFlip(), blockDesc.getVFlip());
+                drawBlock(painter, block, dx * Block::kBlockWidth, dy * Block::kBlockHeight, blockDesc.getHFlip(), blockDesc.getVFlip());
             } catch (...) {
             }
         }
@@ -176,8 +176,8 @@ void ChunkCanvas::drawBlock(QPainter& painter, const Block& block, int dx, int d
             drawPattern(painter,
                   pattern,
                   palette,
-                  dx + px * Pattern::PATTERN_WIDTH,
-                  dy + py * Pattern::PATTERN_HEIGHT,
+                  dx + px * Pattern::kPatternWidth,
+                  dy + py * Pattern::kPatternHeight,
                   patternDesc.getHFlip() ^ hFlip,
                   patternDesc.getVFlip() ^ vFlip);
         }
@@ -192,10 +192,10 @@ void ChunkCanvas::drawPattern(QPainter& painter,
                              bool hFlip,
                              bool vFlip)
 {
-    for (int py = 0; py < Pattern::PATTERN_HEIGHT; py++) {
-        for (int px = 0; px < Pattern::PATTERN_WIDTH; px++) {
-            const auto fx = hFlip ? Pattern::PATTERN_WIDTH - 1 - px : px;
-            const auto fy = vFlip ? Pattern::PATTERN_HEIGHT - 1 - py : py;
+    for (int py = 0; py < Pattern::kPatternHeight; py++) {
+        for (int px = 0; px < Pattern::kPatternWidth; px++) {
+            const auto fx = hFlip ? Pattern::kPatternWidth - 1 - px : px;
+            const auto fy = vFlip ? Pattern::kPatternHeight - 1 - py : py;
             const auto color = palette.getColor(pattern.getPixel(static_cast<uint8_t>(fx), static_cast<uint8_t>(fy)));
             painter.fillRect(dx + px, dy + py, 1, 1, toQColor(color));
         }
@@ -239,7 +239,7 @@ ChunkEditor::ChunkEditor(QWidget* parent, const shared_ptr<Level>& level, size_t
 
     auto* toolsLayout = new QVBoxLayout();
     blockList_ = new QListWidget();
-    blockList_->setIconSize(QSize(Block::BLOCK_WIDTH * BLOCK_PREVIEW_SCALE, Block::BLOCK_HEIGHT * BLOCK_PREVIEW_SCALE));
+    blockList_->setIconSize(QSize(Block::kBlockWidth * kBlockPreviewScale, Block::kBlockHeight * kBlockPreviewScale));
     blockList_->setMinimumWidth(170);
     populateBlockSelector();
     toolsLayout->addWidget(blockList_);
@@ -290,7 +290,7 @@ void ChunkEditor::closeEvent(QCloseEvent* event)
 
 void ChunkEditor::applyChunks()
 {
-    uint8_t buffer[Chunk::CHUNK_SIZE_IN_ROM];
+    uint8_t buffer[Chunk::kChunkSizeInRom];
     for (size_t i = 0; i < level_->getChunkCount(); i++) {
         chunks_[i].toSegaFormat(buffer);
         level_->getChunk(i).fromSegaFormat(buffer);
@@ -323,7 +323,7 @@ bool ChunkEditor::confirmDirtyChanges()
 
 void ChunkEditor::loadChunks()
 {
-    uint8_t buffer[Chunk::CHUNK_SIZE_IN_ROM];
+    uint8_t buffer[Chunk::kChunkSizeInRom];
     for (size_t i = 0; i < level_->getChunkCount(); i++) {
         level_->getChunk(i).toSegaFormat(buffer);
         chunks_[i].fromSegaFormat(buffer);
@@ -332,7 +332,7 @@ void ChunkEditor::loadChunks()
 
 QPixmap ChunkEditor::renderBlockPreview(size_t blockIndex, int scale) const
 {
-    QImage image(Block::BLOCK_WIDTH, Block::BLOCK_HEIGHT, QImage::Format_RGB888);
+    QImage image(Block::kBlockWidth, Block::kBlockHeight, QImage::Format_RGB888);
     image.fill(Qt::black);
 
     try {
@@ -340,8 +340,8 @@ QPixmap ChunkEditor::renderBlockPreview(size_t blockIndex, int scale) const
     } catch (...) {
     }
 
-    return QPixmap::fromImage(image.scaled(Block::BLOCK_WIDTH * scale,
-                                         Block::BLOCK_HEIGHT * scale,
+    return QPixmap::fromImage(image.scaled(Block::kBlockWidth * scale,
+                                         Block::kBlockHeight * scale,
                                          Qt::IgnoreAspectRatio,
                                          Qt::FastTransformation));
 }
@@ -354,10 +354,10 @@ void ChunkEditor::drawPattern(QImage& image,
                              bool hFlip,
                              bool vFlip) const
 {
-    for (int py = 0; py < Pattern::PATTERN_HEIGHT; py++) {
-        for (int px = 0; px < Pattern::PATTERN_WIDTH; px++) {
-            const auto fx = hFlip ? Pattern::PATTERN_WIDTH - 1 - px : px;
-            const auto fy = vFlip ? Pattern::PATTERN_HEIGHT - 1 - py : py;
+    for (int py = 0; py < Pattern::kPatternHeight; py++) {
+        for (int px = 0; px < Pattern::kPatternWidth; px++) {
+            const auto fx = hFlip ? Pattern::kPatternWidth - 1 - px : px;
+            const auto fy = vFlip ? Pattern::kPatternHeight - 1 - py : py;
             const auto color = palette.getColor(pattern.getPixel(static_cast<uint8_t>(fx), static_cast<uint8_t>(fy)));
             image.setPixel(dx + px, dy + py, qRgb(color.r, color.g, color.b));
         }
@@ -374,8 +374,8 @@ void ChunkEditor::drawBlockPreview(QImage& image, const Block& block, int dx, in
             drawPattern(image,
                   pattern,
                   palette,
-                  dx + px * Pattern::PATTERN_WIDTH,
-                  dy + py * Pattern::PATTERN_HEIGHT,
+                  dx + px * Pattern::kPatternWidth,
+                  dy + py * Pattern::kPatternHeight,
                   patternDesc.getHFlip(),
                   patternDesc.getVFlip());
         }
@@ -386,7 +386,7 @@ void ChunkEditor::populateBlockSelector()
 {
     blockList_->clear();
     for (size_t i = 0; i < level_->getBlockCount(); i++) {
-        auto* item = new QListWidgetItem(QIcon(renderBlockPreview(i, BLOCK_PREVIEW_SCALE)), tr("Block %1").arg(i));
+        auto* item = new QListWidgetItem(QIcon(renderBlockPreview(i, kBlockPreviewScale)), tr("Block %1").arg(i));
         item->setData(Qt::UserRole, QVariant::fromValue(static_cast<unsigned int>(i)));
         blockList_->addItem(item);
     }

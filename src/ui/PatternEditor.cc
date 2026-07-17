@@ -20,20 +20,20 @@
 
 using namespace std;
 
-static constexpr int EDITOR_SCALE = 24;
+static constexpr int kEditorScale = 24;
 
 static QColor toQColor(const Palette::Color& color)
 {
     return QColor(color.r, color.g, color.b);
 }
 
-PatternCanvas::PatternCanvas(QWidget* parent, array<uint8_t, Pattern::PATTERN_SIZE_IN_MEM>& pixels)
+PatternCanvas::PatternCanvas(QWidget* parent, array<uint8_t, Pattern::kPatternSizeInMemory>& pixels)
     : QWidget(parent)
     , pixels_(pixels)
     , palette_(nullptr)
     , selectedColor_(0)
 {
-    setFixedSize(Pattern::PATTERN_WIDTH * EDITOR_SCALE, Pattern::PATTERN_HEIGHT * EDITOR_SCALE);
+    setFixedSize(Pattern::kPatternWidth * kEditorScale, Pattern::kPatternHeight * kEditorScale);
     setMouseTracking(true);
 }
 
@@ -75,10 +75,10 @@ void PatternCanvas::paintEvent(QPaintEvent*)
     QPainter painter(this);
     painter.fillRect(rect(), Qt::black);
 
-    for (int y = 0; y < Pattern::PATTERN_HEIGHT; y++) {
-        for (int x = 0; x < Pattern::PATTERN_WIDTH; x++) {
-            const QRect pixelRect(x * EDITOR_SCALE, y * EDITOR_SCALE, EDITOR_SCALE, EDITOR_SCALE);
-            const auto colorIndex = pixels_[static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x)];
+    for (int y = 0; y < Pattern::kPatternHeight; y++) {
+        for (int x = 0; x < Pattern::kPatternWidth; x++) {
+            const QRect pixelRect(x * kEditorScale, y * kEditorScale, kEditorScale, kEditorScale);
+            const auto colorIndex = pixels_[static_cast<size_t>(y) * Pattern::kPatternWidth + static_cast<size_t>(x)];
             if (palette_) {
                 painter.fillRect(pixelRect, toQColor(palette_->getColor(colorIndex)));
             }
@@ -90,13 +90,13 @@ void PatternCanvas::paintEvent(QPaintEvent*)
 
 void PatternCanvas::paintPixelAt(const QPoint& pos)
 {
-    const int x = pos.x() / EDITOR_SCALE;
-    const int y = pos.y() / EDITOR_SCALE;
-    if (x < 0 || x >= Pattern::PATTERN_WIDTH || y < 0 || y >= Pattern::PATTERN_HEIGHT) {
+    const int x = pos.x() / kEditorScale;
+    const int y = pos.y() / kEditorScale;
+    if (x < 0 || x >= Pattern::kPatternWidth || y < 0 || y >= Pattern::kPatternHeight) {
         return;
     }
 
-    const auto offset = static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x);
+    const auto offset = static_cast<size_t>(y) * Pattern::kPatternWidth + static_cast<size_t>(x);
     if (pixels_[offset] == selectedColor_) {
         return;
     }
@@ -152,7 +152,7 @@ PatternEditor::PatternEditor(QWidget* parent, const shared_ptr<Level>& level)
     paletteLayout->setSpacing(4);
     colorButtons_ = new QButtonGroup(this);
     colorButtons_->setExclusive(true);
-    for (int i = 0; i < Palette::PALETTE_SIZE; i++) {
+    for (int i = 0; i < Palette::kPaletteSize; i++) {
         auto* button = new QPushButton();
         button->setCheckable(true);
         button->setFixedSize(28, 28);
@@ -208,9 +208,9 @@ void PatternEditor::closeEvent(QCloseEvent* event)
 void PatternEditor::applyPattern()
 {
     Pattern& pattern = level_->getPattern(currentPatternIndex_);
-    for (int y = 0; y < Pattern::PATTERN_HEIGHT; y++) {
-        for (int x = 0; x < Pattern::PATTERN_WIDTH; x++) {
-            const auto offset = static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x);
+    for (int y = 0; y < Pattern::kPatternHeight; y++) {
+        for (int x = 0; x < Pattern::kPatternWidth; x++) {
+            const auto offset = static_cast<size_t>(y) * Pattern::kPatternWidth + static_cast<size_t>(x);
             pattern.setPixel(static_cast<uint8_t>(x), static_cast<uint8_t>(y), pixels_[offset]);
         }
     }
@@ -244,9 +244,9 @@ void PatternEditor::loadPattern(size_t patternIndex)
 {
     currentPatternIndex_ = patternIndex;
     const Pattern& pattern = level_->getPattern(patternIndex);
-    for (int y = 0; y < Pattern::PATTERN_HEIGHT; y++) {
-        for (int x = 0; x < Pattern::PATTERN_WIDTH; x++) {
-            const auto offset = static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x);
+    for (int y = 0; y < Pattern::kPatternHeight; y++) {
+        for (int x = 0; x < Pattern::kPatternWidth; x++) {
+            const auto offset = static_cast<size_t>(y) * Pattern::kPatternWidth + static_cast<size_t>(x);
             pixels_[offset] = pattern.getPixel(static_cast<uint8_t>(x), static_cast<uint8_t>(y));
         }
     }
@@ -259,7 +259,7 @@ void PatternEditor::loadPattern(size_t patternIndex)
 void PatternEditor::populatePaletteButtons()
 {
     const Palette& palette = level_->getPalette(currentPaletteIndex_);
-    for (int i = 0; i < Palette::PALETTE_SIZE; i++) {
+    for (int i = 0; i < Palette::kPaletteSize; i++) {
         auto* button = colorButtons_->button(i);
         const auto color = palette.getColor(static_cast<size_t>(i));
         button->setStyleSheet(QStringLiteral("background: rgb(%1,%2,%3)").arg(color.r).arg(color.g).arg(color.b));
@@ -269,16 +269,16 @@ void PatternEditor::populatePaletteButtons()
 void PatternEditor::renderPreview(QLabel* label, int scale)
 {
     const Palette& palette = level_->getPalette(currentPaletteIndex_);
-    QImage image(Pattern::PATTERN_WIDTH, Pattern::PATTERN_HEIGHT, QImage::Format_RGB888);
-    for (int y = 0; y < Pattern::PATTERN_HEIGHT; y++) {
-        for (int x = 0; x < Pattern::PATTERN_WIDTH; x++) {
-            const auto offset = static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x);
+    QImage image(Pattern::kPatternWidth, Pattern::kPatternHeight, QImage::Format_RGB888);
+    for (int y = 0; y < Pattern::kPatternHeight; y++) {
+        for (int x = 0; x < Pattern::kPatternWidth; x++) {
+            const auto offset = static_cast<size_t>(y) * Pattern::kPatternWidth + static_cast<size_t>(x);
             const auto color = palette.getColor(pixels_[offset]);
             image.setPixel(x, y, qRgb(color.r, color.g, color.b));
         }
     }
 
-    const QSize size(Pattern::PATTERN_WIDTH * scale, Pattern::PATTERN_HEIGHT * scale);
+    const QSize size(Pattern::kPatternWidth * scale, Pattern::kPatternHeight * scale);
     label->setPixmap(QPixmap::fromImage(image.scaled(size, Qt::IgnoreAspectRatio, Qt::FastTransformation)));
     label->setFixedSize(size);
 }

@@ -45,7 +45,7 @@ PaletteEditor::PaletteEditor(QWidget* parent, const std::shared_ptr<Level>& leve
     auto* paletteLayout = new QGridLayout();
     paletteLayout->setSpacing(4);
     colorButtons_->setExclusive(false);
-    for (int i = 0; i < Palette::PALETTE_SIZE; i++) {
+    for (int i = 0; i < Palette::kPaletteSize; i++) {
         auto* button = new QPushButton();
         button->setFixedSize(36, 36);
         button->setToolTip(tr("Colour %1").arg(i));
@@ -116,7 +116,7 @@ void PaletteEditor::loadPalette(size_t paletteIndex)
 {
     paletteIndex_ = paletteIndex;
     const Palette& palette = level_->getPalette(paletteIndex);
-    for (size_t i = 0; i < Palette::PALETTE_SIZE; i++) {
+    for (size_t i = 0; i < Palette::kPaletteSize; i++) {
         colors_[i] = palette.getColor(i);
         originalColors_[i] = colors_[i];
     }
@@ -126,7 +126,7 @@ void PaletteEditor::loadPalette(size_t paletteIndex)
 
 void PaletteEditor::populateColorButtons()
 {
-    for (size_t i = 0; i < Palette::PALETTE_SIZE; i++) {
+    for (size_t i = 0; i < Palette::kPaletteSize; i++) {
         updateColorButton(colorButtons_->button(static_cast<int>(i)), i);
     }
 }
@@ -176,7 +176,7 @@ void PaletteEditor::colorClicked(int colorIndex)
     updateColorButton(colorButtons_->button(colorIndex), static_cast<size_t>(colorIndex));
 
     bool dirty = false;
-    for (size_t i = 0; i < Palette::PALETTE_SIZE; i++) {
+    for (size_t i = 0; i < Palette::kPaletteSize; i++) {
         dirty = dirty || colorChanged(i);
     }
     setDirty(dirty);
@@ -203,7 +203,7 @@ void PaletteEditor::paletteChanged(int paletteIndex)
 void PaletteEditor::saveChanges()
 {
     Palette& palette = level_->getPalette(paletteIndex_);
-    for (size_t i = 0; i < Palette::PALETTE_SIZE; i++) {
+    for (size_t i = 0; i < Palette::kPaletteSize; i++) {
         palette.setColor(i, colors_[i]);
         originalColors_[i] = colors_[i];
     }

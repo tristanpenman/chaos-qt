@@ -3,9 +3,9 @@
 
 #include "Chunk.h"
 
-void Chunk::fromSegaFormat(uint8_t buffer[CHUNK_SIZE_IN_ROM])
+void Chunk::fromSegaFormat(uint8_t buffer[kChunkSizeInRom])
 {
-    for (unsigned int i = 0; i < BLOCKS_PER_CHUNK; i++) {
+    for (unsigned int i = 0; i < kBlocksPerChunk; i++) {
         uint16_t index = (static_cast<uint16_t>(buffer[0]) << 8) & 0xFF00;
         index |= (buffer[1]) & 0x00FF;
 
@@ -15,9 +15,9 @@ void Chunk::fromSegaFormat(uint8_t buffer[CHUNK_SIZE_IN_ROM])
     }
 }
 
-void Chunk::toSegaFormat(uint8_t buffer[CHUNK_SIZE_IN_ROM]) const
+void Chunk::toSegaFormat(uint8_t buffer[kChunkSizeInRom]) const
 {
-    for (unsigned int i = 0; i < BLOCKS_PER_CHUNK; i++) {
+    for (unsigned int i = 0; i < kBlocksPerChunk; i++) {
         const uint16_t index = blockDescs_[i].get();
         buffer[0] = static_cast<uint8_t>((index >> 8) & 0xFF);
         buffer[1] = static_cast<uint8_t>(index & 0xFF);

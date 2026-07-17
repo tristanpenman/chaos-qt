@@ -39,7 +39,7 @@ vector<RingGroup> Sonic2RingLayout::read(const vector<uint8_t>& data)
             x,
             static_cast<uint16_t>(encodedY & 0x0fff),
             static_cast<uint8_t>(((encodedY >> 12) & 0x07) + 1),
-            (encodedY & 0x8000) != 0 ? RingDirection::Vertical : RingDirection::Horizontal
+            (encodedY & 0x8000) != 0 ? RingDirection::kVertical : RingDirection::kHorizontal
         });
     }
 

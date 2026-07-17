@@ -16,12 +16,12 @@ TEST(Sonic2RingLayout, ReadsHorizontalAndVerticalGroups)
   EXPECT_EQ(0x120, groups[0].x);
   EXPECT_EQ(0x080, groups[0].y);
   EXPECT_EQ(3, groups[0].count);
-  EXPECT_EQ(RingDirection::Horizontal, groups[0].direction);
+  EXPECT_EQ(RingDirection::kHorizontal, groups[0].direction);
 
   EXPECT_EQ(0x200, groups[1].x);
   EXPECT_EQ(0x140, groups[1].y);
   EXPECT_EQ(4, groups[1].count);
-  EXPECT_EQ(RingDirection::Vertical, groups[1].direction);
+  EXPECT_EQ(RingDirection::kVertical, groups[1].direction);
 }
 
 TEST(Sonic2RingLayout, StopsAtTwoByteTerminator)

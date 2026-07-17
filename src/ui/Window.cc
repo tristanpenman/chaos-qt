@@ -45,10 +45,10 @@
 using namespace std;
 
 namespace {
-constexpr int MaxRecentRoms = 10;
-constexpr const char* SettingsOrganization = "Tristan Penman";
-constexpr const char* SettingsApplication = "SpinDash";
-constexpr const char* RecentRomsKey = "recentRoms";
+constexpr int kMaxRecentRoms = 10;
+constexpr const char* kSettingsOrganization = "Tristan Penman";
+constexpr const char* kSettingsApplication = "SpinDash";
+constexpr const char* kRecentRomsKey = "recentRoms";
 }  // namespace
 
 Window::Window()
@@ -811,14 +811,14 @@ bool Window::openProjectFromUserAction(const QString& path)
 
 QStringList Window::recentRoms() const
 {
-    QSettings settings(SettingsOrganization, SettingsApplication);
-    return settings.value(RecentRomsKey).toStringList();
+    QSettings settings(kSettingsOrganization, kSettingsApplication);
+    return settings.value(kRecentRomsKey).toStringList();
 }
 
 void Window::setRecentRoms(const QStringList& paths)
 {
-    QSettings settings(SettingsOrganization, SettingsApplication);
-    settings.setValue(RecentRomsKey, paths);
+    QSettings settings(kSettingsOrganization, kSettingsApplication);
+    settings.setValue(kRecentRomsKey, paths);
 }
 
 void Window::addRecentRom(const QString& path)
@@ -831,7 +831,7 @@ void Window::addRecentRom(const QString& path)
     paths.removeAll(path);
     paths.prepend(path);
 
-    while (paths.size() > MaxRecentRoms) {
+    while (paths.size() > kMaxRecentRoms) {
         paths.removeLast();
     }
 

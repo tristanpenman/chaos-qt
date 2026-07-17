@@ -41,7 +41,7 @@ public:
 
     virtual const std::vector<RingGroup>& getRingGroups() const
     {
-        static const std::vector<RingGroup> empty;
-        return empty;
+        static const std::vector<RingGroup> kEmpty;
+        return kEmpty;
     }
 };

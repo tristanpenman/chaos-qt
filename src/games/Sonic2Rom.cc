@@ -25,18 +25,18 @@
 
 using namespace std;
 
-static constexpr uint32_t defaultRomSize = 0x100000;             // Size of a standard Sonic 2 ROM (1MB)
-static constexpr uint32_t defaultLevelLayoutDirAddr = 0x045A80;
-static constexpr uint32_t levelLayoutDirAddrLoc = 0xE46E;        // Pointer to directory of layout pointers
-static constexpr uint32_t levelLayoutDirSize = 68;
-static constexpr uint32_t levelSelectAddr = 0x9454;              // Level select order
-static constexpr uint32_t levelDataDir = 0x42594;                // Level data pointers (patterns, blocks, chunks)
-static constexpr uint32_t levelDataDirEntrySize = 12;            // Each pointer is 4 bytes, total of 3 pointers
-static constexpr uint32_t levelPaletteDir = 0x2782;              // Directory of palette pointers
-static constexpr uint32_t sonicTailsPaletteAddr = 0x29E2;        // Default palette used for Sonic and Tails
-static constexpr uint32_t ringLayoutDirAddrLoc = 0x172D0;        // Pointer to directory of ring layout offsets
-static constexpr uint32_t ringLayoutDirEntryCount = 34;
-static constexpr uint32_t maxRingLayoutSize = 0x10000;
+static constexpr uint32_t kDefaultLevelLayoutDirAddress = 0x045A80;
+static constexpr uint32_t kDefaultRomSize = 0x100000;                    // Size of a standard Sonic 2 ROM (1MB)
+static constexpr uint32_t kLevelDataDirectory = 0x42594;                 // Level data pointers (patterns, blocks, chunks)
+static constexpr uint32_t kLevelDataDirectoryEntrySize = 12;             // Each pointer is 4 bytes, total of 3 pointers
+static constexpr uint32_t kLevelLayoutDirectoryAddressLocation = 0xE46E; // Pointer to directory of layout pointers
+static constexpr uint32_t kLevelLayoutDirectorySize = 68;
+static constexpr uint32_t kLevelPaletteDirectory = 0x2782;               // Directory of palette pointers
+static constexpr uint32_t kLevelSelectAddress = 0x9454;                  // Level select order
+static constexpr uint32_t kMaxRingLayoutSize = 0x10000;
+static constexpr uint32_t kRingLayoutDirectoryAddressLocation = 0x172D0; // Pointer to directory of ring layout offsets
+static constexpr uint32_t kRingLayoutDirectoryEntryCount = 34;
+static constexpr uint32_t kSonicTailsPaletteAddress = 0x29E2;            // Default palette used for Sonic and Tails
 
 Sonic2Rom::Sonic2Rom(const shared_ptr<Rom>& rom)
     : rom_(rom)
@@ -127,22 +127,22 @@ bool Sonic2Rom::relocateLevels(bool unsafe)
 
     // check rom size
     const auto romSize = rom_->getSize();
-    if (romSize != defaultRomSize && !unsafe) {
+    if (romSize != kDefaultRomSize && !unsafe) {
         LOG() << "Rom size does not match default; giving up";
         return false;
     }
 
     // check level layout directory address
-    const auto levelLayoutDirAddr = rom_->read32BitAddr(levelLayoutDirAddrLoc);
-    if (levelLayoutDirAddr != defaultLevelLayoutDirAddr && !unsafe) {
+    const auto kLevelLayoutDirectoryAddress = rom_->read32BitAddr(kLevelLayoutDirectoryAddressLocation);
+    if (kLevelLayoutDirectoryAddress != kDefaultLevelLayoutDirAddress && !unsafe) {
         LOG() << "Level layout directory is not at expected location; giving up";
         return false;
     }
 
     // relocate levels using level select order
     const auto maxMapSize = 2 * 128 * 16;
-    const auto maxMapCount = levelLayoutDirSize / 2;
-    const auto bufferSize = levelLayoutDirSize + maxMapSize * maxMapCount;
+    const auto maxMapCount = kLevelLayoutDirectorySize / 2;
+    const auto bufferSize = kLevelLayoutDirectorySize + maxMapSize * maxMapCount;
     vector<uint8_t> buffer(bufferSize);
 
     // setup decompression
@@ -154,13 +154,13 @@ bool Sonic2Rom::relocateLevels(bool unsafe)
     for (uint16_t levelIdx = 0; levelIdx < 20; levelIdx++) {
         LOG() << "Relocating level " << levelIdx;
 
-        const uint32_t zoneIdxLoc = levelSelectAddr + levelIdx * 2;
+        const uint32_t zoneIdxLoc = kLevelSelectAddress + levelIdx * 2;
         const uint8_t zoneIdx = rom_->readByte(zoneIdxLoc);
 
         const uint32_t actIdxLoc = zoneIdxLoc + 1;
         const uint8_t actIdx = rom_->readByte(actIdxLoc);
 
-        const uint32_t layoutDirAddr = rom_->read32BitAddr(levelLayoutDirAddrLoc);
+        const uint32_t layoutDirAddr = rom_->read32BitAddr(kLevelLayoutDirectoryAddressLocation);
         const uint32_t levelOffsetLoc = layoutDirAddr + zoneIdx * 4 + actIdx * 2;
         const uint16_t levelOffset = rom_->read16BitAddr(levelOffsetLoc);
 
@@ -189,7 +189,7 @@ bool Sonic2Rom::relocateLevels(bool unsafe)
         newLevelOffset += static_cast<uint32_t>(bytesToCopy);
     }
 
-    rom_->write32BitAddr(static_cast<uint32_t>(romSize), levelLayoutDirAddrLoc);
+    rom_->write32BitAddr(static_cast<uint32_t>(romSize), kLevelLayoutDirectoryAddressLocation);
     file.seek(romSize);
     file.write(reinterpret_cast<const char*>(buffer.data()), static_cast<qint64>(bufferSize));
 
@@ -221,8 +221,8 @@ bool Sonic2Rom::save(unsigned int levelIdx, Level& level)
     auto& file = rom_->getFile();
 
     // if levels have not been relocated, check how much space we have
-    const auto levelLayoutDirAddr = rom_->read32BitAddr(levelLayoutDirAddrLoc);
-    if (levelLayoutDirAddr == defaultLevelLayoutDirAddr) {
+    const auto kLevelLayoutDirectoryAddress = rom_->read32BitAddr(kLevelLayoutDirectoryAddressLocation);
+    if (kLevelLayoutDirectoryAddress == kDefaultLevelLayoutDirAddress) {
         LOG() << "Levels have not been relocated; checking how much space is available...";
 
         std::vector<uint8_t> buffer(0xFFFF);
@@ -239,15 +239,15 @@ bool Sonic2Rom::save(unsigned int levelIdx, Level& level)
     }
 
     {
-        char paletteData[Palette::PALETTE_SIZE_IN_ROM];
+        char paletteData[Palette::kPaletteSizeInRom];
         level.getPalette(0).toSegaFormat(paletteData);
         file.seek(characterPaletteAddr);
-        file.write(paletteData, Palette::PALETTE_SIZE_IN_ROM);
+        file.write(paletteData, Palette::kPaletteSizeInRom);
 
         for (size_t i = 1; i < level.getPaletteCount(); i++) {
             level.getPalette(i).toSegaFormat(paletteData);
-            file.seek(levelPalettesAddr + static_cast<uint32_t>((i - 1) * Palette::PALETTE_SIZE_IN_ROM));
-            file.write(paletteData, Palette::PALETTE_SIZE_IN_ROM);
+            file.seek(levelPalettesAddr + static_cast<uint32_t>((i - 1) * Palette::kPaletteSizeInRom));
+            file.write(paletteData, Palette::kPaletteSizeInRom);
         }
     }
 
@@ -293,9 +293,9 @@ bool Sonic2Rom::save(unsigned int levelIdx, Level& level)
         LOG() << "Total chunk space available is " << *chunkLimit << " bytes";
     }
 
-    vector<uint8_t> patternData(level.getPatternCount() * Pattern::PATTERN_SIZE_IN_ROM);
+    vector<uint8_t> patternData(level.getPatternCount() * Pattern::kPatternSizeInRom);
     for (size_t i = 0; i < level.getPatternCount(); i++) {
-        level.getPattern(i).toSegaFormat(&patternData[i * Pattern::PATTERN_SIZE_IN_ROM]);
+        level.getPattern(i).toSegaFormat(&patternData[i * Pattern::kPatternSizeInRom]);
     }
 
     QByteArray compressedPatterns;
@@ -308,9 +308,9 @@ bool Sonic2Rom::save(unsigned int levelIdx, Level& level)
         return false;
     }
 
-    vector<uint8_t> blockData(level.getBlockCount() * Block::BLOCK_SIZE_IN_ROM);
+    vector<uint8_t> blockData(level.getBlockCount() * Block::kBlockSizeInRom);
     for (size_t i = 0; i < level.getBlockCount(); i++) {
-        level.getBlock(i).toSegaFormat(&blockData[i * Block::BLOCK_SIZE_IN_ROM]);
+        level.getBlock(i).toSegaFormat(&blockData[i * Block::kBlockSizeInRom]);
     }
 
     QByteArray compressedBlocks;
@@ -323,9 +323,9 @@ bool Sonic2Rom::save(unsigned int levelIdx, Level& level)
         return false;
     }
 
-    vector<uint8_t> chunkData(level.getChunkCount() * Chunk::CHUNK_SIZE_IN_ROM);
+    vector<uint8_t> chunkData(level.getChunkCount() * Chunk::kChunkSizeInRom);
     for (size_t i = 0; i < level.getChunkCount(); i++) {
-        level.getChunk(i).toSegaFormat(&chunkData[i * Chunk::CHUNK_SIZE_IN_ROM]);
+        level.getChunk(i).toSegaFormat(&chunkData[i * Chunk::kChunkSizeInRom]);
     }
 
     QByteArray compressedChunks;
@@ -372,11 +372,11 @@ bool Sonic2Rom::save(unsigned int levelIdx, Level& level)
 
 uint32_t Sonic2Rom::getDataAddress(unsigned int levelIdx, unsigned int entryOffset)
 {
-    const uint32_t levelDataIdxLoc = levelSelectAddr + levelIdx * 2;
+    const uint32_t levelDataIdxLoc = kLevelSelectAddress + levelIdx * 2;
     const uint8_t levelDataIdx = rom_->readByte(levelDataIdxLoc);
 
-    const uint32_t dataAddrLoc = levelDataDir +
-        levelDataIdx * levelDataDirEntrySize +
+    const uint32_t dataAddrLoc = kLevelDataDirectory +
+        levelDataIdx * kLevelDataDirectoryEntrySize +
         entryOffset;
 
     return rom_->read32BitAddr(dataAddrLoc);
@@ -384,14 +384,14 @@ uint32_t Sonic2Rom::getDataAddress(unsigned int levelIdx, unsigned int entryOffs
 
 uint32_t Sonic2Rom::getCharacterPaletteAddr()
 {
-    return sonicTailsPaletteAddr;
+    return kSonicTailsPaletteAddress;
 }
 
 uint32_t Sonic2Rom::getLevelPalettesAddr(unsigned int levelIdx)
 {
     const uint32_t dataAddr = getDataAddress(levelIdx, 8);
     const uint32_t paletteIndex = dataAddr >> 24;
-    const uint32_t paletteAddrLoc = levelPaletteDir + paletteIndex * 8;
+    const uint32_t paletteAddrLoc = kLevelPaletteDirectory + paletteIndex * 8;
 
     return rom_->read32BitAddr(paletteAddrLoc);
 }
@@ -413,41 +413,41 @@ uint32_t Sonic2Rom::getPatternsAddr(unsigned int levelIdx)
 
 uint32_t Sonic2Rom::getTilesAddr(unsigned int levelIdx)
 {
-    const uint32_t zoneIdxLoc = levelSelectAddr + levelIdx * 2;
+    const uint32_t zoneIdxLoc = kLevelSelectAddress + levelIdx * 2;
     const uint8_t zoneIdx = rom_->readByte(zoneIdxLoc);
 
     const uint32_t actIdxLoc = zoneIdxLoc + 1;
     const uint8_t actIdx = rom_->readByte(actIdxLoc);
 
-    const uint32_t levelLayoutDirAddr = rom_->read32BitAddr(levelLayoutDirAddrLoc);
-    const uint32_t levelOffsetLoc = levelLayoutDirAddr + zoneIdx * 4 + actIdx * 2;
+    const uint32_t kLevelLayoutDirectoryAddress = rom_->read32BitAddr(kLevelLayoutDirectoryAddressLocation);
+    const uint32_t levelOffsetLoc = kLevelLayoutDirectoryAddress + zoneIdx * 4 + actIdx * 2;
     const uint16_t levelOffset = rom_->read16BitAddr(levelOffsetLoc);
 
-    return levelLayoutDirAddr + levelOffset;
+    return kLevelLayoutDirectoryAddress + levelOffset;
 }
 
 Sonic2Rom::DataRegion Sonic2Rom::getRingsRegion(uint32_t levelIdx)
 {
-    const uint32_t levelSelectEntry = levelSelectAddr + levelIdx * 2;
+    const uint32_t levelSelectEntry = kLevelSelectAddress + levelIdx * 2;
     const uint32_t zoneIdx = rom_->readByte(levelSelectEntry);
     const uint32_t actIdx = rom_->readByte(levelSelectEntry + 1);
     const uint32_t entryIdx = zoneIdx * 2 + actIdx;
-    if (entryIdx >= ringLayoutDirEntryCount) {
+    if (entryIdx >= kRingLayoutDirectoryEntryCount) {
         throw runtime_error("Invalid Sonic 2 ring layout index");
     }
 
-    const uint32_t directoryAddr = rom_->read32BitAddr(ringLayoutDirAddrLoc);
+    const uint32_t directoryAddr = rom_->read32BitAddr(kRingLayoutDirectoryAddressLocation);
     const uint16_t selectedOffset = rom_->read16BitAddr(directoryAddr + entryIdx * 2);
     const uint32_t ringsAddr = directoryAddr + selectedOffset;
-    if (static_cast<size_t>(directoryAddr) + ringLayoutDirEntryCount * 2 > rom_->getSize() ||
+    if (static_cast<size_t>(directoryAddr) + kRingLayoutDirectoryEntryCount * 2 > rom_->getSize() ||
         ringsAddr >= rom_->getSize()) {
         throw runtime_error("Sonic 2 ring layout directory is outside the ROM");
     }
 
     uint32_t endAddr = static_cast<uint32_t>(min(
         rom_->getSize(),
-        static_cast<size_t>(ringsAddr) + maxRingLayoutSize));
-    for (uint32_t i = 0; i < ringLayoutDirEntryCount; i++) {
+        static_cast<size_t>(ringsAddr) + kMaxRingLayoutSize));
+    for (uint32_t i = 0; i < kRingLayoutDirectoryEntryCount; i++) {
         const uint16_t offset = rom_->read16BitAddr(directoryAddr + i * 2);
         const uint32_t candidate = directoryAddr + offset;
         if (candidate > ringsAddr && candidate < endAddr) {

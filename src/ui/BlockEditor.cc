@@ -20,13 +20,13 @@
 
 using namespace std;
 
-static constexpr int CANVAS_SCALE = 10;
-static constexpr int PATTERN_PREVIEW_SCALE = 2;
-static constexpr int PATTERN_CELL_SIZE = Pattern::PATTERN_WIDTH * PATTERN_PREVIEW_SCALE;
-static constexpr int PATTERN_ROW_HEIGHT = PATTERN_CELL_SIZE + 6;
-static constexpr int PATTERN_LABEL_WIDTH = 84;
-static constexpr uint16_t H_FLIP_MASK = 0x800;
-static constexpr uint16_t V_FLIP_MASK = 0x1000;
+static constexpr int kCanvasScale = 10;
+static constexpr int kPatternPreviewScale = 2;
+static constexpr int kPatternCellSize = Pattern::kPatternWidth * kPatternPreviewScale;
+static constexpr int kPatternRowHeight = kPatternCellSize + 6;
+static constexpr int kPatternLabelWidth = 84;
+static constexpr uint16_t kHorizontalFlipMask = 0x800;
+static constexpr uint16_t kVerticalFlipMask = 0x1000;
 
 static QColor toQColor(const Palette::Color& color)
 {
@@ -43,7 +43,7 @@ BlockCanvas::BlockCanvas(QWidget* parent, const shared_ptr<Level>& level, Block*
     , hFlip_(false)
     , vFlip_(false)
 {
-    setFixedSize(Block::BLOCK_WIDTH * CANVAS_SCALE, Block::BLOCK_HEIGHT * CANVAS_SCALE);
+    setFixedSize(Block::kBlockWidth * kCanvasScale, Block::kBlockHeight * kCanvasScale);
 }
 
 void BlockCanvas::setBlockIndex(size_t blockIndex)
@@ -77,22 +77,22 @@ void BlockCanvas::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, false);
-    painter.scale(CANVAS_SCALE, CANVAS_SCALE);
-    painter.fillRect(QRect(0, 0, Block::BLOCK_WIDTH, Block::BLOCK_HEIGHT), Qt::black);
+    painter.scale(kCanvasScale, kCanvasScale);
+    painter.fillRect(QRect(0, 0, Block::kBlockWidth, Block::kBlockHeight), Qt::black);
 
     drawBlock(painter, blocks_[blockIndex_]);
 
     painter.resetTransform();
     painter.setPen(QColor(55, 55, 55));
     painter.drawRect(0, 0, width() - 1, height() - 1);
-    painter.drawLine(Pattern::PATTERN_WIDTH * CANVAS_SCALE, 0, Pattern::PATTERN_WIDTH * CANVAS_SCALE, height());
-    painter.drawLine(0, Pattern::PATTERN_HEIGHT * CANVAS_SCALE, width(), Pattern::PATTERN_HEIGHT * CANVAS_SCALE);
+    painter.drawLine(Pattern::kPatternWidth * kCanvasScale, 0, Pattern::kPatternWidth * kCanvasScale, height());
+    painter.drawLine(0, Pattern::kPatternHeight * kCanvasScale, width(), Pattern::kPatternHeight * kCanvasScale);
 }
 
 void BlockCanvas::drawAt(const QPoint& pos)
 {
-    const int x = pos.x() / (Pattern::PATTERN_WIDTH * CANVAS_SCALE);
-    const int y = pos.y() / (Pattern::PATTERN_HEIGHT * CANVAS_SCALE);
+    const int x = pos.x() / (Pattern::kPatternWidth * kCanvasScale);
+    const int y = pos.y() / (Pattern::kPatternHeight * kCanvasScale);
     if (x < 0 || x > 1 || y < 0 || y > 1) {
         return;
     }
@@ -118,8 +118,8 @@ void BlockCanvas::drawBlock(QPainter& painter, const Block& block)
             drawPattern(painter,
                   pattern,
                   palette,
-                  px * Pattern::PATTERN_WIDTH,
-                  py * Pattern::PATTERN_HEIGHT,
+                  px * Pattern::kPatternWidth,
+                  py * Pattern::kPatternHeight,
                   patternDesc.getHFlip(),
                   patternDesc.getVFlip());
         }
@@ -134,10 +134,10 @@ void BlockCanvas::drawPattern(QPainter& painter,
                              bool hFlip,
                              bool vFlip)
 {
-    for (int py = 0; py < Pattern::PATTERN_HEIGHT; py++) {
-        for (int px = 0; px < Pattern::PATTERN_WIDTH; px++) {
-            const auto fx = hFlip ? Pattern::PATTERN_WIDTH - 1 - px : px;
-            const auto fy = vFlip ? Pattern::PATTERN_HEIGHT - 1 - py : py;
+    for (int py = 0; py < Pattern::kPatternHeight; py++) {
+        for (int px = 0; px < Pattern::kPatternWidth; px++) {
+            const auto fx = hFlip ? Pattern::kPatternWidth - 1 - px : px;
+            const auto fy = vFlip ? Pattern::kPatternHeight - 1 - py : py;
             const auto color = palette.getColor(pattern.getPixel(static_cast<uint8_t>(fx), static_cast<uint8_t>(fy)));
             painter.fillRect(dx + px, dy + py, 1, 1, toQColor(color));
         }
@@ -149,10 +149,10 @@ uint16_t BlockCanvas::selectedPatternDescValue() const
     uint16_t value = selectedPatternIndex_ & 0x7FF;
     value |= (selectedPaletteIndex_ & 0x3) << 13;
     if (hFlip_) {
-        value |= H_FLIP_MASK;
+        value |= kHorizontalFlipMask;
     }
     if (vFlip_) {
-        value |= V_FLIP_MASK;
+        value |= kVerticalFlipMask;
     }
     return value;
 }
@@ -163,8 +163,8 @@ PatternPaletteList::PatternPaletteList(QWidget* parent, const shared_ptr<Level>&
     , selectedPatternIndex_(0)
     , selectedPaletteIndex_(0)
 {
-    setMinimumWidth(PATTERN_LABEL_WIDTH + PATTERN_CELL_SIZE * 4 + 16);
-    setFixedHeight(static_cast<int>(level_->getPatternCount()) * PATTERN_ROW_HEIGHT);
+    setMinimumWidth(kPatternLabelWidth + kPatternCellSize * 4 + 16);
+    setFixedHeight(static_cast<int>(level_->getPatternCount()) * kPatternRowHeight);
     buildPixmapCache();
 }
 
@@ -186,8 +186,8 @@ void PatternPaletteList::mousePressEvent(QMouseEvent* event)
 #else
     const auto pos = event->pos();
 #endif
-    const int patternIndex = pos.y() / PATTERN_ROW_HEIGHT;
-    const int paletteIndex = (pos.x() - PATTERN_LABEL_WIDTH) / PATTERN_CELL_SIZE;
+    const int patternIndex = pos.y() / kPatternRowHeight;
+    const int paletteIndex = (pos.x() - kPatternLabelWidth) / kPatternCellSize;
     if (patternIndex < 0 || patternIndex >= static_cast<int>(level_->getPatternCount()) ||
             paletteIndex < 0 || paletteIndex >= 4) {
         return;
@@ -206,12 +206,12 @@ void PatternPaletteList::paintEvent(QPaintEvent*)
     painter.setRenderHint(QPainter::Antialiasing, false);
 
     for (size_t patternIndex = 0; patternIndex < level_->getPatternCount(); patternIndex++) {
-        const int y = static_cast<int>(patternIndex) * PATTERN_ROW_HEIGHT;
+        const int y = static_cast<int>(patternIndex) * kPatternRowHeight;
         painter.setPen(palette().text().color());
-        painter.drawText(QRect(0, y, PATTERN_LABEL_WIDTH - 8, PATTERN_ROW_HEIGHT), Qt::AlignVCenter | Qt::AlignRight, tr("Pattern %1").arg(patternIndex));
+        painter.drawText(QRect(0, y, kPatternLabelWidth - 8, kPatternRowHeight), Qt::AlignVCenter | Qt::AlignRight, tr("Pattern %1").arg(patternIndex));
 
         for (size_t paletteIndex = 0; paletteIndex < 4; paletteIndex++) {
-            const int x = PATTERN_LABEL_WIDTH + static_cast<int>(paletteIndex) * PATTERN_CELL_SIZE;
+            const int x = kPatternLabelWidth + static_cast<int>(paletteIndex) * kPatternCellSize;
             painter.drawPixmap(x, y + 3, cachedPixmap(patternIndex, paletteIndex));
 
             if (patternIndex == selectedPatternIndex_ && paletteIndex == selectedPaletteIndex_) {
@@ -219,7 +219,7 @@ void PatternPaletteList::paintEvent(QPaintEvent*)
             } else {
                 painter.setPen(QColor(55, 55, 55));
             }
-            painter.drawRect(x, y + 3, PATTERN_CELL_SIZE - 1, PATTERN_CELL_SIZE - 1);
+            painter.drawRect(x, y + 3, kPatternCellSize - 1, kPatternCellSize - 1);
         }
     }
 }
@@ -237,16 +237,16 @@ void PatternPaletteList::buildPixmapCache()
 
 QPixmap PatternPaletteList::renderPatternPixmap(const Pattern& pattern, const Palette& palette) const
 {
-    QImage image(Pattern::PATTERN_WIDTH, Pattern::PATTERN_HEIGHT, QImage::Format_RGB888);
-    for (int py = 0; py < Pattern::PATTERN_HEIGHT; py++) {
-        for (int px = 0; px < Pattern::PATTERN_WIDTH; px++) {
+    QImage image(Pattern::kPatternWidth, Pattern::kPatternHeight, QImage::Format_RGB888);
+    for (int py = 0; py < Pattern::kPatternHeight; py++) {
+        for (int px = 0; px < Pattern::kPatternWidth; px++) {
             const auto color = palette.getColor(pattern.getPixel(static_cast<uint8_t>(px), static_cast<uint8_t>(py)));
             image.setPixel(px, py, qRgb(color.r, color.g, color.b));
         }
     }
 
-    return QPixmap::fromImage(image.scaled(PATTERN_CELL_SIZE,
-                                         PATTERN_CELL_SIZE,
+    return QPixmap::fromImage(image.scaled(kPatternCellSize,
+                                         kPatternCellSize,
                                          Qt::IgnoreAspectRatio,
                                          Qt::FastTransformation));
 }
@@ -308,7 +308,7 @@ BlockEditor::BlockEditor(QWidget* parent, const shared_ptr<Level>& level)
     auto* scrollArea = new QScrollArea();
     scrollArea->setWidget(patternList_);
     scrollArea->setWidgetResizable(false);
-    scrollArea->setMinimumSize(PATTERN_LABEL_WIDTH + PATTERN_CELL_SIZE * 4 + 36, 320);
+    scrollArea->setMinimumSize(kPatternLabelWidth + kPatternCellSize * 4 + 36, 320);
     contentLayout->addWidget(scrollArea);
     mainLayout->addLayout(contentLayout);
 
@@ -348,7 +348,7 @@ void BlockEditor::closeEvent(QCloseEvent* event)
 
 void BlockEditor::applyBlocks()
 {
-    uint8_t buffer[Block::BLOCK_SIZE_IN_ROM];
+    uint8_t buffer[Block::kBlockSizeInRom];
     for (size_t i = 0; i < level_->getBlockCount(); i++) {
         blocks_[i].toSegaFormat(buffer);
         level_->getBlock(i).fromSegaFormat(buffer);
@@ -383,7 +383,7 @@ bool BlockEditor::confirmDirtyChanges()
 
 void BlockEditor::loadBlocks()
 {
-    uint8_t buffer[Block::BLOCK_SIZE_IN_ROM];
+    uint8_t buffer[Block::kBlockSizeInRom];
     for (size_t i = 0; i < level_->getBlockCount(); i++) {
         level_->getBlock(i).toSegaFormat(buffer);
         blocks_[i].fromSegaFormat(buffer);

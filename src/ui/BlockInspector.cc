@@ -20,8 +20,8 @@
 
 using namespace std;
 
-static constexpr int PIXMAP_WIDTH = 320;
-static constexpr int BLOCKS_PER_ROW = PIXMAP_WIDTH / Block::BLOCK_WIDTH;
+static constexpr int kPixmapWidth = 320;
+static constexpr int kBlocksPerRow = kPixmapWidth / Block::kBlockWidth;
 
 BlockInspector::BlockInspector(QWidget* parent, const shared_ptr<Level>& level)
     : QDialog(parent)
@@ -29,7 +29,7 @@ BlockInspector::BlockInspector(QWidget* parent, const shared_ptr<Level>& level)
     , pixmap_(nullptr)
 {
     const auto blockCount = level->getBlockCount();
-    const int pixmapHeight = ceilf(static_cast<float>(blockCount) / BLOCKS_PER_ROW) * Block::BLOCK_HEIGHT;
+    const int pixmapHeight = ceilf(static_cast<float>(blockCount) / kBlocksPerRow) * Block::kBlockHeight;
 
     // main layout
     QVBoxLayout* vbox = new QVBoxLayout();
@@ -39,12 +39,12 @@ BlockInspector::BlockInspector(QWidget* parent, const shared_ptr<Level>& level)
 
     // create widget to display pixmap
     label_ = new QLabel();
-    label_->setFixedSize(PIXMAP_WIDTH, pixmapHeight);
-    label_->setMinimumWidth(PIXMAP_WIDTH);
+    label_->setFixedSize(kPixmapWidth, pixmapHeight);
+    label_->setMinimumWidth(kPixmapWidth);
     vbox->addWidget(label_);
 
     // create pixmap
-    pixmap_ = new QPixmap(PIXMAP_WIDTH, pixmapHeight);
+    pixmap_ = new QPixmap(kPixmapWidth, pixmapHeight);
     label_->setPixmap(*pixmap_);
     drawBlocks();
 }
@@ -57,8 +57,8 @@ void BlockInspector::drawPattern(QImage& image,
                                  bool hFlip,
                                  bool vFlip)
 {
-    for (int py = 0; py < Pattern::PATTERN_HEIGHT; py++) {
-        for (int px = 0; px < Pattern::PATTERN_WIDTH; px++) {
+    for (int py = 0; py < Pattern::kPatternHeight; py++) {
+        for (int px = 0; px < Pattern::kPatternWidth; px++) {
             const auto fx = hFlip ? 7 - px : px;
             const auto fy = vFlip ? 7 - py : py;
 
@@ -85,8 +85,8 @@ void BlockInspector::drawBlock(QImage& image, const Block& block, int dx, int dy
             drawPattern(image,
                   pattern,
                   palette,
-                  dx + px * Pattern::PATTERN_WIDTH,
-                  dy + py * Pattern::PATTERN_HEIGHT,
+                  dx + px * Pattern::kPatternWidth,
+                  dy + py * Pattern::kPatternHeight,
                   patternDesc.getHFlip(),
                   patternDesc.getVFlip());
         }
@@ -103,10 +103,10 @@ void BlockInspector::drawBlocks()
 
     // draw individual blocks
     for (size_t i = 0; i < level_->getBlockCount(); i++) {
-        const auto row = static_cast<int>(i / BLOCKS_PER_ROW);
-        const auto col = static_cast<int>(i % BLOCKS_PER_ROW);
+        const auto row = static_cast<int>(i / kBlocksPerRow);
+        const auto col = static_cast<int>(i % kBlocksPerRow);
 
-        drawBlock(image, level_->getBlock(i), col * Block::BLOCK_WIDTH, row * Block::BLOCK_HEIGHT);
+        drawBlock(image, level_->getBlock(i), col * Block::kBlockWidth, row * Block::kBlockHeight);
     }
 
     // copy to pixmap

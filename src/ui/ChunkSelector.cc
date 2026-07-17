@@ -17,7 +17,7 @@
 #undef LOG
 #define LOG Logger("ChunkSelector")
 
-static constexpr int CHUNK_SPACING = 5;
+static constexpr int kChunkSpacing = 5;
 
 ChunkSelector::ChunkSelector(QWidget* parent, QPixmap** chunks, size_t chunkCount)
     : QWidget(parent)
@@ -35,7 +35,7 @@ ChunkSelector::ChunkSelector(QWidget* parent, QPixmap** chunks, size_t chunkCoun
     chunkItems_ = new QGraphicsPixmapItem*[chunkCount];
     for (size_t i = 0; i < chunkCount; i++) {
         chunkItems_[i] = scene_->addPixmap(*chunks[i]);
-        chunkItems_[i]->setPos(0, i * (128 + CHUNK_SPACING));
+        chunkItems_[i]->setPos(0, i * (128 + kChunkSpacing));
     }
 
     // create view
@@ -130,11 +130,11 @@ bool ChunkSelector::eventFilter(QObject* object, QEvent* ev)
 
 void ChunkSelector::handleClick(const QPoint& pos)
 {
-    const int y = pos.y() - CHUNK_SPACING + view_->verticalScrollBar()->value();
-    const int tileOffset = y % (128 + CHUNK_SPACING);
+    const int y = pos.y() - kChunkSpacing + view_->verticalScrollBar()->value();
+    const int tileOffset = y % (128 + kChunkSpacing);
 
     if (tileOffset < 128) {
-        const int tile = y / (128 + CHUNK_SPACING);
+        const int tile = y / (128 + kChunkSpacing);
         LOG() << "Selected chunk " << tile;
         selectedChunk_ = tile;
         selected_->setPixmap(*chunks_[tile]);
@@ -144,18 +144,18 @@ void ChunkSelector::handleClick(const QPoint& pos)
 
 void ChunkSelector::handleMove(const QPoint& pos)
 {
-    const int y = pos.y() - CHUNK_SPACING + view_->verticalScrollBar()->value();
-    const int tileOffset = y % (128 + CHUNK_SPACING);
+    const int y = pos.y() - kChunkSpacing + view_->verticalScrollBar()->value();
+    const int tileOffset = y % (128 + kChunkSpacing);
     if (tileOffset >= 128) {
         highlightedChunk_ = -1;
         highlight_->setVisible(false);
         return;
     }
 
-    const int tile = y / (128 + CHUNK_SPACING);
+    const int tile = y / (128 + kChunkSpacing);
     if (highlightedChunk_ != tile) {
         highlightedChunk_ = tile;
-        highlight_->setPos(0, tile * (128 + CHUNK_SPACING));
+        highlight_->setPos(0, tile * (128 + kChunkSpacing));
         highlight_->setVisible(true);
     }
 }

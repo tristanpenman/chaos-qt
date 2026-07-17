@@ -19,7 +19,7 @@ using namespace std;
 
 namespace {
 
-constexpr size_t DecompressionBufferSize = 0xFFFF;
+constexpr size_t kDecompressionBufferSize = 0xFFFF;
 
 QString firstNonEmpty(const QStringList& values)
 {
@@ -184,7 +184,7 @@ Sonic2Disassembly::LevelEntry Sonic2Disassembly::readLevelEntry(const QString& g
 
 vector<char> Sonic2Disassembly::readPaletteData(const QString& spec) const
 {
-    vector<char> paletteData(Palette::PALETTE_SIZE_IN_ROM * 4, 0);
+    vector<char> paletteData(Palette::kPaletteSizeInRom * 4, 0);
     const auto parts = spec.split('|', Qt::SkipEmptyParts);
 
     if (parts.isEmpty()) {
@@ -201,9 +201,9 @@ vector<char> Sonic2Disassembly::readPaletteData(const QString& spec) const
         size_t byteCount = min(static_cast<size_t>(data.size()), paletteData.size() - destOffset);
 
         if (args.size() >= 4) {
-            srcOffset = args.value(1).toUInt() * Palette::BYTES_PER_COLOR;
-            destOffset = args.value(2).toUInt() * Palette::BYTES_PER_COLOR;
-            byteCount = args.value(3).toUInt() * Palette::BYTES_PER_COLOR;
+            srcOffset = args.value(1).toUInt() * Palette::kBytesPerColor;
+            destOffset = args.value(2).toUInt() * Palette::kBytesPerColor;
+            byteCount = args.value(3).toUInt() * Palette::kBytesPerColor;
         }
 
         if (srcOffset + byteCount > static_cast<size_t>(data.size()) ||
@@ -236,7 +236,7 @@ vector<uint8_t> Sonic2Disassembly::decompressKosinski(const QByteArray& data, co
     buffer.setData(data);
     buffer.open(QIODevice::ReadOnly);
 
-    vector<uint8_t> output(DecompressionBufferSize);
+    vector<uint8_t> output(kDecompressionBufferSize);
     KosinskiReader reader;
     const auto result = reader.decompress(buffer, output.data(), output.size());
     if (!result.first) {

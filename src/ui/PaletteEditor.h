@@ -35,8 +35,8 @@ private:
     void updateTitle();
 
     std::shared_ptr<Level> level_;
-    std::array<Palette::Color, Palette::PALETTE_SIZE> colors_;
-    std::array<Palette::Color, Palette::PALETTE_SIZE> originalColors_;
+    std::array<Palette::Color, Palette::kPaletteSize> colors_;
+    std::array<Palette::Color, Palette::kPaletteSize> originalColors_;
 
     QComboBox* paletteCombo_;
     QButtonGroup* colorButtons_;

@@ -19,8 +19,8 @@
 
 using namespace std;
 
-static constexpr int PIXMAP_WIDTH = 320;
-static constexpr int PATTERNS_PER_ROW = PIXMAP_WIDTH / Pattern::PATTERN_WIDTH;
+static constexpr int kPixmapWidth = 320;
+static constexpr int kPatternsPerRow = kPixmapWidth / Pattern::kPatternWidth;
 
 PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& level)
     : QDialog(parent)
@@ -29,7 +29,7 @@ PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& lev
     , paletteIndex_(0)
 {
     const auto patternCount = level->getPatternCount();
-    const int pixmapHeight = ceilf(static_cast<float>(patternCount) / PATTERNS_PER_ROW) * Pattern::PATTERN_HEIGHT;
+    const int pixmapHeight = ceilf(static_cast<float>(patternCount) / kPatternsPerRow) * Pattern::kPatternHeight;
 
     // main layout
     QVBoxLayout* vbox = new QVBoxLayout();
@@ -47,12 +47,12 @@ PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& lev
 
     // create widget to display pixmap
     label_ = new QLabel();
-    label_->setFixedSize(PIXMAP_WIDTH, pixmapHeight);
-    label_->setMinimumWidth(PIXMAP_WIDTH);
+    label_->setFixedSize(kPixmapWidth, pixmapHeight);
+    label_->setMinimumWidth(kPixmapWidth);
     vbox->addWidget(label_);
 
     // create pixmap
-    pixmap_ = new QPixmap(PIXMAP_WIDTH, pixmapHeight);
+    pixmap_ = new QPixmap(kPixmapWidth, pixmapHeight);
     label_->setPixmap(*pixmap_);
     drawPatterns(0);
 
@@ -84,10 +84,10 @@ void PatternInspector::drawPatterns(size_t paletteIndex)
 
     // draw individual patterns
     for (size_t i = 0; i < level_->getPatternCount(); i++) {
-        const auto row = static_cast<int>(i / PATTERNS_PER_ROW);
-        const auto col = static_cast<int>(i % PATTERNS_PER_ROW);
+        const auto row = static_cast<int>(i / kPatternsPerRow);
+        const auto col = static_cast<int>(i % kPatternsPerRow);
 
-        drawPattern(image, level_->getPattern(i), palette, col * Pattern::PATTERN_WIDTH, row * Pattern::PATTERN_HEIGHT);
+        drawPattern(image, level_->getPattern(i), palette, col * Pattern::kPatternWidth, row * Pattern::kPatternHeight);
     }
 
     // copy to pixmap

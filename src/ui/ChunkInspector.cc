@@ -35,12 +35,12 @@ ChunkInspector::ChunkInspector(QWidget* parent, const shared_ptr<Level>& level)
 
     // create widget to display pixmap
     label_ = new QLabel();
-    label_->setFixedSize(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT);
-    label_->setMinimumWidth(Chunk::CHUNK_WIDTH);
+    label_->setFixedSize(Chunk::kChunkWidth, Chunk::kChunkHeight);
+    label_->setMinimumWidth(Chunk::kChunkWidth);
     vbox->addWidget(label_);
 
     // create pixmap
-    pixmap_ = new QPixmap(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT);
+    pixmap_ = new QPixmap(Chunk::kChunkWidth, Chunk::kChunkHeight);
     label_->setPixmap(*pixmap_);
     drawChunk(0);
 
@@ -56,8 +56,8 @@ void ChunkInspector::drawPattern(QImage& image,
                                  bool hFlip,
                                  bool vFlip)
 {
-    for (int py = 0; py < Pattern::PATTERN_HEIGHT; py++) {
-        for (int px = 0; px < Pattern::PATTERN_WIDTH; px++) {
+    for (int py = 0; py < Pattern::kPatternHeight; py++) {
+        for (int px = 0; px < Pattern::kPatternWidth; px++) {
             const auto fx = hFlip ? 7 - px : px;
             const auto fy = vFlip ? 7 - py : py;
 
@@ -84,8 +84,8 @@ void ChunkInspector::drawBlock(QImage& image, const Block& block, int dx, int dy
             drawPattern(image,
                   pattern,
                   palette,
-                  dx + px * Pattern::PATTERN_WIDTH,
-                  dy + py * Pattern::PATTERN_HEIGHT,
+                  dx + px * Pattern::kPatternWidth,
+                  dy + py * Pattern::kPatternHeight,
                   patternDesc.getHFlip() ^ hFlip,
                   patternDesc.getVFlip() ^ vFlip);
         }
@@ -98,7 +98,7 @@ void ChunkInspector::drawChunk(size_t index)
 
     const Chunk& chunk = level_->getChunk(index);
 
-    QImage image(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT, QImage::Format_RGB888);
+    QImage image(Chunk::kChunkWidth, Chunk::kChunkHeight, QImage::Format_RGB888);
     image.fill(0);
 
     for (int dy = 0; dy < 8; dy++) {

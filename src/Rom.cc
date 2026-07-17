@@ -6,16 +6,21 @@
 
 #include "Rom.h"
 
-#define CHECKSUM_OFFSET 0x018E
-#define CHECKSUM_BUFFER_SIZE 0x8000  // 32kB
-#define ROM_HEADER_OFFSET 0x100
-#define ROM_LENGTH_OFFSET 0x01A4
-#define DOMESTIC_NAME_LEN 48
-#define DOMESTIC_NAME_OFFSET ROM_HEADER_OFFSET + 32
-#define INTERNATIONAL_NAME_LEN 48
-#define INTERNATIONAL_NAME_OFFSET DOMESTIC_NAME_OFFSET + DOMESTIC_NAME_LEN
-
 using namespace std;
+
+namespace {
+
+constexpr uint32_t kChecksumOffset = 0x018E;
+constexpr uint32_t kChecksumDataOffset = 0x0200;
+constexpr qint64 kChecksumBufferSize = 0x8000;  // 32 KiB
+constexpr uint32_t kRomHeaderOffset = 0x100;
+constexpr uint32_t kRomLengthOffset = 0x01A4;
+constexpr qint64 kDomesticNameLength = 48;
+constexpr uint32_t kDomesticNameOffset = kRomHeaderOffset + 32;
+constexpr qint64 kInternationalNameLength = 48;
+constexpr uint32_t kInternationalNameOffset = kDomesticNameOffset + kDomesticNameLength;
+
+}  // namespace
 
 bool Rom::open(const string& path)
 {
@@ -35,22 +40,22 @@ size_t Rom::getSize()
 
 uint32_t Rom::readAddrRange()
 {
-    return read32BitAddr(0x1A4);
+    return read32BitAddr(kRomLengthOffset);
 }
 
 void Rom::writeSize(uint32_t size)
 {
-    write32BitAddr(size, 0x1A4);
+    write32BitAddr(size, kRomLengthOffset);
 
     file_.flush();
 }
 
 uint16_t Rom::calculateChecksum()
 {
-    file_.seek(512);
+    file_.seek(kChecksumDataOffset);
     int count = 0;
     while (!file_.atEnd()) {
-        const QByteArray buffer = file_.read(CHECKSUM_BUFFER_SIZE);
+        const QByteArray buffer = file_.read(kChecksumBufferSize);
         const auto readCount = buffer.size();
         for (auto i = 0; i < readCount; i += 2) {
             int num;
@@ -82,28 +87,28 @@ uint16_t Rom::calculateChecksum()
 
 uint16_t Rom::readChecksum()
 {
-    return read16BitAddr(CHECKSUM_OFFSET);
+    return read16BitAddr(kChecksumOffset);
 }
 
 void Rom::writeChecksum(uint16_t checksum)
 {
-    write16BitAddr(checksum, CHECKSUM_OFFSET);
+    write16BitAddr(checksum, kChecksumOffset);
 
     file_.flush();
 }
 
 string Rom::readDomesticName()
 {
-    file_.seek(DOMESTIC_NAME_OFFSET);
-    QByteArray buffer = file_.read(DOMESTIC_NAME_LEN);
+    file_.seek(kDomesticNameOffset);
+    QByteArray buffer = file_.read(kDomesticNameLength);
     buffer.append('\0');
     return buffer.constData();
 }
 
 string Rom::readInternationalName()
 {
-    file_.seek(INTERNATIONAL_NAME_OFFSET);
-    QByteArray buffer = file_.read(INTERNATIONAL_NAME_LEN);
+    file_.seek(kInternationalNameOffset);
+    QByteArray buffer = file_.read(kInternationalNameLength);
     buffer.append('\0');
     return buffer.constData();
 }

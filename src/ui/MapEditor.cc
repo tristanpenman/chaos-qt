@@ -30,9 +30,13 @@
 #undef LOG
 #define LOG Logger("MapEditor")
 
-#define MAX_UNDO_COMMANDS 20
-
 using namespace std;
+
+namespace {
+
+constexpr size_t kMaxUndoCommands = 20;
+
+}  // namespace
 
 MapEditor::MapEditor(QWidget* parent, const shared_ptr<Level>& level)
     : QWidget(parent)
@@ -76,8 +80,8 @@ MapEditor::MapEditor(QWidget* parent, const shared_ptr<Level>& level)
     const QBrush ringBrush(QColor(255, 224, 0, 48));
     for (const auto& group : level_->getRingGroups()) {
         for (uint8_t i = 0; i < group.count; i++) {
-            const int x = group.x + (group.direction == RingDirection::Horizontal ? i * 0x18 : 0);
-            const int y = group.y + (group.direction == RingDirection::Vertical ? i * 0x18 : 0);
+            const int x = group.x + (group.direction == RingDirection::kHorizontal ? i * 0x18 : 0);
+            const int y = group.y + (group.direction == RingDirection::kVertical ? i * 0x18 : 0);
             auto* ring = scene_->addRect(x - 8, y - 8, 16, 16, ringPen, ringBrush);
             ring->setToolTip(tr("Ring (%1, %2)").arg(x).arg(y));
         }
@@ -125,7 +129,7 @@ void MapEditor::undo()
 
     auto redoCommand = applyCommand(*undoCommand);
     redoCommands_.push_front(redoCommand);
-    if (redoCommands_.size() > MAX_UNDO_COMMANDS) {
+    if (redoCommands_.size() > kMaxUndoCommands) {
         LOG() << "Dropping redo command";
         redoCommands_.pop_back();
     }
@@ -144,7 +148,7 @@ void MapEditor::redo()
 
     auto undoCommand = applyCommand(*redoCommand);
     undoCommands_.push_front(undoCommand);
-    if (undoCommands_.size() > MAX_UNDO_COMMANDS) {
+    if (undoCommands_.size() > kMaxUndoCommands) {
         LOG() << "Dropping undo command";
         undoCommands_.pop_back();
     }
@@ -192,12 +196,12 @@ void MapEditor::refreshChunks()
 
 int MapEditor::getWidth() const
 {
-    return level_->getMap().getWidth() * Chunk::CHUNK_WIDTH;
+    return level_->getMap().getWidth() * Chunk::kChunkWidth;
 }
 
 int MapEditor::getHeight() const
 {
-    return level_->getMap().getHeight() * Chunk::CHUNK_HEIGHT;
+    return level_->getMap().getHeight() * Chunk::kChunkHeight;
 }
 
 size_t MapEditor::getSelectedChunk() const
@@ -284,7 +288,7 @@ bool MapEditor::handleMouseRelease()
     // save undo command
     redoCommands_.clear();
     undoCommands_.push_front(result.undoCommand);
-    if (undoCommands_.size() > MAX_UNDO_COMMANDS) {
+    if (undoCommands_.size() > kMaxUndoCommands) {
         LOG() << "Dropping undo command";
         undoCommands_.pop_back();
     }
@@ -333,8 +337,8 @@ void MapEditor::drawPattern(QImage& image,
                             bool hFlip,
                             bool vFlip)
 {
-    for (int py = 0; py < Pattern::PATTERN_HEIGHT; py++) {
-        for (int px = 0; px < Pattern::PATTERN_WIDTH; px++) {
+    for (int py = 0; py < Pattern::kPatternHeight; py++) {
+        for (int px = 0; px < Pattern::kPatternWidth; px++) {
             const auto fx = hFlip ? 7 - px : px;
             const auto fy = vFlip ? 7 - py : py;
 
@@ -361,8 +365,8 @@ void MapEditor::drawBlock(QImage& image, const Block& block, int dx, int dy, boo
             drawPattern(image,
                   pattern,
                   palette,
-                  dx + px * Pattern::PATTERN_WIDTH,
-                  dy + py * Pattern::PATTERN_HEIGHT,
+                  dx + px * Pattern::kPatternWidth,
+                  dy + py * Pattern::kPatternHeight,
                   patternDesc.getHFlip() ^ hFlip,
                   patternDesc.getVFlip() ^ vFlip);
         }
@@ -373,7 +377,7 @@ void MapEditor::drawChunk(QPixmap& pixmap, size_t index)
 {
     const Chunk& chunk = level_->getChunk(index);
 
-    QImage image(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT, QImage::Format_RGB888);
+    QImage image(Chunk::kChunkWidth, Chunk::kChunkHeight, QImage::Format_RGB888);
     image.fill(0);
 
     for (int dy = 0; dy < 8; dy++) {

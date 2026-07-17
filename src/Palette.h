@@ -18,9 +18,9 @@
 class Palette
 {
 public:
-    static constexpr uint8_t BYTES_PER_COLOR = 2;
-    static constexpr uint8_t PALETTE_SIZE = 16;
-    static constexpr uint8_t PALETTE_SIZE_IN_ROM = BYTES_PER_COLOR * PALETTE_SIZE;
+    static constexpr uint8_t kBytesPerColor = 2;
+    static constexpr uint8_t kPaletteSize = 16;
+    static constexpr uint8_t kPaletteSizeInRom = kBytesPerColor * kPaletteSize;
 
     struct Color
     {
@@ -28,14 +28,14 @@ public:
         uint8_t g;
         uint8_t b;
 
-        void fromSegaFormat(char bytes[BYTES_PER_COLOR]);
-        void toSegaFormat(char bytes[BYTES_PER_COLOR]) const;
+        void fromSegaFormat(char bytes[kBytesPerColor]);
+        void toSegaFormat(char bytes[kBytesPerColor]) const;
     };
 
     Palette();
 
-    void fromSegaFormat(char bytes[PALETTE_SIZE_IN_ROM]);
-    void toSegaFormat(char bytes[PALETTE_SIZE_IN_ROM]) const;
+    void fromSegaFormat(char bytes[kPaletteSizeInRom]);
+    void toSegaFormat(char bytes[kPaletteSizeInRom]) const;
 
     size_t getColorCount() const;
     const Color& getColor(size_t index) const;
@@ -45,10 +45,10 @@ private:
     Palette(const Palette&) = delete;
     Palette& operator=(const Palette&) = delete;
 
-    Color colors_[PALETTE_SIZE];
+    Color colors_[kPaletteSize];
 };
 
 inline size_t Palette::getColorCount() const
 {
-    return PALETTE_SIZE;
+    return kPaletteSize;
 }

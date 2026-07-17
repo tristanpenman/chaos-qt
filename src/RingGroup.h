@@ -4,8 +4,8 @@
 
 enum class RingDirection
 {
-    Horizontal,
-    Vertical
+    kHorizontal,
+    kVertical
 };
 
 struct RingGroup

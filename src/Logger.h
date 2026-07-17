@@ -25,7 +25,7 @@
  *
  *     // log info by default
  *     LOG() << "Log some stuff, maybe even some value in hex: 0x" << hex << 23030;
- *     LOG(WARNING) << "This is a warning message";
+ *     LOG(Logger::Level::kWarning) << "This is a warning message";
  *   }
  *
  * This would write the following to std::cout:
@@ -45,10 +45,10 @@ class Logger
 public:
     enum class Level
     {
-        Verbose = 0,
-        Info = 1,
-        Warning = 2,
-        Error = 3
+        kVerbose = 0,
+        kInfo = 1,
+        kWarning = 2,
+        kError = 3
     };
 
     class Writer
@@ -75,7 +75,7 @@ public:
 
     explicit Logger(std::string name = {});
 
-    Writer operator()(const Level level = Level::Info)
+    Writer operator()(const Level level = Level::kInfo)
     {
         return Writer{*this, level};
     }
@@ -87,7 +87,7 @@ public:
 
     static bool verbose()
     {
-        return minLevel_.load() <= Level::Verbose;
+        return minLevel_.load() <= Level::kVerbose;
     }
 
 private:
@@ -98,8 +98,4 @@ private:
     std::string name_;
 };
 
-#define LOG     Logger()
-#define INFO    Logger::Level::Info
-#define WARNING Logger::Level::Warning
-#define ERROR   Logger::Level::Error
-#define VERBOSE Logger::Level::Verbose
+#define LOG Logger()

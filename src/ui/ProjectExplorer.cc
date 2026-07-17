@@ -6,7 +6,7 @@
 
 namespace {
 
-constexpr int ColumnCount = 4;
+constexpr int kColumnCount = 4;
 
 QString text(const std::string& value)
 {
@@ -22,7 +22,7 @@ ProjectExplorer::ProjectExplorer(QWidget* parent, const std::vector<ProjectResou
     setWindowTitle(tr("Project Explorer"));
     resize(900, 500);
 
-    table_->setColumnCount(ColumnCount);
+    table_->setColumnCount(kColumnCount);
     table_->setHorizontalHeaderLabels({tr("Level"), tr("Type"), tr("Path"), tr("Compression")});
     table_->setRowCount(static_cast<int>(resources.size()));
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);

@@ -5,9 +5,9 @@
 
 #include "Block.h"
 
-void Block::fromSegaFormat(uint8_t buffer[BLOCK_SIZE_IN_ROM])
+void Block::fromSegaFormat(uint8_t buffer[kBlockSizeInRom])
 {
-    for (unsigned int i = 0; i < PATTERNS_PER_BLOCK; i++) {
+    for (unsigned int i = 0; i < kPatternsPerBlock; i++) {
         uint16_t index = (static_cast<uint16_t>(buffer[0]) << 8) & 0xFF00;
         index |= (buffer[1]) & 0x00FF;
 
@@ -18,9 +18,9 @@ void Block::fromSegaFormat(uint8_t buffer[BLOCK_SIZE_IN_ROM])
     }
 }
 
-void Block::toSegaFormat(uint8_t buffer[BLOCK_SIZE_IN_ROM]) const
+void Block::toSegaFormat(uint8_t buffer[kBlockSizeInRom]) const
 {
-    for (unsigned int i = 0; i < PATTERNS_PER_BLOCK; i++) {
+    for (unsigned int i = 0; i < kPatternsPerBlock; i++) {
         const uint16_t index = patternDescs_[i].get();
         buffer[0] = static_cast<uint8_t>((index >> 8) & 0xFF);
         buffer[1] = static_cast<uint8_t>(index & 0xFF);

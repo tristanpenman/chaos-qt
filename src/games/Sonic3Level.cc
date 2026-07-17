@@ -19,7 +19,7 @@
 
 using namespace std;
 
-static constexpr uint8_t MAP_LAYERS = 2;
+static constexpr uint8_t kMapLayers = 2;
 
 Sonic3Level::Sonic3Level(Rom& rom,
                          uint32_t sonicPaletteAddr,
@@ -48,7 +48,7 @@ Sonic3Level::Sonic3Level(Rom& rom,
 
 const Palette& Sonic3Level::getPalette(size_t index) const
 {
-    if (index >= PALETTE_COUNT) {
+    if (index >= kPaletteCount) {
         throw runtime_error("Invalid palette index");
     }
 
@@ -57,7 +57,7 @@ const Palette& Sonic3Level::getPalette(size_t index) const
 
 Palette& Sonic3Level::getPalette(size_t index)
 {
-    if (index >= PALETTE_COUNT) {
+    if (index >= kPaletteCount) {
         throw runtime_error("Invalid palette index");
     }
 
@@ -128,34 +128,34 @@ void Sonic3Level::loadPalettes(Rom& rom, uint32_t characterPaletteAddr, uint32_t
     palettes_ = new Palette[4];
 
     {
-        auto buffer = rom.readBytes(characterPaletteAddr, Palette::PALETTE_SIZE_IN_ROM);
+        auto buffer = rom.readBytes(characterPaletteAddr, Palette::kPaletteSizeInRom);
         palettes_[0].fromSegaFormat(buffer.data());
     }
 
     {
-        auto buffer = rom.readBytes(levelPalettesAddr, Palette::PALETTE_SIZE_IN_ROM * 3);
+        auto buffer = rom.readBytes(levelPalettesAddr, Palette::kPaletteSizeInRom * 3);
         for (int i = 0; i < 3; i++) {
-            palettes_[i + 1].fromSegaFormat(&buffer[Palette::PALETTE_SIZE_IN_ROM * i]);
+            palettes_[i + 1].fromSegaFormat(&buffer[Palette::kPaletteSizeInRom * i]);
         }
     }
 }
 
 void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t extPatternsAddr)
 {
-    static constexpr size_t PATTERN_BUFFER_SIZE = 0xFFFFF;  // 64KB
+    static constexpr size_t kPatternBufferSize = 0xFFFFF;  // 64KB
 
     // length of uncompressed data
     const uint16_t baseDataSize = rom.read16BitAddr(basePatternsAddr);
     const uint16_t extDataSize = rom.read16BitAddr(extPatternsAddr);
 
     // total number of patterns
-    patternCount_ = (baseDataSize + extDataSize) / Pattern::PATTERN_SIZE_IN_ROM;
+    patternCount_ = (baseDataSize + extDataSize) / Pattern::kPatternSizeInRom;
     patterns_ = new Pattern[patternCount_];
 
     // setup decompression
     auto& file = rom.getFile();
     KosinskiReader reader;
-    vector<uint8_t> buffer(PATTERN_BUFFER_SIZE);
+    vector<uint8_t> buffer(kPatternBufferSize);
     size_t total = 0;
     int patternIndex = 0;
 
@@ -164,18 +164,18 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
         file.seek(basePatternsAddr + 2);
         while (total < baseDataSize) {
             // decompress module
-            auto result = reader.decompress(file, buffer.data(), PATTERN_BUFFER_SIZE);
+            auto result = reader.decompress(file, buffer.data(), kPatternBufferSize);
             if (!result.first) {
                 throw runtime_error("Base pattern decompression error");
             }
 
-            if (result.second % Pattern::PATTERN_SIZE_IN_ROM != 0) {
+            if (result.second % Pattern::kPatternSizeInRom != 0) {
                 throw runtime_error("Inconsistent base pattern data");
             }
 
-            const auto patternCount = result.second / Pattern::PATTERN_SIZE_IN_ROM;
+            const auto patternCount = result.second / Pattern::kPatternSizeInRom;
             for (size_t i = 0; i < patternCount; i++) {
-                patterns_[patternIndex++].fromSegaFormat(&buffer[i * Pattern::PATTERN_SIZE_IN_ROM]);
+                patterns_[patternIndex++].fromSegaFormat(&buffer[i * Pattern::kPatternSizeInRom]);
             }
 
             // Find the beginning of the next module...
@@ -196,18 +196,18 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
         // extended patterns
         file.seek(extPatternsAddr + 2);
         while (total < baseDataSize + extDataSize) {
-            auto result = reader.decompress(file, buffer.data(), PATTERN_BUFFER_SIZE);
+            auto result = reader.decompress(file, buffer.data(), kPatternBufferSize);
             if (!result.first) {
                 throw runtime_error("Extended pattern decompression error");
             }
 
-            if (result.second % Pattern::PATTERN_SIZE_IN_ROM != 0) {
+            if (result.second % Pattern::kPatternSizeInRom != 0) {
                 throw runtime_error("Inconsistent extended pattern data");
             }
 
-            const auto patternCount = result.second / Pattern::PATTERN_SIZE_IN_ROM;
+            const auto patternCount = result.second / Pattern::kPatternSizeInRom;
             for (size_t i = 0; i < patternCount; i++) {
-                patterns_[patternIndex++].fromSegaFormat(&buffer[i * Pattern::PATTERN_SIZE_IN_ROM]);
+                patterns_[patternIndex++].fromSegaFormat(&buffer[i * Pattern::kPatternSizeInRom]);
             }
 
             char b = 0;
@@ -227,47 +227,47 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
 
 void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBlocksAddr)
 {
-    static constexpr size_t BLOCK_BUFFER_SIZE = 0xFFFF;  // 64KB
+    static constexpr size_t kBlockBufferSize = 0xFFFF;  // 64KB
 
     // setup decompression
     auto& file = rom.getFile();
     KosinskiReader reader;
-    vector<uint8_t> buffer(BLOCK_BUFFER_SIZE);
+    vector<uint8_t> buffer(kBlockBufferSize);
     size_t total = 0;
 
     {
         // decompress base blocks
         file.seek(baseBlocksAddr);
-        auto result = reader.decompress(file, buffer.data(), BLOCK_BUFFER_SIZE);
+        auto result = reader.decompress(file, buffer.data(), kBlockBufferSize);
         if (!result.first) {
             throw runtime_error("Base block decompression error");
         }
 
-        if (result.second % Block::BLOCK_SIZE_IN_ROM != 0) {
+        if (result.second % Block::kBlockSizeInRom != 0) {
             throw runtime_error("Inconsistent base block data");
         }
 
-        blockCount_ = result.second / Block::BLOCK_SIZE_IN_ROM;
+        blockCount_ = result.second / Block::kBlockSizeInRom;
         total += result.second;
     }
 
     {
         // decompress extended blocks
         file.seek(extBlocksAddr);
-        auto result = reader.decompress(file, buffer.data() + total, BLOCK_BUFFER_SIZE - total);
+        auto result = reader.decompress(file, buffer.data() + total, kBlockBufferSize - total);
         if (!result.first) {
             throw runtime_error("Extended block decompression error");
         }
 
-        if (result.second % Block::BLOCK_SIZE_IN_ROM != 0) {
+        if (result.second % Block::kBlockSizeInRom != 0) {
             throw runtime_error("Inconsistent extended block data");
         }
 
-        blockCount_ += result.second / Block::BLOCK_SIZE_IN_ROM;
+        blockCount_ += result.second / Block::kBlockSizeInRom;
         blocks_ = new Block[blockCount_];
 
         for (size_t i = 0; i < blockCount_; i++) {
-            blocks_[i].fromSegaFormat(&buffer[i * Block::BLOCK_SIZE_IN_ROM]);
+            blocks_[i].fromSegaFormat(&buffer[i * Block::kBlockSizeInRom]);
         }
 
         total += result.second;
@@ -278,47 +278,47 @@ void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBloc
 
 void Sonic3Level::loadChunks(Rom& rom, uint32_t baseChunksAddr, uint32_t extChunksAddr)
 {
-    static constexpr size_t CHUNK_BUFFER_SIZE = 0xFFFFF;  // 64KB
+    static constexpr size_t kChunkBufferSize = 0xFFFFF;  // 64KB
 
     // setup decompression
     auto& file = rom.getFile();
     KosinskiReader reader;
-    vector<uint8_t> buffer(CHUNK_BUFFER_SIZE);
+    vector<uint8_t> buffer(kChunkBufferSize);
     size_t total = 0;
 
     {
         // decompress base chunks
         file.seek(baseChunksAddr);
-        auto result = reader.decompress(file, buffer.data(), CHUNK_BUFFER_SIZE);
+        auto result = reader.decompress(file, buffer.data(), kChunkBufferSize);
         if (!result.first) {
             throw runtime_error("Base chunk decompression error");
         }
 
-        if (result.second % Chunk::CHUNK_SIZE_IN_ROM != 0) {
+        if (result.second % Chunk::kChunkSizeInRom != 0) {
             throw runtime_error("Inconsistent base chunk data");
         }
 
-        chunkCount_ = result.second / Chunk::CHUNK_SIZE_IN_ROM;
+        chunkCount_ = result.second / Chunk::kChunkSizeInRom;
         total += result.second;
     }
 
     {
         // decompress extended chunks
         file.seek(extChunksAddr);
-        auto result = reader.decompress(file, buffer.data() + total, CHUNK_BUFFER_SIZE - total);
+        auto result = reader.decompress(file, buffer.data() + total, kChunkBufferSize - total);
         if (!result.first) {
             throw runtime_error("Extended chunk decompression error");
         }
 
-        if (result.second % Chunk::CHUNK_SIZE_IN_ROM != 0) {
+        if (result.second % Chunk::kChunkSizeInRom != 0) {
             throw runtime_error("Inconsistent extended chunk data");
         }
 
-        chunkCount_ += result.second / Chunk::CHUNK_SIZE_IN_ROM;
+        chunkCount_ += result.second / Chunk::kChunkSizeInRom;
         chunks_ = new Chunk[chunkCount_];
 
         for (size_t i = 0; i < chunkCount_; i++) {
-            chunks_[i].fromSegaFormat(&buffer[i * Chunk::CHUNK_SIZE_IN_ROM]);
+            chunks_[i].fromSegaFormat(&buffer[i * Chunk::kChunkSizeInRom]);
         }
     }
 
@@ -336,7 +336,7 @@ void Sonic3Level::loadMap(Rom& rom, uint32_t mapAddr)
     // create map
     const uint16_t mapWidth = max(rowSizeBg, rowSizeFg);
     const uint16_t mapHeight = max(rowCountBg, rowCountFg);
-    map_ = new Map(MAP_LAYERS, mapWidth, mapHeight);
+    map_ = new Map(kMapLayers, mapWidth, mapHeight);
 
     // setup for reading values
     auto& file = rom.getFile();

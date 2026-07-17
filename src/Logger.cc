@@ -7,7 +7,7 @@
 using namespace std;
 
 atomic<ostream*> Logger::os_ = nullptr;
-atomic<Logger::Level> Logger::minLevel_ = Level::Info;
+atomic<Logger::Level> Logger::minLevel_ = Level::kInfo;
 mutex Logger::mutex_;
 
 namespace {
@@ -15,13 +15,13 @@ namespace {
 const char* levelLabel(Logger::Level level)
 {
     switch (level) {
-    case Logger::Level::Info:
+    case Logger::Level::kInfo:
         return "I";
-    case Logger::Level::Warning:
+    case Logger::Level::kWarning:
         return "W";
-    case Logger::Level::Error:
+    case Logger::Level::kError:
         return "E";
-    case Logger::Level::Verbose:
+    case Logger::Level::kVerbose:
         return "V";
     default:
         return "U";

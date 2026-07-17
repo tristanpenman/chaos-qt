@@ -22,7 +22,7 @@ class PatternCanvas : public QWidget
     Q_OBJECT
 
 public:
-    PatternCanvas(QWidget* parent, std::array<uint8_t, Pattern::PATTERN_SIZE_IN_MEM>& pixels);
+    PatternCanvas(QWidget* parent, std::array<uint8_t, Pattern::kPatternSizeInMemory>& pixels);
 
     void setPalette(const Palette* palette);
     void setSelectedColor(uint8_t colorIndex);
@@ -35,7 +35,7 @@ protected:
 private:
     void paintPixelAt(const QPoint& pos);
 
-    std::array<uint8_t, Pattern::PATTERN_SIZE_IN_MEM>& pixels_;
+    std::array<uint8_t, Pattern::kPatternSizeInMemory>& pixels_;
     const Palette* palette_;
     uint8_t selectedColor_;
 
@@ -64,7 +64,7 @@ private:
     void updateTitle();
 
     std::shared_ptr<Level> level_;
-    std::array<uint8_t, Pattern::PATTERN_SIZE_IN_MEM> pixels_;
+    std::array<uint8_t, Pattern::kPatternSizeInMemory> pixels_;
 
     QComboBox* patternCombo_;
     QComboBox* paletteCombo_;
