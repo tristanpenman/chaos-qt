@@ -1,36 +1,80 @@
 # Conventions
 
-This file documents the coding conventions used within this project.
+These conventions apply to project-owned C++ code. Third-party code should not be reformatted merely to match this document. At an integration boundary, retain the spelling and idioms of the external API, but use the project conventions inside project-owned wrappers and implementations.
 
-## C++ (.cc, .h)
+When modifying older code, apply these conventions to the code being changed when doing so is low risk. Avoid unrelated, file-wide formatting or renaming changes.
 
-- Indentation is four spaces and opening braces are placed on the next line for functions and class methods.
-- Braces on a separate line for classes, structs, enums, and other structural elements.
-- Braces on the same line for control flow and namespaces.
-- Anonymous namespaces can be used to contain functions and variables to the current translation unit.
-- Closing braces for namespaces should include a comment with the name of the namespace.
-- Use `#pragma once` for header guards, with standard library includes listed before local headers and separated by a blank line.
-- Class names use PascalCase (e.g., `Sonic2RingLayout`, `KosinskiWriter`, `Rom`), and functions use camelCase (e.g., `readWord`, `getColorCount`).
-- Local variables, parameters, and struct fields use camelCase (e.g., `blocksAddr`, `encodedY`).
-- Member variables are prefixed with `m_` (e.g., `m_bar`, `m_byteCount`).
-- Enum values use PascalCase (e.g., `First`, `Second`).
-- Other constants and constexpr expressions can use ALL_CAPS.
-- Use `std::shared_ptr` for shared ownership, with constructor injection for dependencies.
-- Prefer `const` correctness for read-only methods and pass-by-value for small types while using references for larger objects or smart pointers.
-- Comments may delineate sections and provide inline notes.
-- Multi-line doc comments are permitted for classes and inline explanation comments for logic blocks.
-- Use `auto` for local variables when the type is clear from context, especially with calculated addresses or values.
-- Header include ordering. Place stdlib before local headers, blank-line separated.
+## C++
+
+### Files and formatting
+
+- Use `.h` for headers and the source extension already established by the project (`.cc` or `.cpp`) for implementations.
+- Indent with four spaces. Do not use tabs.
+- Put opening braces on the next line for functions, classes, structs, unions, and enums.
+- Put opening braces on the same line for namespaces and control-flow statements.
+- Always use braces for the body of `if`, `else`, `for`, `while`, and similar statements, including single-statement bodies.
+- Put a space on both sides of the colon in a range-based `for` loop.
+- Bind pointer and reference markers to the type: `Widget* widget`, `const Vector& value`.
+- Keep short getters and setters in the normal multi-line form. An inline one-line definition is acceptable when it materially improves the readability of a long, repetitive class.
+- For a multi-line function declaration or definition, indent each parameter by four spaces and keep the closing parenthesis with the opening brace.
+- Put each member on its own line in a multi-member constructor initializer list.
+- Follow the established line-ending and maximum-line-length settings of the repository.
 
 ```cpp
-#pragma once
+Result calculateResult(
+    const Input& input,
+    std::size_t sampleCount)
+{
+    if (sampleCount == 0) {
+        return {};
+    }
 
-#include <memory>
+    for (const auto& sample : input.samples()) {
+        // Process the sample.
+    }
 
-#include "something.h"
+    return makeResult(input, sampleCount);
+}
+```
 
-class Bar;
+### Names
 
+- Classes, structs, unions, type aliases, and enum types use `PascalCase`.
+- Functions and methods use `camelCase`.
+- Local variables, parameters, and public struct fields use `camelCase`.
+- Non-static data members use `camelCase` with a trailing underscore: `byteCount_`.
+- Mutable global and namespace-scope variables use `camelCase` with a `g_` prefix: `g_shutdownRequested`. This includes variables in anonymous namespaces and `thread_local` variables because their storage duration is not apparent at the point of use. Prefer avoiding mutable global state when ownership or dependency injection is practical.
+- Constants, `constexpr` values, and enumerators use `kPascalCase`: `kBufferSize`, `kInvalidArgument`.
+- Preprocessor macros use `ALL_CAPS`. Prefer typed constants and functions to macros.
+- Template parameters use `PascalCase`: `ValueType` or `T`.
+- CUDA kernels use `camelCase` with a `Kernel` suffix.
+
+Do not rename symbols owned by an external library or operating-system API. Where a project must implement a prescribed callback or interface, retain its required name. Project wrappers around such APIs use the normal project naming rules.
+
+Legacy modules that consistently use `snake_case`, `m_` member prefixes, unprefixed PascalCase enumerators, or `ALL_CAPS` constants may retain that style until they are deliberately migrated. Do not mix competing styles within one class or closely related module.
+
+### Headers and includes
+
+- Use `#pragma once` in project headers.
+- Include what the file directly uses.
+- Group includes in this order, with one blank line between groups:
+  1. The corresponding header, in an implementation file.
+  2. C and C++ standard-library headers.
+  3. Third-party and platform headers.
+  4. Project headers.
+- Sort includes consistently within each group.
+- Prefer a forward declaration when it is valid and makes the dependency clearer. Include the owning header when a complete type or a library-provided smart-pointer declaration is required.
+- Keep platform-specific includes out of portable public headers where practical.
+
+### Namespaces
+
+- Use an anonymous namespace for implementation details confined to one translation unit.
+- Add a namespace name to the closing-brace comment. Use `// namespace` for an anonymous namespace.
+- Do not use `using namespace` in a header. Use it sparingly in a narrow implementation scope.
+- Do not indent the contents of a namespace.
+- Include an empty line after opening a namespace and before closing one.
+
+```cpp
 namespace {
 
 int helper()
@@ -42,49 +86,88 @@ int helper()
 
 namespace example {
 
-/**
-* Example class using repository conventions
-*/
+// ...
+
+}  // namespace example
+```
+
+### Types, ownership, and interfaces
+
+- Prefer fixed-width integer types such as `std::int32_t` where width is part of the interface or data format. Otherwise use the natural type for the operation, such as `std::size_t` for sizes.
+- Pass small, inexpensive value types by value. Pass larger read-only objects by `const&` and mutable non-owning objects by reference or pointer as appropriate.
+- Use `std::unique_ptr` for exclusive ownership and `std::shared_ptr` only for genuine shared ownership.
+- Pass smart pointers by value when transferring or sharing ownership. Do not use a smart pointer merely to express non-owning access.
+- Prefer constructor injection when an object requires a dependency for its valid lifetime.
+- Mark read-only methods `const` and use `const` for values that do not change.
+- Use `auto` when the type is obvious from the initializer or when spelling the type would obscure the intent. Avoid it when the concrete type conveys important ownership, precision, or conversion information.
+- Initialise members at their declarations when the same default applies to every constructor.
+- Use scoped enums (`enum class`) unless implicit conversion or compatibility with an existing interface is required.
+
+### Comments and documentation
+
+- Write comments that explain intent, constraints, or non-obvious behaviour rather than restating the code.
+- Use sentence case and punctuation for prose comments.
+- Avoid full stops for short annotations and non-prose comments.
+- Documentation comments are appropriate for public types and APIs whose contract is not evident from the declaration.
+- Section comments may be used to make a long file easier to navigate, but should not compensate for an overly large class or function.
+
+### Example
+
+```cpp
+#pragma once
+
+#include <cstdint>
+#include <memory>
+#include <vector>
+
+#include "project/bar.h"
+
+namespace example {
+
+/** Processes values using the supplied service. */
 class Foo
 {
 public:
-    enum Status
+    enum class Status
     {
-        First  = 1 << 0,
-        Second = 1 << 1
+        kReady,
+        kFailed
     };
 
-    // single line comment
-    explicit Foo(const std::shared_ptr<Bar> &bar);
+    explicit Foo(std::unique_ptr<Bar> bar);
 
-    int32_t countThings() const
+    std::int32_t count() const
     {
-        auto total = Start;
-        if (enabled) {
-            for (int32_t i = 0; i < 4; i++) {
-                // loop body
-                total += i;
+        auto total = kStartValue;
+        if (enabled_) {
+            for (const auto value : values_) {
+                total += value;
             }
-        } else {
-          // not enabled
         }
 
-        return total + helper();
+        return total;
     }
 
 private:
-    std::shared_ptr<Bar> m_bar;
+    std::unique_ptr<Bar> bar_;
+    bool enabled_ = true;
+    std::vector<std::int32_t> values_;
 
-    static constexpr int32_t SOME_VALUE = 3;
+    static constexpr std::int32_t kStartValue = 3;
 };
 
 }  // namespace example
 ```
 
-### Spacing
+## Qt
 
-A note on spacing.
-
-This code originally used 2-space indentation, but new files should use 4-spaces.
-
-Existing code will be migrated when appropriate.
+- Use Qt types at Qt API boundaries and standard-library types in platform-independent code. Convert between them at the boundary.
+- Use `QStringLiteral` for fixed strings and `tr()` or `QCoreApplication::translate()` for translatable user-visible text.
+- Parent heap-allocated `QObject`s where practical. Store parent-owned objects as non-owning raw pointers and do not delete them manually.
+- Keep GUI objects on the GUI thread; use queued signals and slots across threads.
+- Add `Q_OBJECT` only when meta-object features are required.
+- Prefer compiler-checked function-pointer or lambda connections. Give capturing lambdas a context object.
+- Include Qt types used by value or as base classes; forward-declare types used only through pointers or references.
+- List `Q_OBJECT` headers in the CMake target and explicitly find and link every Qt module used.
+- Preserve Qt-prescribed names for overrides and interfaces; use project naming conventions for project-defined Qt APIs.
+- Prefer cross-platform Qt APIs and isolate platform-specific integration.
