@@ -1,3 +1,5 @@
+#include "BlockEditor.h"
+
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QComboBox>
@@ -15,8 +17,6 @@
 #include "../Level.h"
 #include "../Palette.h"
 #include "../Pattern.h"
-
-#include "BlockEditor.h"
 
 using namespace std;
 
@@ -208,7 +208,7 @@ void PatternPaletteList::paintEvent(QPaintEvent*)
     for (size_t patternIndex = 0; patternIndex < m_level->getPatternCount(); patternIndex++) {
         const int y = static_cast<int>(patternIndex) * PATTERN_ROW_HEIGHT;
         painter.setPen(palette().text().color());
-        painter.drawText(QRect(0, y, PATTERN_LABEL_WIDTH - 8, PATTERN_ROW_HEIGHT), Qt::AlignVCenter | Qt::AlignRight, QString("Pattern %1").arg(patternIndex));
+        painter.drawText(QRect(0, y, PATTERN_LABEL_WIDTH - 8, PATTERN_ROW_HEIGHT), Qt::AlignVCenter | Qt::AlignRight, tr("Pattern %1").arg(patternIndex));
 
         for (size_t paletteIndex = 0; paletteIndex < 4; paletteIndex++) {
             const int x = PATTERN_LABEL_WIDTH + static_cast<int>(paletteIndex) * PATTERN_CELL_SIZE;
@@ -285,7 +285,7 @@ BlockEditor::BlockEditor(QWidget* parent, const shared_ptr<Level>& level)
 
     m_blockCombo = new QComboBox();
     for (size_t i = 0; i < m_level->getBlockCount(); i++) {
-        m_blockCombo->addItem(QString("Block %1").arg(i), QVariant::fromValue(i));
+        m_blockCombo->addItem(tr("Block %1").arg(i), QVariant::fromValue(i));
     }
     leftLayout->addWidget(m_blockCombo);
 
@@ -322,14 +322,14 @@ BlockEditor::BlockEditor(QWidget* parent, const shared_ptr<Level>& level)
     buttonLayout->addWidget(closeButton);
     mainLayout->addLayout(buttonLayout);
 
-    connect(m_blockCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(blockChanged(int)));
-    connect(m_hFlipCheckBox, SIGNAL(stateChanged(int)), this, SLOT(flipChanged(int)));
-    connect(m_vFlipCheckBox, SIGNAL(stateChanged(int)), this, SLOT(flipChanged(int)));
-    connect(m_canvas, SIGNAL(blockModified()), this, SLOT(blockModified()));
-    connect(m_patternList, SIGNAL(patternSelected(uint16_t,uint16_t)), this, SLOT(patternSelected(uint16_t,uint16_t)));
-    connect(m_saveButton, SIGNAL(clicked()), this, SLOT(saveChanges()));
-    connect(m_discardButton, SIGNAL(clicked()), this, SLOT(discardChanges()));
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(m_blockCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &BlockEditor::blockChanged);
+    connect(m_hFlipCheckBox, &QCheckBox::toggled, this, &BlockEditor::flipChanged);
+    connect(m_vFlipCheckBox, &QCheckBox::toggled, this, &BlockEditor::flipChanged);
+    connect(m_canvas, &BlockCanvas::blockModified, this, &BlockEditor::blockModified);
+    connect(m_patternList, &PatternPaletteList::patternSelected, this, &BlockEditor::patternSelected);
+    connect(m_saveButton, &QPushButton::clicked, this, &BlockEditor::saveChanges);
+    connect(m_discardButton, &QPushButton::clicked, this, &BlockEditor::discardChanges);
+    connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
     setDirty(false);
     updateCanvasSelection();
@@ -408,7 +408,7 @@ void BlockEditor::updateCanvasSelection()
 
 void BlockEditor::updateTitle()
 {
-    setWindowTitle(QString("%1Block Editor - Block %2")
+    setWindowTitle(tr("%1Block Editor - Block %2")
             .arg(m_dirty ? "*" : "")
             .arg(m_blockIndex));
 }

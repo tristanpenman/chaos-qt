@@ -1,3 +1,5 @@
+#include "PaletteEditor.h"
+
 #include <QAbstractButton>
 #include <QButtonGroup>
 #include <QCloseEvent>
@@ -11,8 +13,6 @@
 #include <QVBoxLayout>
 
 #include "../Level.h"
-
-#include "PaletteEditor.h"
 
 namespace {
 uint8_t toSegaChannel(int value)
@@ -38,7 +38,7 @@ PaletteEditor::PaletteEditor(QWidget* parent, const std::shared_ptr<Level>& leve
     setLayout(mainLayout);
 
     for (size_t i = 0; i < m_level->getPaletteCount(); i++) {
-        m_paletteCombo->addItem(QString("Palette %1").arg(i), QVariant::fromValue(i));
+        m_paletteCombo->addItem(tr("Palette %1").arg(i), QVariant::fromValue(i));
     }
     mainLayout->addWidget(m_paletteCombo);
 
@@ -62,11 +62,11 @@ PaletteEditor::PaletteEditor(QWidget* parent, const std::shared_ptr<Level>& leve
     buttonLayout->addWidget(closeButton);
     mainLayout->addLayout(buttonLayout);
 
-    connect(m_paletteCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(paletteChanged(int)));
-    connect(m_colorButtons, SIGNAL(idClicked(int)), this, SLOT(colorClicked(int)));
-    connect(m_saveButton, SIGNAL(clicked()), this, SLOT(saveChanges()));
-    connect(m_discardButton, SIGNAL(clicked()), this, SLOT(discardChanges()));
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(m_paletteCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PaletteEditor::paletteChanged);
+    connect(m_colorButtons, &QButtonGroup::idClicked, this, &PaletteEditor::colorClicked);
+    connect(m_saveButton, &QPushButton::clicked, this, &PaletteEditor::saveChanges);
+    connect(m_discardButton, &QPushButton::clicked, this, &PaletteEditor::discardChanges);
+    connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
     loadPalette(0);
     setDirty(false);
@@ -145,7 +145,7 @@ void PaletteEditor::updateColorButton(QAbstractButton* button, size_t colorIndex
     const QString border = colorChanged(colorIndex)
             ? QStringLiteral("3px solid #f0a000")
             : QStringLiteral("1px solid palette(mid)");
-    button->setStyleSheet(QString("background: rgb(%1,%2,%3); border: %4")
+    button->setStyleSheet(QStringLiteral("background: rgb(%1,%2,%3); border: %4")
             .arg(color.r)
             .arg(color.g)
             .arg(color.b)
@@ -154,7 +154,7 @@ void PaletteEditor::updateColorButton(QAbstractButton* button, size_t colorIndex
 
 void PaletteEditor::updateTitle()
 {
-    setWindowTitle(QString("%1Palette Editor - Palette %2")
+    setWindowTitle(tr("%1Palette Editor - Palette %2")
             .arg(m_dirty ? "*" : "")
             .arg(m_paletteIndex));
 }

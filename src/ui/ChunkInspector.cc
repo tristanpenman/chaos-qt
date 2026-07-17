@@ -1,3 +1,5 @@
+#include "ChunkInspector.h"
+
 #include <QComboBox>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -8,8 +10,6 @@
 #include "../Logger.h"
 #include "../Palette.h"
 #include "../Pattern.h"
-
-#include "ChunkInspector.h"
 
 #undef LOG
 #define LOG Logger("ChunkInspector")
@@ -29,7 +29,7 @@ ChunkInspector::ChunkInspector(QWidget* parent, const shared_ptr<Level>& level)
     QComboBox* chunkCombo = new QComboBox();
     vbox->addWidget(chunkCombo);
     for (size_t i = 0; i < m_level->getChunkCount(); i++) {
-        const QString paletteName = QString("Chunk %1").arg(i);
+        const QString paletteName = tr("Chunk %1").arg(i);
         chunkCombo->addItem(paletteName, QVariant::fromValue(i));
     }
 
@@ -45,7 +45,7 @@ ChunkInspector::ChunkInspector(QWidget* parent, const shared_ptr<Level>& level)
     drawChunk(0);
 
     // handle switching chunks
-    connect(chunkCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(chunkChanged(int)));
+    connect(chunkCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &ChunkInspector::chunkChanged);
 }
 
 void ChunkInspector::drawPattern(QImage& image,

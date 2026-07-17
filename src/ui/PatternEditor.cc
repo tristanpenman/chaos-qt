@@ -1,3 +1,5 @@
+#include "PatternEditor.h"
+
 #include <QButtonGroup>
 #include <QCloseEvent>
 #include <QComboBox>
@@ -15,8 +17,6 @@
 
 #include "../Level.h"
 #include "../Palette.h"
-
-#include "PatternEditor.h"
 
 using namespace std;
 
@@ -133,13 +133,13 @@ PatternEditor::PatternEditor(QWidget* parent, const shared_ptr<Level>& level)
     auto* selectorLayout = new QHBoxLayout();
     m_patternCombo = new QComboBox();
     for (size_t i = 0; i < m_level->getPatternCount(); i++) {
-        m_patternCombo->addItem(QString("Pattern %1").arg(i), QVariant::fromValue(i));
+        m_patternCombo->addItem(tr("Pattern %1").arg(i), QVariant::fromValue(i));
     }
     selectorLayout->addWidget(m_patternCombo);
 
     m_paletteCombo = new QComboBox();
     for (size_t i = 0; i < m_level->getPaletteCount(); i++) {
-        m_paletteCombo->addItem(QString("Palette %1").arg(i), QVariant::fromValue(i));
+        m_paletteCombo->addItem(tr("Palette %1").arg(i), QVariant::fromValue(i));
     }
     selectorLayout->addWidget(m_paletteCombo);
     mainLayout->addLayout(selectorLayout);
@@ -181,13 +181,13 @@ PatternEditor::PatternEditor(QWidget* parent, const shared_ptr<Level>& level)
     buttonLayout->addWidget(closeButton);
     mainLayout->addLayout(buttonLayout);
 
-    connect(m_patternCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(patternChanged(int)));
-    connect(m_paletteCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(paletteChanged(int)));
-    connect(m_colorButtons, SIGNAL(idClicked(int)), this, SLOT(colorSelected(int)));
-    connect(m_canvas, SIGNAL(patternChanged()), this, SLOT(patternEdited()));
-    connect(m_saveButton, SIGNAL(clicked()), this, SLOT(saveChanges()));
-    connect(m_discardButton, SIGNAL(clicked()), this, SLOT(discardChanges()));
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(m_patternCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PatternEditor::patternChanged);
+    connect(m_paletteCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PatternEditor::paletteChanged);
+    connect(m_colorButtons, &QButtonGroup::idClicked, this, &PatternEditor::colorSelected);
+    connect(m_canvas, &PatternCanvas::patternChanged, this, &PatternEditor::patternEdited);
+    connect(m_saveButton, &QPushButton::clicked, this, &PatternEditor::saveChanges);
+    connect(m_discardButton, &QPushButton::clicked, this, &PatternEditor::discardChanges);
+    connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
     m_canvas->setPalette(&m_level->getPalette(m_currentPaletteIndex));
     loadPattern(0);
@@ -262,7 +262,7 @@ void PatternEditor::populatePaletteButtons()
     for (int i = 0; i < Palette::PALETTE_SIZE; i++) {
         auto* button = m_colorButtons->button(i);
         const auto color = palette.getColor(static_cast<size_t>(i));
-        button->setStyleSheet(QString("background: rgb(%1,%2,%3)").arg(color.r).arg(color.g).arg(color.b));
+        button->setStyleSheet(QStringLiteral("background: rgb(%1,%2,%3)").arg(color.r).arg(color.g).arg(color.b));
     }
 }
 
@@ -300,7 +300,7 @@ void PatternEditor::setDirty(bool dirty)
 
 void PatternEditor::updateTitle()
 {
-    setWindowTitle(QString("%1Pattern Editor - Pattern %2")
+    setWindowTitle(tr("%1Pattern Editor - Pattern %2")
             .arg(m_dirty ? "*" : "")
             .arg(m_currentPatternIndex));
 }

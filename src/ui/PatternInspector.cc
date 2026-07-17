@@ -1,3 +1,5 @@
+#include "PatternInspector.h"
+
 #include <cmath>
 
 #include <QComboBox>
@@ -11,8 +13,6 @@
 #include "../Logger.h"
 #include "../Palette.h"
 #include "../Pattern.h"
-
-#include "PatternInspector.h"
 
 #undef LOG
 #define LOG Logger("PatternInspector")
@@ -41,7 +41,7 @@ PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& lev
     QComboBox* paletteCombo = new QComboBox();
     vbox->addWidget(paletteCombo);
     for (size_t i = 0; i < level->getPaletteCount(); i++) {
-        const QString paletteName = QString("Pallete %1").arg(i);
+        const QString paletteName = tr("Palette %1").arg(i);
         paletteCombo->addItem(paletteName, QVariant::fromValue(i));
     }
 
@@ -57,7 +57,7 @@ PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& lev
     drawPatterns(0);
 
     // handle switching palettes
-    connect(paletteCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(paletteChanged(int)));
+    connect(paletteCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PatternInspector::paletteChanged);
 }
 
 void PatternInspector::drawPattern(QImage& image, const Pattern& pattern, const Palette& palette, int dx, int dy)

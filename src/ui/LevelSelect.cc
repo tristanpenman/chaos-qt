@@ -1,3 +1,5 @@
+#include "LevelSelect.h"
+
 #include <iostream>
 
 #include <QEvent>
@@ -9,8 +11,6 @@
 #include <QVBoxLayout>
 
 #include "../Game.h"
-
-#include "LevelSelect.h"
 
 LevelSelect::LevelSelect(QWidget* parent, const std::shared_ptr<Game>& game)
     : QDialog(parent)
@@ -35,17 +35,17 @@ LevelSelect::LevelSelect(QWidget* parent, const std::shared_ptr<Game>& game)
     m_listView->setModel(model);
 
     // enable OK button when selection is valid
-    connect(m_listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-                this, SLOT(selectionChanged(QItemSelection)));
+    connect(m_listView->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &LevelSelect::selectionChanged);
 
     m_listView->viewport()->installEventFilter(this);
 
     m_okButton = new QPushButton(tr("OK"));
     m_okButton->setDisabled(true);
-    connect(m_okButton, SIGNAL(clicked(bool)), this, SLOT(ok(bool)));
+    connect(m_okButton, &QPushButton::clicked, this, &LevelSelect::ok);
 
     auto cancelButton = new QPushButton(tr("Cancel"));
-    connect(cancelButton, SIGNAL(clicked(bool)), this, SLOT(cancel(bool)));
+    connect(cancelButton, &QPushButton::clicked, this, &LevelSelect::cancel);
 
     auto hbox = new QHBoxLayout();
     hbox->addWidget(m_okButton);

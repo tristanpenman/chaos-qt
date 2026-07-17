@@ -25,10 +25,10 @@ int main(int argc, char* argv[])
     parser.addPositionalArgument(QApplication::translate("main", "rom-file"),
                                  QApplication::translate("main", "Path to ROM file"));
 
-    const QString logOpt("log");
+    const QString logOpt = QStringLiteral("log");
     parser.addOption(QCommandLineOption(logOpt, QObject::tr("Enable logging"), QObject::tr("target")));
 
-    const QString levelOpt("level");
+    const QString levelOpt = QStringLiteral("level");
     parser.addOption(QCommandLineOption(levelOpt, QObject::tr("Level to load"), QObject::tr("index")));
 
     parser.process(app);

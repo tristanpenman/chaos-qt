@@ -1,3 +1,5 @@
+#include "ChunkEditor.h"
+
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QComboBox>
@@ -17,8 +19,6 @@
 #include "../Level.h"
 #include "../Palette.h"
 #include "../Pattern.h"
-
-#include "ChunkEditor.h"
 
 using namespace std;
 
@@ -227,7 +227,7 @@ ChunkEditor::ChunkEditor(QWidget* parent, const shared_ptr<Level>& level, size_t
     auto* selectorLayout = new QHBoxLayout();
     m_chunkCombo = new QComboBox();
     for (size_t i = 0; i < m_level->getChunkCount(); i++) {
-        m_chunkCombo->addItem(QString("Chunk %1").arg(i), QVariant::fromValue(i));
+        m_chunkCombo->addItem(tr("Chunk %1").arg(i), QVariant::fromValue(i));
     }
     selectorLayout->addWidget(m_chunkCombo);
     mainLayout->addLayout(selectorLayout);
@@ -261,14 +261,14 @@ ChunkEditor::ChunkEditor(QWidget* parent, const shared_ptr<Level>& level, size_t
     buttonLayout->addWidget(closeButton);
     mainLayout->addLayout(buttonLayout);
 
-    connect(m_chunkCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(chunkChanged(int)));
-    connect(m_blockList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(blockChanged(QListWidgetItem*,QListWidgetItem*)));
-    connect(m_hFlipCheckBox, SIGNAL(stateChanged(int)), this, SLOT(horizontalFlipChanged(int)));
-    connect(m_vFlipCheckBox, SIGNAL(stateChanged(int)), this, SLOT(verticalFlipChanged(int)));
-    connect(m_canvas, SIGNAL(chunkModified()), this, SLOT(chunkModified()));
-    connect(m_saveButton, SIGNAL(clicked()), this, SLOT(saveChanges()));
-    connect(m_discardButton, SIGNAL(clicked()), this, SLOT(discardChanges()));
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(m_chunkCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &ChunkEditor::chunkChanged);
+    connect(m_blockList, &QListWidget::currentItemChanged, this, &ChunkEditor::blockChanged);
+    connect(m_hFlipCheckBox, &QCheckBox::toggled, this, &ChunkEditor::horizontalFlipChanged);
+    connect(m_vFlipCheckBox, &QCheckBox::toggled, this, &ChunkEditor::verticalFlipChanged);
+    connect(m_canvas, &ChunkCanvas::chunkModified, this, &ChunkEditor::chunkModified);
+    connect(m_saveButton, &QPushButton::clicked, this, &ChunkEditor::saveChanges);
+    connect(m_discardButton, &QPushButton::clicked, this, &ChunkEditor::discardChanges);
+    connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
     m_chunkCombo->setCurrentIndex(static_cast<int>(m_chunkIndex));
     if (m_blockList->count() > 0) {
@@ -386,7 +386,7 @@ void ChunkEditor::populateBlockSelector()
 {
     m_blockList->clear();
     for (size_t i = 0; i < m_level->getBlockCount(); i++) {
-        auto* item = new QListWidgetItem(QIcon(renderBlockPreview(i, BLOCK_PREVIEW_SCALE)), QString("Block %1").arg(i));
+        auto* item = new QListWidgetItem(QIcon(renderBlockPreview(i, BLOCK_PREVIEW_SCALE)), tr("Block %1").arg(i));
         item->setData(Qt::UserRole, QVariant::fromValue(static_cast<unsigned int>(i)));
         m_blockList->addItem(item);
     }
@@ -402,7 +402,7 @@ void ChunkEditor::setDirty(bool dirty)
 
 void ChunkEditor::updateTitle()
 {
-    setWindowTitle(QString("%1Chunk Editor - Chunk %2")
+    setWindowTitle(tr("%1Chunk Editor - Chunk %2")
             .arg(m_dirty ? "*" : "")
             .arg(m_chunkIndex));
 }

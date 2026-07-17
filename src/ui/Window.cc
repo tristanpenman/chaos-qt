@@ -1,3 +1,5 @@
+#include "Window.h"
+
 #include <iostream>
 
 #include <QAction>
@@ -36,8 +38,6 @@
 #include "ProjectExplorer.h"
 #include "RomInfo.h"
 #include "ChunkEditor.h"
-
-#include "Window.h"
 
 #undef LOG
 #define LOG Logger("Window")
@@ -115,11 +115,11 @@ Window::Window()
     // open rom button
     const auto openRomButton = new QPushButton(tr("Open ROM..."));
     openRomButton->setMaximumWidth(250);
-    connect(openRomButton, SIGNAL(clicked()), this, SLOT(showOpenRomDialog()));
+    connect(openRomButton, &QPushButton::clicked, this, &Window::showOpenRomDialog);
 
     m_openLastRomButton = new QPushButton(tr("Open Last..."));
     m_openLastRomButton->setMaximumWidth(250);
-    connect(m_openLastRomButton, SIGNAL(clicked()), this, SLOT(openLastRom()));
+    connect(m_openLastRomButton, &QPushButton::clicked, this, &Window::openLastRom);
 
     const auto openButtonLayout = new QHBoxLayout();
     openButtonLayout->addWidget(openRomButton);
@@ -130,7 +130,7 @@ Window::Window()
     m_levelSelectButton = new QPushButton(tr("Level Select..."));
     m_levelSelectButton->setMaximumWidth(250);
     m_levelSelectButton->setDisabled(true);
-    connect(m_levelSelectButton, SIGNAL(clicked()), this, SLOT(showLevelSelectDialog()));
+    connect(m_levelSelectButton, &QPushButton::clicked, this, &Window::showLevelSelectDialog);
 
     const auto buttonLayout = new QVBoxLayout();
     buttonLayout->addLayout(openButtonLayout);
@@ -343,7 +343,7 @@ void Window::showLevelSelectDialog()
     }
 
     m_levelSelect = new LevelSelect(this, m_game);
-    connect(m_levelSelect, SIGNAL(levelSelected(int)), this, SLOT(levelSelected(int)));
+    connect(m_levelSelect, &LevelSelect::levelSelected, this, &Window::levelSelected);
 
     m_levelSelect->show();
 }
@@ -414,7 +414,7 @@ void Window::showPatternEditor()
     }
 
     PatternEditor editor(this, m_level);
-    connect(&editor, SIGNAL(patternModified()), this, SLOT(patternModified()));
+    connect(&editor, &PatternEditor::patternModified, this, &Window::patternModified);
     editor.exec();
 }
 
@@ -425,7 +425,7 @@ void Window::showPaletteEditor()
     }
 
     PaletteEditor editor(this, m_level);
-    connect(&editor, SIGNAL(paletteModified()), this, SLOT(paletteModified()));
+    connect(&editor, &PaletteEditor::paletteModified, this, &Window::paletteModified);
     editor.exec();
 }
 
@@ -437,7 +437,7 @@ void Window::showBlockEditor()
 
     auto* editor = new BlockEditor(this, m_level);
     editor->setAttribute(Qt::WA_DeleteOnClose);
-    connect(editor, SIGNAL(blocksModified()), this, SLOT(blocksModified()));
+    connect(editor, &BlockEditor::blocksModified, this, &Window::blocksModified);
     editor->show();
 }
 
@@ -450,7 +450,7 @@ void Window::showChunkEditor()
     const auto selectedChunk = m_mapEditor ? m_mapEditor->getSelectedChunk() : 0;
     auto* editor = new ChunkEditor(this, m_level, selectedChunk);
     editor->setAttribute(Qt::WA_DeleteOnClose);
-    connect(editor, SIGNAL(chunksModified()), this, SLOT(chunksModified()));
+    connect(editor, &ChunkEditor::chunksModified, this, &Window::chunksModified);
     editor->show();
 }
 
@@ -626,10 +626,10 @@ void Window::levelSelected(int levelIdx)
     m_romInfoAction->setEnabled(m_rom != nullptr);
 
     m_mapEditor = new MapEditor(this, m_level);
-    connect(m_mapEditor, SIGNAL(currentTile(uint16_t,uint16_t,uint8_t)), this, SLOT(currentTile(uint16_t,uint16_t,uint8_t)));
-    connect(m_mapEditor, SIGNAL(noTile()), this, SLOT(noTile()));
-    connect(m_mapEditor, SIGNAL(undosRedosChanged(size_t,size_t)), this, SLOT(undosRedosChanged(size_t,size_t)));
-    connect(m_mapEditor, SIGNAL(mapModified()), this, SLOT(mapModified()));
+    connect(m_mapEditor, &MapEditor::currentTile, this, &Window::currentTile);
+    connect(m_mapEditor, &MapEditor::noTile, this, &Window::noTile);
+    connect(m_mapEditor, &MapEditor::undosRedosChanged, this, &Window::undosRedosChanged);
+    connect(m_mapEditor, &MapEditor::mapModified, this, &Window::mapModified);
     this->setCentralWidget(m_mapEditor);
 
     m_hasUnsavedChanges = false;
@@ -865,7 +865,7 @@ void Window::updateRecentRomActions()
         auto action = new QAction(tr("&%1 %2").arg(i + 1).arg(text), m_openRecentMenu);
         action->setData(path);
         action->setStatusTip(path);
-        connect(action, SIGNAL(triggered()), this, SLOT(openRecentRom()));
+        connect(action, &QAction::triggered, this, &Window::openRecentRom);
         m_openRecentMenu->addAction(action);
     }
 }
@@ -947,23 +947,23 @@ void Window::closeEvent(QCloseEvent* event)
 void Window::createFileMenu()
 {
     // open rom
-    m_openRomAction = new QAction(tr("&Open ROM..."));
+    m_openRomAction = new QAction(tr("&Open ROM..."), this);
     m_openRomAction->setShortcuts(QKeySequence::Open);
-    connect(m_openRomAction, SIGNAL(triggered()), this, SLOT(showOpenRomDialog()));
+    connect(m_openRomAction, &QAction::triggered, this, &Window::showOpenRomDialog);
 
     // open project
-    m_openProjectAction = new QAction(tr("Open &Project..."));
-    connect(m_openProjectAction, SIGNAL(triggered()), this, SLOT(showOpenProjectDialog()));
+    m_openProjectAction = new QAction(tr("Open &Project..."), this);
+    connect(m_openProjectAction, &QAction::triggered, this, &Window::showOpenProjectDialog);
 
     // level select
-    m_levelSelectAction = new QAction(tr("&Level Select..."));
+    m_levelSelectAction = new QAction(tr("&Level Select..."), this);
     m_levelSelectAction->setDisabled(true);
-    connect(m_levelSelectAction, SIGNAL(triggered()), this, SLOT(showLevelSelectDialog()));
+    connect(m_levelSelectAction, &QAction::triggered, this, &Window::showLevelSelectDialog);
 
     // save rom
-    m_saveRomAction = new QAction(tr("&Save ROM"));
+    m_saveRomAction = new QAction(tr("&Save ROM"), this);
     m_saveRomAction->setDisabled(true);
-    connect(m_saveRomAction, SIGNAL(triggered()), this, SLOT(saveRom()));
+    connect(m_saveRomAction, &QAction::triggered, this, &Window::saveRom);
 
     // file menu
     auto fileMenu = menuBar()->addMenu(tr("&File"));
@@ -981,31 +981,31 @@ void Window::createEditMenu()
 {
     auto editMenu = menuBar()->addMenu(tr("&Edit"));
 
-    m_undoAction = new QAction(tr("Undo"));
+    m_undoAction = new QAction(tr("Undo"), this);
     m_undoAction->setShortcuts(QKeySequence::Undo);
     m_undoAction->setDisabled(true);
-    connect(m_undoAction, SIGNAL(triggered()), this, SLOT(undo()));
+    connect(m_undoAction, &QAction::triggered, this, &Window::undo);
 
-    m_redoAction = new QAction(tr("Redo"));
+    m_redoAction = new QAction(tr("Redo"), this);
     m_redoAction->setShortcuts(QKeySequence::Redo);
     m_redoAction->setDisabled(true);
-    connect(m_redoAction, SIGNAL(triggered()), this, SLOT(redo()));
+    connect(m_redoAction, &QAction::triggered, this, &Window::redo);
 
-    m_paletteEditorAction = new QAction(tr("Palette Editor..."));
+    m_paletteEditorAction = new QAction(tr("Palette Editor..."), this);
     m_paletteEditorAction->setDisabled(true);
-    connect(m_paletteEditorAction, SIGNAL(triggered()), this, SLOT(showPaletteEditor()));
+    connect(m_paletteEditorAction, &QAction::triggered, this, &Window::showPaletteEditor);
 
-    m_patternEditorAction = new QAction(tr("8x8 Pattern Editor..."));
+    m_patternEditorAction = new QAction(tr("8x8 Pattern Editor..."), this);
     m_patternEditorAction->setDisabled(true);
-    connect(m_patternEditorAction, SIGNAL(triggered()), this, SLOT(showPatternEditor()));
+    connect(m_patternEditorAction, &QAction::triggered, this, &Window::showPatternEditor);
 
-    m_blockEditorAction = new QAction(tr("16x16 Block Editor..."));
+    m_blockEditorAction = new QAction(tr("16x16 Block Editor..."), this);
     m_blockEditorAction->setDisabled(true);
-    connect(m_blockEditorAction, SIGNAL(triggered()), this, SLOT(showBlockEditor()));
+    connect(m_blockEditorAction, &QAction::triggered, this, &Window::showBlockEditor);
 
-    m_chunkEditorAction = new QAction(tr("128x128 Chunk Editor..."));
+    m_chunkEditorAction = new QAction(tr("128x128 Chunk Editor..."), this);
     m_chunkEditorAction->setDisabled(true);
-    connect(m_chunkEditorAction, SIGNAL(triggered()), this, SLOT(showChunkEditor()));
+    connect(m_chunkEditorAction, &QAction::triggered, this, &Window::showChunkEditor);
 
     editMenu->addAction(m_undoAction);
     editMenu->addAction(m_redoAction);
@@ -1023,20 +1023,20 @@ void Window::createViewMenu()
     m_projectExplorerAction = new QAction(tr("Project Explorer"), this);
     m_projectExplorerAction->setCheckable(true);
     m_projectExplorerAction->setDisabled(true);
-    connect(m_projectExplorerAction, SIGNAL(triggered()), this, SLOT(toggleProjectExplorer()));
+    connect(m_projectExplorerAction, &QAction::triggered, this, &Window::toggleProjectExplorer);
 
     viewMenu->addAction(m_projectExplorerAction);
     viewMenu->addSeparator();
 
     // wire up inspectors
     auto inspectPalettesAction = new QAction(tr("Palettes"), this);
-    connect(inspectPalettesAction, SIGNAL(triggered()), this, SLOT(showPaletteInspector()));
+    connect(inspectPalettesAction, &QAction::triggered, this, &Window::showPaletteInspector);
     auto inspectPatternsAction = new QAction(tr("Patterns (8x8)"), this);
-    connect(inspectPatternsAction, SIGNAL(triggered()), this, SLOT(showPatternInspector()));
+    connect(inspectPatternsAction, &QAction::triggered, this, &Window::showPatternInspector);
     auto inspectBlocksAction = new QAction(tr("Blocks (16x16)"), this);
-    connect(inspectBlocksAction, SIGNAL(triggered()), this, SLOT(showBlockInspector()));
+    connect(inspectBlocksAction, &QAction::triggered, this, &Window::showBlockInspector);
     auto inspectChunksAction = new QAction(tr("Chunks (128x128)"), this);
-    connect(inspectChunksAction, SIGNAL(triggered()), this, SLOT(showChunkInspector()));
+    connect(inspectChunksAction, &QAction::triggered, this, &Window::showChunkInspector);
 
     // build inspectors sub-menu
     m_inspectorsMenu = viewMenu->addMenu(tr("&Inspectors"));
@@ -1050,13 +1050,13 @@ void Window::createViewMenu()
     // zoom
     m_actualSizeAction = new QAction(tr("Actual Size"), this);
     m_actualSizeAction->setDisabled(true);
-    connect(m_actualSizeAction, SIGNAL(triggered()), this, SLOT(actualSize()));
+    connect(m_actualSizeAction, &QAction::triggered, this, &Window::actualSize);
     m_zoomInAction = new QAction(tr("Zoom In"), this);
     m_zoomInAction->setDisabled(true);
-    connect(m_zoomInAction, SIGNAL(triggered()), this, SLOT(zoomIn()));
+    connect(m_zoomInAction, &QAction::triggered, this, &Window::zoomIn);
     m_zoomOutAction = new QAction(tr("Zoom Out"), this);
     m_zoomOutAction->setDisabled(true);
-    connect(m_zoomOutAction, SIGNAL(triggered()), this, SLOT(zoomOut()));
+    connect(m_zoomOutAction, &QAction::triggered, this, &Window::zoomOut);
 
     viewMenu->addSeparator();
     viewMenu->addAction(m_actualSizeAction);
@@ -1070,11 +1070,11 @@ void Window::createToolsMenu()
 
     m_romInfoAction = new QAction(tr("ROM Info..."), this);
     m_romInfoAction->setDisabled(true);
-    connect(m_romInfoAction, SIGNAL(triggered()), this, SLOT(showRomInfo()));
+    connect(m_romInfoAction, &QAction::triggered, this, &Window::showRomInfo);
 
     m_relocateLevelsAction = new QAction(tr("Relocate Levels"), this);
     m_relocateLevelsAction->setDisabled(true);
-    connect(m_relocateLevelsAction, SIGNAL(triggered()), this, SLOT(relocateLevels()));
+    connect(m_relocateLevelsAction, &QAction::triggered, this, &Window::relocateLevels);
 
     toolsMenu->addAction(m_romInfoAction);
     toolsMenu->addSeparator();
@@ -1086,14 +1086,14 @@ void Window::createMapMenu()
     auto mapMenu = menuBar()->addMenu(tr("&Map"));
 
     // export binary
-    m_exportBinaryAction = new QAction(tr("Export &Binary..."));
+    m_exportBinaryAction = new QAction(tr("Export &Binary..."), this);
     m_exportBinaryAction->setDisabled(true);
-    connect(m_exportBinaryAction, SIGNAL(triggered()), this, SLOT(showExportBinaryDialog()));
+    connect(m_exportBinaryAction, &QAction::triggered, this, &Window::showExportBinaryDialog);
 
     // export png
-    m_exportPngAction = new QAction(tr("Export &PNG..."));
+    m_exportPngAction = new QAction(tr("Export &PNG..."), this);
     m_exportPngAction->setDisabled(true);
-    connect(m_exportPngAction, SIGNAL(triggered()), this, SLOT(showExportPngDialog()));
+    connect(m_exportPngAction, &QAction::triggered, this, &Window::showExportPngDialog);
 
     mapMenu->addAction(m_exportBinaryAction);
     mapMenu->addAction(m_exportPngAction);

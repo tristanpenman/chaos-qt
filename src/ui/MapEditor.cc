@@ -1,3 +1,5 @@
+#include "MapEditor.h"
+
 #include <QApplication>
 #include <QBrush>
 #include <QGraphicsPixmapItem>
@@ -24,8 +26,6 @@
 #include "ChunkSelector.h"
 #include "Rectangle.h"
 #include "ZoomSupport.h"
-
-#include "MapEditor.h"
 
 #undef LOG
 #define LOG Logger("MapEditor")
@@ -79,7 +79,7 @@ MapEditor::MapEditor(QWidget* parent, const shared_ptr<Level>& level)
             const int x = group.x + (group.direction == RingDirection::Horizontal ? i * 0x18 : 0);
             const int y = group.y + (group.direction == RingDirection::Vertical ? i * 0x18 : 0);
             auto* ring = m_scene->addRect(x - 8, y - 8, 16, 16, ringPen, ringBrush);
-            ring->setToolTip(QString("Ring (%1, %2)").arg(x).arg(y));
+            ring->setToolTip(tr("Ring (%1, %2)").arg(x).arg(y));
         }
     }
 
@@ -107,7 +107,7 @@ MapEditor::MapEditor(QWidget* parent, const shared_ptr<Level>& level)
     // selector
     m_chunkSelector = new ChunkSelector(this, m_chunks, chunkCount);
     hbox->addWidget(m_chunkSelector);
-    connect(m_chunkSelector, SIGNAL(chunkSelected(int)), this, SLOT(chunkSelected(int)));
+    connect(m_chunkSelector, &ChunkSelector::chunkSelected, this, &MapEditor::chunkSelected);
 
     // allow map to grow but chunk selector remains the same size
     hbox->setStretch(0, 1);
