@@ -1,9 +1,10 @@
+#include "ZoomSupport.h"
+
 #include <QMouseEvent>
 #include <QApplication>
 #include <QScrollBar>
 #include <qmath.h>
 
-#include "ZoomSupport.h"
 
 ZoomSupport::ZoomSupport(QGraphicsView* view)
     : QObject(view)

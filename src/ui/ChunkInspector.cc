@@ -1,5 +1,6 @@
 #include "ChunkInspector.h"
 
+
 #include <QComboBox>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -14,9 +15,8 @@
 #undef LOG
 #define LOG Logger("ChunkInspector")
 
-using namespace std;
 
-ChunkInspector::ChunkInspector(QWidget* parent, const shared_ptr<Level>& level)
+ChunkInspector::ChunkInspector(QWidget* parent, const std::shared_ptr<Level>& level)
     : QDialog(parent)
     , level_(level)
     , chunkIndex_(0)
@@ -25,7 +25,7 @@ ChunkInspector::ChunkInspector(QWidget* parent, const shared_ptr<Level>& level)
     vbox->setContentsMargins(8, 8, 8, 8);
     setLayout(vbox);
 
-    // chunk selector
+    // Chunk selector
     QComboBox* chunkCombo = new QComboBox();
     vbox->addWidget(chunkCombo);
     for (size_t i = 0; i < level_->getChunkCount(); i++) {
@@ -33,18 +33,17 @@ ChunkInspector::ChunkInspector(QWidget* parent, const shared_ptr<Level>& level)
         chunkCombo->addItem(paletteName, QVariant::fromValue(i));
     }
 
-    // create widget to display pixmap
+    // Create widget to display pixmap
     label_ = new QLabel();
     label_->setFixedSize(Chunk::kChunkWidth, Chunk::kChunkHeight);
     label_->setMinimumWidth(Chunk::kChunkWidth);
     vbox->addWidget(label_);
 
-    // create pixmap
     pixmap_ = new QPixmap(Chunk::kChunkWidth, Chunk::kChunkHeight);
     label_->setPixmap(*pixmap_);
     drawChunk(0);
 
-    // handle switching chunks
+    // Handle switching chunks
     connect(chunkCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &ChunkInspector::chunkChanged);
 }
 
@@ -108,13 +107,12 @@ void ChunkInspector::drawChunk(size_t index)
             try {
                 const auto& block = level_->getBlock(blockIndex);
                 drawBlock(image, block, dx * 16, dy * 16, blockDesc.getHFlip(), blockDesc.getVFlip());
-            } catch (const exception& e) {
+            } catch (const std::exception& e) {
                 LOG() << "Failed to draw block " << blockIndex << ": " << e.what();
             }
         }
     }
 
-    // copy to pixmap
     LOG() << "Copying chunk image to pixmap";
     if (pixmap_->convertFromImage(image)) {
         label_->setPixmap(*pixmap_);

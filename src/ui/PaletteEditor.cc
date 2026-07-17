@@ -1,5 +1,6 @@
 #include "PaletteEditor.h"
 
+
 #include <QAbstractButton>
 #include <QButtonGroup>
 #include <QCloseEvent>

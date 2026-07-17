@@ -1,9 +1,9 @@
+#include "Map.h"
+
 #include <cstring>
 #include <stdexcept>
 
-#include "Map.h"
 
-using namespace std;
 
 Map::Map(uint8_t layers, uint16_t width, uint16_t height)
     : Map(layers, width, height, nullptr)
@@ -20,7 +20,7 @@ Map::Map(uint8_t layers, uint16_t width, uint16_t height, uint8_t* data)
 
     data_ = new uint8_t[size];
     if (!data_) {
-        throw runtime_error("Failed to allocate memory for level map");
+        throw std::runtime_error("Failed to allocate memory for level map");
     }
 
     if (data) {
@@ -45,11 +45,11 @@ Map::~Map()
 uint8_t Map::getValue(uint8_t layer, uint16_t x, uint16_t y) const
 {
     if (layer >= layers_) {
-        throw runtime_error("Invalid map layer index");
+        throw std::runtime_error("Invalid map layer index");
     }
 
     if (x >= width_ || y >= height_) {
-        throw runtime_error("Invalid map tile index");
+        throw std::runtime_error("Invalid map tile index");
     }
 
     return data_[y * width_ * layers_ + layer * width_ + x];
@@ -58,11 +58,11 @@ uint8_t Map::getValue(uint8_t layer, uint16_t x, uint16_t y) const
 void Map::setValue(uint8_t layer, uint16_t x, uint16_t y, uint8_t value)
 {
     if (layer >= layers_) {
-        throw runtime_error("Invalid map layer index");
+        throw std::runtime_error("Invalid map layer index");
     }
 
     if (x >= width_ || y >= height_) {
-        throw runtime_error("Invalid map tile index");
+        throw std::runtime_error("Invalid map tile index");
     }
 
     data_[y * width_ * layers_ + layer * width_ + x] = value;

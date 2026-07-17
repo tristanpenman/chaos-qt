@@ -1,5 +1,6 @@
 #include "BlockEditor.h"
 
+
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QComboBox>
@@ -18,22 +19,25 @@
 #include "../Palette.h"
 #include "../Pattern.h"
 
-using namespace std;
 
-static constexpr int kCanvasScale = 10;
-static constexpr int kPatternPreviewScale = 2;
-static constexpr int kPatternCellSize = Pattern::kPatternWidth * kPatternPreviewScale;
-static constexpr int kPatternRowHeight = kPatternCellSize + 6;
-static constexpr int kPatternLabelWidth = 84;
-static constexpr uint16_t kHorizontalFlipMask = 0x800;
-static constexpr uint16_t kVerticalFlipMask = 0x1000;
+namespace {
 
-static QColor toQColor(const Palette::Color& color)
+constexpr int kCanvasScale = 10;
+constexpr int kPatternPreviewScale = 2;
+constexpr int kPatternCellSize = Pattern::kPatternWidth * kPatternPreviewScale;
+constexpr int kPatternRowHeight = kPatternCellSize + 6;
+constexpr int kPatternLabelWidth = 84;
+constexpr uint16_t kHorizontalFlipMask = 0x800;
+constexpr uint16_t kVerticalFlipMask = 0x1000;
+
+QColor toQColor(const Palette::Color& color)
 {
     return QColor(color.r, color.g, color.b);
 }
 
-BlockCanvas::BlockCanvas(QWidget* parent, const shared_ptr<Level>& level, Block* blocks)
+}  // namespace
+
+BlockCanvas::BlockCanvas(QWidget* parent, const std::shared_ptr<Level>& level, Block* blocks)
     : QWidget(parent)
     , level_(level)
     , blocks_(blocks)
@@ -157,7 +161,7 @@ uint16_t BlockCanvas::selectedPatternDescValue() const
     return value;
 }
 
-PatternPaletteList::PatternPaletteList(QWidget* parent, const shared_ptr<Level>& level)
+PatternPaletteList::PatternPaletteList(QWidget* parent, const std::shared_ptr<Level>& level)
     : QWidget(parent)
     , level_(level)
     , selectedPatternIndex_(0)
@@ -256,7 +260,7 @@ const QPixmap& PatternPaletteList::cachedPixmap(size_t patternIndex, size_t pale
     return pixmaps_[patternIndex * 4 + paletteIndex];
 }
 
-BlockEditor::BlockEditor(QWidget* parent, const shared_ptr<Level>& level)
+BlockEditor::BlockEditor(QWidget* parent, const std::shared_ptr<Level>& level)
     : QDialog(parent)
     , level_(level)
     , blocks_(new Block[level->getBlockCount()])

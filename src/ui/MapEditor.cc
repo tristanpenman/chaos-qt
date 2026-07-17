@@ -1,5 +1,6 @@
 #include "MapEditor.h"
 
+
 #include <QApplication>
 #include <QBrush>
 #include <QGraphicsPixmapItem>
@@ -30,7 +31,6 @@
 #undef LOG
 #define LOG Logger("MapEditor")
 
-using namespace std;
 
 namespace {
 
@@ -38,7 +38,7 @@ constexpr size_t kMaxUndoCommands = 20;
 
 }  // namespace
 
-MapEditor::MapEditor(QWidget* parent, const shared_ptr<Level>& level)
+MapEditor::MapEditor(QWidget* parent, const std::shared_ptr<Level>& level)
     : QWidget(parent)
     , level_(level)
     , chunkSelector_(nullptr)
@@ -48,13 +48,13 @@ MapEditor::MapEditor(QWidget* parent, const shared_ptr<Level>& level)
 {
     setStyleSheet("background: #ccc");
 
-    // layout
+    // Layout
     auto* hbox = new QHBoxLayout(this);
     hbox->setContentsMargins(8, 8, 8, 8);
     hbox->setSpacing(8);
     setLayout(hbox);
 
-    // render chunk artwork into pixmaps
+    // Render chunk artwork into pixmaps
     LOG() << "Drawing chunks";
     const size_t chunkCount = level_->getChunkCount();
     chunks_ = new QPixmap*[chunkCount];
@@ -63,7 +63,7 @@ MapEditor::MapEditor(QWidget* parent, const shared_ptr<Level>& level)
         drawChunk(*chunks_[i], i);
     }
 
-    // populate scene
+    // Populate scene
     const auto& map = level_->getMap();
     tiles_ = new QGraphicsPixmapItem*[map.getWidth() * map.getHeight()];
     scene_ = new QGraphicsScene(this);
@@ -87,7 +87,7 @@ MapEditor::MapEditor(QWidget* parent, const shared_ptr<Level>& level)
         }
     }
 
-    // setup scene view
+    // Setup scene view
     view_ = new QGraphicsView(this);
     view_->setScene(scene_);
     view_->setFrameStyle(QFrame::NoFrame);
@@ -95,25 +95,25 @@ MapEditor::MapEditor(QWidget* parent, const shared_ptr<Level>& level)
     view_->setDragMode(QGraphicsView::DragMode::NoDrag);
     hbox->addWidget(view_);
 
-    // highlight region
+    // Highlight region
     highlight_ = new Rectangle(128, 128, QColor(128, 192, 255, 64));
     highlight_->setPos(0, 0);
     highlight_->setVisible(false);
     scene_->addItem(highlight_);
 
-    // track mouse events
+    // Track mouse events
     view_->viewport()->installEventFilter(this);
     view_->setMouseTracking(true);
 
-    // zoom support
+    // Zoom support
     new ZoomSupport(view_);
 
-    // selector
+    // Selector
     chunkSelector_ = new ChunkSelector(this, chunks_, chunkCount);
     hbox->addWidget(chunkSelector_);
     connect(chunkSelector_, &ChunkSelector::chunkSelected, this, &MapEditor::chunkSelected);
 
-    // allow map to grow but chunk selector remains the same size
+    // Allow map to grow but chunk selector remains the same size
     hbox->setStretch(0, 1);
     hbox->setStretch(1, 0);
 }
@@ -242,11 +242,10 @@ bool MapEditor::eventFilter(QObject* object, QEvent* ev)
     return false;
 }
 
-shared_ptr<Command> MapEditor::applyCommand(Command& command)
+std::shared_ptr<Command> MapEditor::applyCommand(Command& command)
 {
     auto result = command.commit();
 
-    // apply changes to visible tiles
     for (const auto& change : result.changes) {
         const auto offset = static_cast<size_t>(change.y) * level_->getMap().getWidth()
             + static_cast<size_t>(change.x);
@@ -263,12 +262,10 @@ bool MapEditor::handleMousePress()
         return false;
     }
 
-    // update tile
     const auto offset = static_cast<size_t>(highlightY_) * level_->getMap().getWidth()
         + static_cast<size_t>(highlightX_);
     tiles_[offset]->setPixmap(*chunks_[selectedChunk_]);
 
-    // start command
     pencilCommand_ = std::make_shared<PencilCommand>(level_->getMap());
     pencilCommand_->addChange(0, highlightX_, highlightY_, static_cast<int>(selectedChunk_));
 
@@ -281,11 +278,9 @@ bool MapEditor::handleMouseRelease()
         return false;
     }
 
-    // generate undo command
     const auto result = pencilCommand_->commit();
     pencilCommand_.reset();
 
-    // save undo command
     redoCommands_.clear();
     undoCommands_.push_front(result.undoCommand);
     if (undoCommands_.size() > kMaxUndoCommands) {
@@ -387,14 +382,14 @@ void MapEditor::drawChunk(QPixmap& pixmap, size_t index)
             try {
                 const auto& block = level_->getBlock(blockIndex);
                 drawBlock(image, block, dx * 16, dy * 16, blockDesc.getHFlip(), blockDesc.getVFlip());
-            } catch (const exception& e) {
+            } catch (const std::exception& e) {
                 LOG() << "Failed to draw block: " << e.what();
             }
         }
     }
 
     if (!pixmap.convertFromImage(image)) {
-        throw runtime_error("Failed to copy image to pixmap");
+        throw std::runtime_error("Failed to copy image to pixmap");
     }
 }
 

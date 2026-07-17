@@ -1,5 +1,6 @@
 #include "PatternInspector.h"
 
+
 #include <cmath>
 
 #include <QComboBox>
@@ -17,12 +18,15 @@
 #undef LOG
 #define LOG Logger("PatternInspector")
 
-using namespace std;
 
-static constexpr int kPixmapWidth = 320;
-static constexpr int kPatternsPerRow = kPixmapWidth / Pattern::kPatternWidth;
+namespace {
 
-PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& level)
+constexpr int kPixmapWidth = 320;
+constexpr int kPatternsPerRow = kPixmapWidth / Pattern::kPatternWidth;
+
+}  // namespace
+
+PatternInspector::PatternInspector(QWidget* parent, const std::shared_ptr<Level>& level)
     : QDialog(parent)
     , level_(level)
     , pixmap_(nullptr)
@@ -31,13 +35,13 @@ PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& lev
     const auto patternCount = level->getPatternCount();
     const int pixmapHeight = ceilf(static_cast<float>(patternCount) / kPatternsPerRow) * Pattern::kPatternHeight;
 
-    // main layout
+    // Main layout
     QVBoxLayout* vbox = new QVBoxLayout();
     vbox->setContentsMargins(8, 8, 8, 8);
     vbox->setSizeConstraint(QLayout::SetFixedSize);
     setLayout(vbox);
 
-    // palette combo box
+    // Palette combo box
     QComboBox* paletteCombo = new QComboBox();
     vbox->addWidget(paletteCombo);
     for (size_t i = 0; i < level->getPaletteCount(); i++) {
@@ -45,18 +49,17 @@ PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& lev
         paletteCombo->addItem(paletteName, QVariant::fromValue(i));
     }
 
-    // create widget to display pixmap
+    // Create widget to display pixmap
     label_ = new QLabel();
     label_->setFixedSize(kPixmapWidth, pixmapHeight);
     label_->setMinimumWidth(kPixmapWidth);
     vbox->addWidget(label_);
 
-    // create pixmap
     pixmap_ = new QPixmap(kPixmapWidth, pixmapHeight);
     label_->setPixmap(*pixmap_);
     drawPatterns(0);
 
-    // handle switching palettes
+    // Handle switching palettes
     connect(paletteCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PatternInspector::paletteChanged);
 }
 
@@ -78,11 +81,10 @@ void PatternInspector::drawPatterns(size_t paletteIndex)
 
     const Palette& palette = level_->getPalette(paletteIndex);
 
-    // image to draw to
     QImage image(pixmap_->width(), pixmap_->height(), QImage::Format_RGB888);
     image.fill(qRgb(0, 0, 0));
 
-    // draw individual patterns
+    // Draw individual patterns
     for (size_t i = 0; i < level_->getPatternCount(); i++) {
         const auto row = static_cast<int>(i / kPatternsPerRow);
         const auto col = static_cast<int>(i % kPatternsPerRow);
@@ -90,7 +92,6 @@ void PatternInspector::drawPatterns(size_t paletteIndex)
         drawPattern(image, level_->getPattern(i), palette, col * Pattern::kPatternWidth, row * Pattern::kPatternHeight);
     }
 
-    // copy to pixmap
     LOG() << "Copying pattern image to pixmap";
     if (pixmap_->convertFromImage(image)) {
         label_->setPixmap(*pixmap_);

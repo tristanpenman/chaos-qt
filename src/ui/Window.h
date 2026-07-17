@@ -42,7 +42,7 @@ public:
     void exportPng(const QString& fileName);
 
 public slots:
-    // file
+    // File
     void showOpenRomDialog();
     void showOpenProjectDialog();
     void openLastRom();
@@ -52,29 +52,29 @@ public slots:
     void showExportBinaryDialog();
     void showExportPngDialog();
 
-    // edit
+    // Edit
     void undo();
     void redo();
 
-    // view
+    // View
     void actualSize();
     void zoomIn();
     void zoomOut();
 
-    // view/inspectors
+    // View/inspectors
     void showPaletteInspector();
     void showPatternInspector();
     void showBlockInspector();
     void showChunkInspector();
     void toggleProjectExplorer();
 
-    // edit
+    // Edit
     void showBlockEditor();
     void showPaletteEditor();
     void showPatternEditor();
     void showChunkEditor();
 
-    // tools
+    // Tools
     void showRomInfo();
     void relocateLevels();
 
@@ -108,11 +108,11 @@ private:
     void createToolsMenu();
     void createMapMenu();
 
-    // message box helpers
+    // Message box helpers
     static void showError(const QString& title, const QString& text);
     static void showInfo(const QString& title, const QString& text);
 
-    // dialogs
+    // Dialogs
     LevelSelect* levelSelect_;
     PaletteInspector* paletteInspector_;
     PatternInspector* patternInspector_;
@@ -121,10 +121,10 @@ private:
     ProjectExplorer* projectExplorer_;
     RomInfo* romInfo_;
 
-    // editor
+    // Editor
     MapEditor* mapEditor_;
 
-    // actions
+    // Actions
     QAction* openRomAction_;
     QAction* openProjectAction_;
     QAction* levelSelectAction_;
@@ -144,7 +144,7 @@ private:
     QAction* romInfoAction_;
     QAction* projectExplorerAction_;
 
-    // misc
+    // Misc
     QMenu* openRecentMenu_;
     QMenu* inspectorsMenu_;
     QStatusBar* statusBar_;

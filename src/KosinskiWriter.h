@@ -25,7 +25,7 @@ public:
      *
      * The return value will be \c true if compression was successful, or \c false if the byte limit
      * would be exceeded. Data will only be written to the output stream if the byte limit is not
-     * exceeded. Any other errors will result in an exception being thrown.
+     * exceeded. Any other errors will result in an std::exception being thrown.
      */
     Result compress(QIODevice&,
                     const uint8_t data[],

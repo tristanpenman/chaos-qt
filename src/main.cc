@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 
     Window window;
 
-    // attempt to load a rom if a positional argument is provided
+    // Attempt to load a rom if a positional argument is provided
     bool romLoaded = false;
     bool skipLevel = false;
     if (!parser.positionalArguments().empty()) {
@@ -62,8 +62,8 @@ int main(int argc, char* argv[])
         }
     }
 
-    // only parse level option if rom was loaded, or no positional argument provided
-    // this is to prevent multiple error messages being shown
+    // Only parse level option if rom was loaded, or no positional argument provided
+    // This is to prevent multiple error messages being shown
     if (parser.isSet(levelOpt) && !skipLevel) {
         window.openLevel(parser.value(levelOpt));
     } else if (romLoaded) {

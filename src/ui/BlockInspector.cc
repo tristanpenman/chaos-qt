@@ -1,3 +1,5 @@
+#include "BlockInspector.h"
+
 #include <cmath>
 #include <iostream>
 
@@ -13,17 +15,19 @@
 #include "../Palette.h"
 #include "../Pattern.h"
 
-#include "BlockInspector.h"
 
 #undef LOG
 #define LOG Logger("BlockInspector")
 
-using namespace std;
 
-static constexpr int kPixmapWidth = 320;
-static constexpr int kBlocksPerRow = kPixmapWidth / Block::kBlockWidth;
+namespace {
 
-BlockInspector::BlockInspector(QWidget* parent, const shared_ptr<Level>& level)
+constexpr int kPixmapWidth = 320;
+constexpr int kBlocksPerRow = kPixmapWidth / Block::kBlockWidth;
+
+}  // namespace
+
+BlockInspector::BlockInspector(QWidget* parent, const std::shared_ptr<Level>& level)
     : QDialog(parent)
     , level_(level)
     , pixmap_(nullptr)
@@ -31,19 +35,18 @@ BlockInspector::BlockInspector(QWidget* parent, const shared_ptr<Level>& level)
     const auto blockCount = level->getBlockCount();
     const int pixmapHeight = ceilf(static_cast<float>(blockCount) / kBlocksPerRow) * Block::kBlockHeight;
 
-    // main layout
+    // Main layout
     QVBoxLayout* vbox = new QVBoxLayout();
     vbox->setContentsMargins(8, 8, 8, 8);
     vbox->setSizeConstraint(QLayout::SetFixedSize);
     setLayout(vbox);
 
-    // create widget to display pixmap
+    // Create widget to display pixmap
     label_ = new QLabel();
     label_->setFixedSize(kPixmapWidth, pixmapHeight);
     label_->setMinimumWidth(kPixmapWidth);
     vbox->addWidget(label_);
 
-    // create pixmap
     pixmap_ = new QPixmap(kPixmapWidth, pixmapHeight);
     label_->setPixmap(*pixmap_);
     drawBlocks();
@@ -97,11 +100,10 @@ void BlockInspector::drawBlocks()
 {
     LOG() << "Drawing blocks";
 
-    // image to draw to
     QImage image(pixmap_->width(), pixmap_->height(), QImage::Format_RGB888);
     image.fill(qRgb(0, 0, 0));
 
-    // draw individual blocks
+    // Draw individual blocks
     for (size_t i = 0; i < level_->getBlockCount(); i++) {
         const auto row = static_cast<int>(i / kBlocksPerRow);
         const auto col = static_cast<int>(i % kBlocksPerRow);
@@ -109,7 +111,6 @@ void BlockInspector::drawBlocks()
         drawBlock(image, level_->getBlock(i), col * Block::kBlockWidth, row * Block::kBlockHeight);
     }
 
-    // copy to pixmap
     LOG() << "Copying pattern image to pixmap";
     if (pixmap_->convertFromImage(image)) {
         label_->setPixmap(*pixmap_);

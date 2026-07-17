@@ -1,3 +1,5 @@
+#include "Sonic2Level.h"
+
 #include <algorithm>
 #include <cstdint>
 #include <stdexcept>
@@ -13,17 +15,18 @@
 #include "../Pattern.h"
 #include "../Rom.h"
 
-#include "Sonic2Level.h"
 #include "Sonic2RingLayout.h"
 
 #undef LOG
 #define LOG Logger("Sonic2Level")
 
-static constexpr uint8_t kMapLayers = 2;
-static constexpr uint8_t kMapHeight = 16;
-static constexpr uint8_t kMapWidth = 128;
+namespace {
 
-using namespace std;
+constexpr uint8_t kMapLayers = 2;
+constexpr uint8_t kMapHeight = 16;
+constexpr uint8_t kMapWidth = 128;
+
+}  // namespace
 
 Sonic2Level::Sonic2Level(Rom& rom,
                          uint32_t sonicPaletteAddr,
@@ -51,12 +54,12 @@ Sonic2Level::Sonic2Level(Rom& rom,
     loadRings(rom, ringsAddr, ringsSize);
 }
 
-Sonic2Level::Sonic2Level(const vector<char>& paletteData,
-                         const vector<uint8_t>& patternData,
-                         const vector<uint8_t>& blockData,
-                         const vector<uint8_t>& chunkData,
-                         const vector<uint8_t>& mapData,
-                         const vector<uint8_t>& ringData)
+Sonic2Level::Sonic2Level(const std::vector<char>& paletteData,
+                         const std::vector<uint8_t>& patternData,
+                         const std::vector<uint8_t>& blockData,
+                         const std::vector<uint8_t>& chunkData,
+                         const std::vector<uint8_t>& mapData,
+                         const std::vector<uint8_t>& ringData)
     : palettes_(nullptr)
     , patterns_(nullptr)
     , blocks_(nullptr)
@@ -88,7 +91,7 @@ Sonic2Level::~Sonic2Level()
 const Palette& Sonic2Level::getPalette(size_t index) const
 {
     if (index >= kPaletteCount) {
-        throw runtime_error("Invalid palette index");
+        throw std::runtime_error("Invalid palette index");
     }
 
     return palettes_[index];
@@ -97,7 +100,7 @@ const Palette& Sonic2Level::getPalette(size_t index) const
 Palette& Sonic2Level::getPalette(size_t index)
 {
     if (index >= kPaletteCount) {
-        throw runtime_error("Invalid palette index");
+        throw std::runtime_error("Invalid palette index");
     }
 
     return palettes_[index];
@@ -106,7 +109,7 @@ Palette& Sonic2Level::getPalette(size_t index)
 const Pattern& Sonic2Level::getPattern(size_t index) const
 {
     if (index >= patternCount_) {
-        throw runtime_error("Invalid pattern index");
+        throw std::runtime_error("Invalid pattern index");
     }
 
     return patterns_[index];
@@ -115,7 +118,7 @@ const Pattern& Sonic2Level::getPattern(size_t index) const
 Pattern& Sonic2Level::getPattern(size_t index)
 {
     if (index >= patternCount_) {
-        throw runtime_error("Invalid pattern index");
+        throw std::runtime_error("Invalid pattern index");
     }
 
     return patterns_[index];
@@ -124,7 +127,7 @@ Pattern& Sonic2Level::getPattern(size_t index)
 const Block& Sonic2Level::getBlock(size_t index) const
 {
     if (index >= blockCount_) {
-        throw runtime_error("Invalid block index " + std::to_string(index));
+        throw std::runtime_error("Invalid block index " + std::to_string(index));
     }
 
     return blocks_[index];
@@ -133,7 +136,7 @@ const Block& Sonic2Level::getBlock(size_t index) const
 Block& Sonic2Level::getBlock(size_t index)
 {
     if (index >= blockCount_) {
-        throw runtime_error("Invalid block index " + std::to_string(index));
+        throw std::runtime_error("Invalid block index " + std::to_string(index));
     }
 
     return blocks_[index];
@@ -142,7 +145,7 @@ Block& Sonic2Level::getBlock(size_t index)
 const Chunk& Sonic2Level::getChunk(size_t index) const
 {
     if (index >= chunkCount_) {
-        throw runtime_error("Invalid chunk index");
+        throw std::runtime_error("Invalid chunk index");
     }
 
     return chunks_[index];
@@ -151,7 +154,7 @@ const Chunk& Sonic2Level::getChunk(size_t index) const
 Chunk& Sonic2Level::getChunk(size_t index)
 {
     if (index >= chunkCount_) {
-        throw runtime_error("Invalid chunk index");
+        throw std::runtime_error("Invalid chunk index");
     }
 
     return chunks_[index];
@@ -162,14 +165,14 @@ Map& Sonic2Level::getMap()
     return *map_;
 }
 
-const vector<RingGroup>& Sonic2Level::getRingGroups() const
+const std::vector<RingGroup>& Sonic2Level::getRingGroups() const
 {
     return ringGroups_;
 }
 
 void Sonic2Level::loadPalettes(Rom& rom, uint32_t characterPaletteAddr, uint32_t levelPalettesAddr)
 {
-    vector<char> paletteData(Palette::kPaletteSizeInRom * kPaletteCount);
+    std::vector<char> paletteData(Palette::kPaletteSizeInRom * kPaletteCount);
 
     {
         auto buffer = rom.readBytes(characterPaletteAddr, Palette::kPaletteSizeInRom);
@@ -184,10 +187,10 @@ void Sonic2Level::loadPalettes(Rom& rom, uint32_t characterPaletteAddr, uint32_t
     loadPalettes(paletteData);
 }
 
-void Sonic2Level::loadPalettes(const vector<char>& data)
+void Sonic2Level::loadPalettes(const std::vector<char>& data)
 {
     if (data.size() != Palette::kPaletteSizeInRom * kPaletteCount) {
-        throw runtime_error("Inconsistent palette data");
+        throw std::runtime_error("Inconsistent palette data");
     }
 
     palettes_ = new Palette[kPaletteCount];
@@ -200,29 +203,27 @@ void Sonic2Level::loadPatterns(Rom& rom, uint32_t patternsAddr)
 {
     static constexpr size_t kPatternBufferSize = 0xFFFF;  // 64KB
 
-    // decompress patterns
+    // Decompress patterns
     auto& file = rom.getFile();
     file.seek(patternsAddr);
     KosinskiReader reader;
     std::vector<uint8_t> buffer(kPatternBufferSize);
     auto result = reader.decompress(file, buffer.data(), kPatternBufferSize);
     if (!result.first) {
-        throw runtime_error("Pattern decompression failed");
+        throw std::runtime_error("Pattern decompression failed");
     }
 
     buffer.resize(result.second);
     loadPatterns(buffer);
 }
 
-void Sonic2Level::loadPatterns(const vector<uint8_t>& data)
+void Sonic2Level::loadPatterns(const std::vector<uint8_t>& data)
 {
-    // check data
     patternCount_ = data.size() / Pattern::kPatternSizeInRom;
     if (data.size() % Pattern::kPatternSizeInRom != 0) {
-        throw runtime_error("Inconsistent pattern data");
+        throw std::runtime_error("Inconsistent pattern data");
     }
 
-    // convert pattern data
     patterns_ = new Pattern[patternCount_];
     for (size_t i = 0; i < patternCount_; i++) {
         patterns_[i].fromSegaFormat(const_cast<uint8_t*>(&data[i * Pattern::kPatternSizeInRom]));
@@ -235,29 +236,27 @@ void Sonic2Level::loadBlocks(Rom& rom, uint32_t blocksAddr)
 {
     static constexpr size_t kBlockBufferSize = 0xFFFF;  // 64KB
 
-    // decompress blocks
+    // Decompress blocks
     auto& file = rom.getFile();
     file.seek(blocksAddr);
     KosinskiReader reader;
-    vector<uint8_t> buffer(kBlockBufferSize);
+    std::vector<uint8_t> buffer(kBlockBufferSize);
     auto result = reader.decompress(file, buffer.data(), kBlockBufferSize);
     if (!result.first) {
-        throw runtime_error("Block decompression error");
+        throw std::runtime_error("Block decompression error");
     }
 
     buffer.resize(result.second);
     loadBlocks(buffer);
 }
 
-void Sonic2Level::loadBlocks(const vector<uint8_t>& data)
+void Sonic2Level::loadBlocks(const std::vector<uint8_t>& data)
 {
-    // check data
     blockCount_ = data.size() / Block::kBlockSizeInRom;
     if (data.size() % Block::kBlockSizeInRom != 0) {
-        throw runtime_error("Inconsistent block data");
+        throw std::runtime_error("Inconsistent block data");
     }
 
-    // convert block data
     blocks_ = new Block[blockCount_];
     for (size_t i = 0; i < blockCount_; i++) {
         blocks_[i].fromSegaFormat(const_cast<uint8_t*>(&data[i * Block::kBlockSizeInRom]));
@@ -270,26 +269,25 @@ void Sonic2Level::loadChunks(Rom& rom, uint32_t chunksAddr)
 {
     static constexpr size_t kChunkBufferSize = 0xFFFF;  // 64KB
 
-    // decompress chunks
+    // Decompress chunks
     auto& file = rom.getFile();
     file.seek(chunksAddr);
     KosinskiReader reader;
-    vector<uint8_t> buffer(kChunkBufferSize);
+    std::vector<uint8_t> buffer(kChunkBufferSize);
     auto result = reader.decompress(file, buffer.data(), kChunkBufferSize);
     if (!result.first) {
-        throw runtime_error("Chunk decompression error");
+        throw std::runtime_error("Chunk decompression error");
     }
 
     buffer.resize(result.second);
     loadChunks(buffer);
 }
 
-void Sonic2Level::loadChunks(const vector<uint8_t>& data)
+void Sonic2Level::loadChunks(const std::vector<uint8_t>& data)
 {
-    // check data
     chunkCount_ = data.size() / Chunk::kChunkSizeInRom;
     if (data.size() % Chunk::kChunkSizeInRom != 0) {
-        throw runtime_error("Inconsistent chunk data");
+        throw std::runtime_error("Inconsistent chunk data");
     }
 
     chunks_ = new Chunk[chunkCount_];
@@ -306,23 +304,22 @@ void Sonic2Level::loadMap(Rom& rom, uint32_t mapAddr)
 
     auto& file = rom.getFile();
     file.seek(mapAddr);
-    vector<unsigned char> buffer(kMapBufferSize);
+    std::vector<unsigned char> buffer(kMapBufferSize);
 
     KosinskiReader reader;
     auto result = reader.decompress(file, buffer.data(), kMapBufferSize);
     if (!result.first) {
-        throw runtime_error("Map decompression error");
+        throw std::runtime_error("Map decompression error");
     }
 
     buffer.resize(result.second);
     loadMap(buffer);
 }
 
-void Sonic2Level::loadMap(const vector<uint8_t>& data)
+void Sonic2Level::loadMap(const std::vector<uint8_t>& data)
 {
-    // check data
     if (data.size() != kMapLayers * kMapHeight * kMapWidth) {
-        throw runtime_error("Inconsistent map data");
+        throw std::runtime_error("Inconsistent map data");
     }
 
     map_ = new Map(kMapLayers, kMapWidth, kMapHeight, const_cast<uint8_t*>(data.data()));
@@ -331,11 +328,11 @@ void Sonic2Level::loadMap(const vector<uint8_t>& data)
 void Sonic2Level::loadRings(Rom& rom, uint32_t ringsAddr, size_t ringsSize)
 {
     const auto bytes = rom.readBytes(ringsAddr, ringsSize);
-    vector<uint8_t> data(bytes.begin(), bytes.end());
+    std::vector<uint8_t> data(bytes.begin(), bytes.end());
     loadRings(data);
 }
 
-void Sonic2Level::loadRings(const vector<uint8_t>& data)
+void Sonic2Level::loadRings(const std::vector<uint8_t>& data)
 {
     ringGroups_ = Sonic2RingLayout::read(data);
     LOG() << "Ring group count: " << ringGroups_.size();

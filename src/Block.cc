@@ -1,9 +1,10 @@
+#include "Block.h"
+
 #include <cstring>
 #include <stdexcept>
 
 #include "Pattern.h"
 
-#include "Block.h"
 
 void Block::fromSegaFormat(uint8_t buffer[kBlockSizeInRom])
 {

@@ -1,9 +1,9 @@
+#include "Palette.h"
+
 #include <cstring>
 #include <stdexcept>
 
-#include "Palette.h"
 
-using namespace std;
 
 Palette::Palette()
 {
@@ -27,7 +27,7 @@ void Palette::toSegaFormat(char bytes[kPaletteSizeInRom]) const
 const Palette::Color& Palette::getColor(size_t index) const
 {
     if (index >= kPaletteSize) {
-        throw runtime_error("Invalid palette index");
+        throw std::runtime_error("Invalid palette index");
     }
 
     return colors_[index];
@@ -36,7 +36,7 @@ const Palette::Color& Palette::getColor(size_t index) const
 void Palette::setColor(size_t index, const Color& color)
 {
     if (index >= kPaletteSize) {
-        throw runtime_error("Invalid palette index");
+        throw std::runtime_error("Invalid palette index");
     }
 
     memcpy(&colors_[index], &color, sizeof(Color));

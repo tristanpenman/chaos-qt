@@ -24,7 +24,7 @@
  *     Logger::configure();
  *
  *     // log info by default
- *     LOG() << "Log some stuff, maybe even some value in hex: 0x" << hex << 23030;
+ *     LOG() << "Log some stuff, maybe even some value in hex: 0x" << std::hex << 23030;
  *     LOG(Logger::Level::kWarning) << "This is a warning message";
  *   }
  *

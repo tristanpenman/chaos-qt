@@ -1,3 +1,5 @@
+#include "Sonic2Disassembly.h"
+
 #include <algorithm>
 #include <stdexcept>
 
@@ -9,13 +11,11 @@
 #include "../Logger.h"
 #include "../Palette.h"
 
-#include "Sonic2Disassembly.h"
 #include "Sonic2Level.h"
 
 #undef LOG
 #define LOG Logger("Sonic2Disassembly")
 
-using namespace std;
 
 namespace {
 
@@ -32,20 +32,20 @@ QString firstNonEmpty(const QStringList& values)
     return {};
 }
 
-vector<uint8_t> toBytes(const QByteArray& data)
+std::vector<uint8_t> toBytes(const QByteArray& data)
 {
-    return vector<uint8_t>(data.begin(), data.end());
+    return std::vector<uint8_t>(data.begin(), data.end());
 }
 
 }  // namespace
 
-Sonic2Disassembly::Sonic2Disassembly(const string& iniPath)
+Sonic2Disassembly::Sonic2Disassembly(const std::string& iniPath)
     : rootDir_(QFileInfo(QString::fromStdString(iniPath)).absoluteDir())
     , iniPath_(QString::fromStdString(iniPath))
 {
 }
 
-Sonic2Disassembly::Sonic2Disassembly(const string& rootDir, const string& iniPath)
+Sonic2Disassembly::Sonic2Disassembly(const std::string& rootDir, const std::string& iniPath)
     : rootDir_(QString::fromStdString(rootDir))
     , iniPath_(QFileInfo(QString::fromStdString(iniPath)).isAbsolute()
                      ? QString::fromStdString(iniPath)
@@ -67,9 +67,9 @@ const char* Sonic2Disassembly::getIdentifier() const
     return "Sonic2Disassembly";
 }
 
-vector<string> Sonic2Disassembly::getTitleCards()
+std::vector<std::string> Sonic2Disassembly::getTitleCards()
 {
-    vector<string> titleCards;
+    std::vector<std::string> titleCards;
     for (const auto& entry : readLevelEntries()) {
         titleCards.push_back(entry.title);
     }
@@ -77,9 +77,9 @@ vector<string> Sonic2Disassembly::getTitleCards()
     return titleCards;
 }
 
-vector<ProjectResource> Sonic2Disassembly::getProjectResources() const
+std::vector<ProjectResource> Sonic2Disassembly::getProjectResources() const
 {
-    vector<ProjectResource> resources;
+    std::vector<ProjectResource> resources;
     for (const auto& entry : readLevelEntries()) {
         const auto addResource = [&](const char* type, const QString& spec, const QString& compression) {
             const auto parts = spec.split('|', Qt::SkipEmptyParts);
@@ -101,11 +101,11 @@ vector<ProjectResource> Sonic2Disassembly::getProjectResources() const
     return resources;
 }
 
-shared_ptr<Level> Sonic2Disassembly::loadLevel(unsigned int levelIdx)
+std::shared_ptr<Level> Sonic2Disassembly::loadLevel(unsigned int levelIdx)
 {
     const auto levels = readLevelEntries();
     if (levelIdx >= levels.size()) {
-        throw runtime_error("Invalid level index");
+        throw std::runtime_error("Invalid level index");
     }
 
     const auto& entry = levels[levelIdx];
@@ -117,7 +117,7 @@ shared_ptr<Level> Sonic2Disassembly::loadLevel(unsigned int levelIdx)
     LOG() << "Chunks spec: " << entry.chunksSpec.toStdString();
     LOG() << "Map spec: " << entry.mapSpec.toStdString();
 
-    return make_shared<Sonic2Level>(readPaletteData(entry.paletteSpec),
+    return std::make_shared<Sonic2Level>(readPaletteData(entry.paletteSpec),
                                     readDataFile(entry.patternsSpec, entry.patternsCompression),
                                     readDataFile(entry.blocksSpec, entry.blocksCompression),
                                     readDataFile(entry.chunksSpec, entry.chunksCompression),
@@ -144,10 +144,10 @@ bool Sonic2Disassembly::save(unsigned int, Level&)
     return false;
 }
 
-vector<Sonic2Disassembly::LevelEntry> Sonic2Disassembly::readLevelEntries() const
+std::vector<Sonic2Disassembly::LevelEntry> Sonic2Disassembly::readLevelEntries() const
 {
     QSettings settings(iniPath_, QSettings::IniFormat);
-    vector<LevelEntry> entries;
+    std::vector<LevelEntry> entries;
 
     const auto groups = settings.childGroups();
     for (const auto& group : groups) {
@@ -182,13 +182,13 @@ Sonic2Disassembly::LevelEntry Sonic2Disassembly::readLevelEntry(const QString& g
     return entry;
 }
 
-vector<char> Sonic2Disassembly::readPaletteData(const QString& spec) const
+std::vector<char> Sonic2Disassembly::readPaletteData(const QString& spec) const
 {
-    vector<char> paletteData(Palette::kPaletteSizeInRom * 4, 0);
+    std::vector<char> paletteData(Palette::kPaletteSizeInRom * 4, 0);
     const auto parts = spec.split('|', Qt::SkipEmptyParts);
 
     if (parts.isEmpty()) {
-        throw runtime_error("Missing palette data");
+        throw std::runtime_error("Missing palette data");
     }
 
     size_t nextPaletteByte = 0;
@@ -198,7 +198,7 @@ vector<char> Sonic2Disassembly::readPaletteData(const QString& spec) const
 
         size_t srcOffset = 0;
         size_t destOffset = nextPaletteByte;
-        size_t byteCount = min(static_cast<size_t>(data.size()), paletteData.size() - destOffset);
+        size_t byteCount = std::min(static_cast<size_t>(data.size()), paletteData.size() - destOffset);
 
         if (args.size() >= 4) {
             srcOffset = args.value(1).toUInt() * Palette::kBytesPerColor;
@@ -208,7 +208,7 @@ vector<char> Sonic2Disassembly::readPaletteData(const QString& spec) const
 
         if (srcOffset + byteCount > static_cast<size_t>(data.size()) ||
             destOffset + byteCount > paletteData.size()) {
-            throw runtime_error("Palette spec is out of range");
+            throw std::runtime_error("Palette spec is out of range");
         }
 
         copy(data.begin() + static_cast<qsizetype>(srcOffset),
@@ -220,7 +220,7 @@ vector<char> Sonic2Disassembly::readPaletteData(const QString& spec) const
     return paletteData;
 }
 
-vector<uint8_t> Sonic2Disassembly::readDataFile(const QString& spec, const QString& compression) const
+std::vector<uint8_t> Sonic2Disassembly::readDataFile(const QString& spec, const QString& compression) const
 {
     const QByteArray data = readFile(spec);
     if (usesKosinskiCompression(compression)) {
@@ -230,17 +230,17 @@ vector<uint8_t> Sonic2Disassembly::readDataFile(const QString& spec, const QStri
     return toBytes(data);
 }
 
-vector<uint8_t> Sonic2Disassembly::decompressKosinski(const QByteArray& data, const QString& description) const
+std::vector<uint8_t> Sonic2Disassembly::decompressKosinski(const QByteArray& data, const QString& description) const
 {
     QBuffer buffer;
     buffer.setData(data);
     buffer.open(QIODevice::ReadOnly);
 
-    vector<uint8_t> output(kDecompressionBufferSize);
+    std::vector<uint8_t> output(kDecompressionBufferSize);
     KosinskiReader reader;
     const auto result = reader.decompress(buffer, output.data(), output.size());
     if (!result.first) {
-        throw runtime_error("Kosinski decompression buffer too small for " + description.toStdString());
+        throw std::runtime_error("Kosinski decompression buffer too small for " + description.toStdString());
     }
 
     output.resize(result.second);
@@ -251,7 +251,7 @@ QByteArray Sonic2Disassembly::readFile(const QString& spec) const
 {
     QFile file(resolvePath(spec));
     if (!file.open(QIODevice::ReadOnly)) {
-        throw runtime_error("Failed to open disassembly file: " + file.fileName().toStdString());
+        throw std::runtime_error("Failed to open disassembly file: " + file.fileName().toStdString());
     }
 
     return file.readAll();

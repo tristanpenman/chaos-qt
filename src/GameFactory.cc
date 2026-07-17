@@ -1,20 +1,20 @@
+#include "GameFactory.h"
+
 #include "games/Sonic2Disassembly.h"
 #include "games/Sonic2Rom.h"
 #include "games/Sonic3Rom.h"
 
-#include "GameFactory.h"
 
 #include <QDir>
 #include <QFileInfo>
 #include <QStringList>
 
-using namespace std;
 
 namespace {
 
-shared_ptr<Game> buildSonic2Disassembly(const QString& iniPath)
+std::shared_ptr<Game> buildSonic2Disassembly(const QString& iniPath)
 {
-    shared_ptr<Game> game = make_shared<Sonic2Disassembly>(iniPath.toStdString());
+    std::shared_ptr<Game> game = std::make_shared<Sonic2Disassembly>(iniPath.toStdString());
     if (game->isCompatible()) {
         return game;
     }
@@ -40,15 +40,15 @@ QStringList disassemblyIniCandidates(const QString& path)
 
 }  // namespace
 
-shared_ptr<Game> GameFactory::build(const shared_ptr<Rom>& rom)
+std::shared_ptr<Game> GameFactory::build(const std::shared_ptr<Rom>& rom)
 {
-    // try Sonic2Rom
-    shared_ptr<Game> game = make_shared<Sonic2Rom>(rom);
+    // Try Sonic2Rom
+    std::shared_ptr<Game> game = std::make_shared<Sonic2Rom>(rom);
     if (game->isCompatible()) {
         return game;
     }
 
-    // try Sonic3Rom
+    // Try Sonic3Rom
     game.reset(new Sonic3Rom(rom));
     if (game->isCompatible()) {
         return game;
@@ -57,7 +57,7 @@ shared_ptr<Game> GameFactory::build(const shared_ptr<Rom>& rom)
     return nullptr;
 }
 
-shared_ptr<Game> GameFactory::buildDisassembly(const string& iniPath)
+std::shared_ptr<Game> GameFactory::buildDisassembly(const std::string& iniPath)
 {
     for (const auto& candidate : disassemblyIniCandidates(QString::fromStdString(iniPath))) {
         if (auto game = buildSonic2Disassembly(candidate)) {
@@ -68,9 +68,9 @@ shared_ptr<Game> GameFactory::buildDisassembly(const string& iniPath)
     return nullptr;
 }
 
-shared_ptr<Game> GameFactory::buildDisassembly(const string& rootDir, const string& iniPath)
+std::shared_ptr<Game> GameFactory::buildDisassembly(const std::string& rootDir, const std::string& iniPath)
 {
-    shared_ptr<Game> game = make_shared<Sonic2Disassembly>(rootDir, iniPath);
+    std::shared_ptr<Game> game = std::make_shared<Sonic2Disassembly>(rootDir, iniPath);
     if (game->isCompatible()) {
         return game;
     }

@@ -1,5 +1,6 @@
 #include "PatternEditor.h"
 
+
 #include <QButtonGroup>
 #include <QCloseEvent>
 #include <QComboBox>
@@ -18,16 +19,19 @@
 #include "../Level.h"
 #include "../Palette.h"
 
-using namespace std;
 
-static constexpr int kEditorScale = 24;
+namespace {
 
-static QColor toQColor(const Palette::Color& color)
+constexpr int kEditorScale = 24;
+
+QColor toQColor(const Palette::Color& color)
 {
     return QColor(color.r, color.g, color.b);
 }
 
-PatternCanvas::PatternCanvas(QWidget* parent, array<uint8_t, Pattern::kPatternSizeInMemory>& pixels)
+}  // namespace
+
+PatternCanvas::PatternCanvas(QWidget* parent, std::array<uint8_t, Pattern::kPatternSizeInMemory>& pixels)
     : QWidget(parent)
     , pixels_(pixels)
     , palette_(nullptr)
@@ -106,7 +110,7 @@ void PatternCanvas::paintPixelAt(const QPoint& pos)
     emit patternChanged();
 }
 
-PatternEditor::PatternEditor(QWidget* parent, const shared_ptr<Level>& level)
+PatternEditor::PatternEditor(QWidget* parent, const std::shared_ptr<Level>& level)
     : QDialog(parent)
     , level_(level)
     , patternCombo_(nullptr)

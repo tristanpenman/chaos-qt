@@ -1,5 +1,6 @@
 #include "Window.h"
 
+
 #include <iostream>
 
 #include <QAction>
@@ -42,7 +43,6 @@
 #undef LOG
 #define LOG Logger("Window")
 
-using namespace std;
 
 namespace {
 constexpr int kMaxRecentRoms = 10;
@@ -93,26 +93,25 @@ Window::Window()
     setMinimumSize(320, 240);
     setAttribute(Qt::WA_AcceptTouchEvents, false);
 
-    // choose a nice default width and height, and center the window
+    // Choose a nice default width and height, and center the window
     const auto geometry = QGuiApplication::primaryScreen()->geometry();
     const int width = int(geometry.height() * 0.75);
     const int height = int(geometry.height() * 0.5);
     setGeometry(0, 0, width, height);
     move(geometry.center() - rect().center());
 
-    // menus
+    // Menus
     createFileMenu();
     createEditMenu();
     createViewMenu();
     createToolsMenu();
     createMapMenu();
 
-    // statusbar
+    // Statusbar
     statusBar_ = new QStatusBar(this);
     statusBar_->showMessage(tr("Ready"));
     setStatusBar(statusBar_);
 
-    // open rom button
     const auto openRomButton = new QPushButton(tr("Open ROM..."));
     openRomButton->setMaximumWidth(250);
     connect(openRomButton, &QPushButton::clicked, this, &Window::showOpenRomDialog);
@@ -126,7 +125,6 @@ Window::Window()
     openButtonLayout->addWidget(openLastRomButton_);
     openButtonLayout->setAlignment(Qt::AlignHCenter);
 
-    // level select button
     levelSelectButton_ = new QPushButton(tr("Level Select..."));
     levelSelectButton_->setMaximumWidth(250);
     levelSelectButton_->setDisabled(true);
@@ -149,7 +147,7 @@ bool Window::openRom(const QString& path)
     rom_.reset();
     game_.reset();
 
-    rom_ = make_shared<Rom>();
+    rom_ = std::make_shared<Rom>();
     if (!rom_->open(path.toStdString())) {
         showError(tr("ROM Error"), tr("Failed to open ROM file"));
         rom_.reset();
@@ -194,7 +192,7 @@ bool Window::openProject(const QString& path)
 
     try {
         game_ = GameFactory::buildDisassembly(path.toStdString());
-    } catch (const exception& e) {
+    } catch (const std::exception& e) {
         showError(tr("Project Error"), tr("Failed to open project: ") + e.what());
         return false;
     }
@@ -587,7 +585,7 @@ void Window::relocateLevels()
         } else {
             showError(tr("Relocate Levels"), tr("Level relocation was attempted but rolled back."));
         }
-    } catch (exception& e) {
+    } catch (std::exception& e) {
         showError(tr("Relocate Levels"), tr("Exception while relocating levels: ") + e.what());
     }
 }
@@ -638,10 +636,10 @@ void Window::levelSelected(int levelIdx)
 void Window::currentTile(uint16_t x, uint16_t y, uint8_t value)
 {
     statusBar_->showMessage(
-            QString("[%1, %2]: 0x%3")
+            QStringLiteral("[%1, %2]: 0x%3")
           .arg(x)
           .arg(y)
-          .arg(QString("%1")
+          .arg(QStringLiteral("%1")
                .arg(value, 1, 16)
                .toUpper()
                .rightJustified(2, '0')));
@@ -891,8 +889,8 @@ bool Window::trySaveRom()
                 tr("There was not enough space to save this level. You may need to relocate the levels in this ROM."),
                 QMessageBox::StandardButton::Ok);
         return false;
-    } catch (const exception& e) {
-        // show other error occurred
+    } catch (const std::exception& e) {
+        // Show other error occurred
         QMessageBox::warning(this,
                 tr("Save ROM"),
                 tr("Something went wrong while saving this level: ") + e.what(),
@@ -946,26 +944,26 @@ void Window::closeEvent(QCloseEvent* event)
 
 void Window::createFileMenu()
 {
-    // open rom
+    // Open rom
     openRomAction_ = new QAction(tr("&Open ROM..."), this);
     openRomAction_->setShortcuts(QKeySequence::Open);
     connect(openRomAction_, &QAction::triggered, this, &Window::showOpenRomDialog);
 
-    // open project
+    // Open project
     openProjectAction_ = new QAction(tr("Open &Project..."), this);
     connect(openProjectAction_, &QAction::triggered, this, &Window::showOpenProjectDialog);
 
-    // level select
+    // Level select
     levelSelectAction_ = new QAction(tr("&Level Select..."), this);
     levelSelectAction_->setDisabled(true);
     connect(levelSelectAction_, &QAction::triggered, this, &Window::showLevelSelectDialog);
 
-    // save rom
+    // Save rom
     saveRomAction_ = new QAction(tr("&Save ROM"), this);
     saveRomAction_->setDisabled(true);
     connect(saveRomAction_, &QAction::triggered, this, &Window::saveRom);
 
-    // file menu
+    // File menu
     auto fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(openRomAction_);
     fileMenu->addAction(openProjectAction_);
@@ -1028,7 +1026,6 @@ void Window::createViewMenu()
     viewMenu->addAction(projectExplorerAction_);
     viewMenu->addSeparator();
 
-    // wire up inspectors
     auto inspectPalettesAction = new QAction(tr("Palettes"), this);
     connect(inspectPalettesAction, &QAction::triggered, this, &Window::showPaletteInspector);
     auto inspectPatternsAction = new QAction(tr("Patterns (8x8)"), this);
@@ -1038,7 +1035,6 @@ void Window::createViewMenu()
     auto inspectChunksAction = new QAction(tr("Chunks (128x128)"), this);
     connect(inspectChunksAction, &QAction::triggered, this, &Window::showChunkInspector);
 
-    // build inspectors sub-menu
     inspectorsMenu_ = viewMenu->addMenu(tr("&Inspectors"));
     inspectorsMenu_->setDisabled(true);
     inspectorsMenu_->addAction(inspectPalettesAction);
@@ -1047,7 +1043,7 @@ void Window::createViewMenu()
     inspectorsMenu_->addAction(inspectBlocksAction);
     inspectorsMenu_->addAction(inspectChunksAction);
 
-    // zoom
+    // Zoom
     actualSizeAction_ = new QAction(tr("Actual Size"), this);
     actualSizeAction_->setDisabled(true);
     connect(actualSizeAction_, &QAction::triggered, this, &Window::actualSize);
@@ -1085,12 +1081,12 @@ void Window::createMapMenu()
 {
     auto mapMenu = menuBar()->addMenu(tr("&Map"));
 
-    // export binary
+    // Export binary
     exportBinaryAction_ = new QAction(tr("Export &Binary..."), this);
     exportBinaryAction_->setDisabled(true);
     connect(exportBinaryAction_, &QAction::triggered, this, &Window::showExportBinaryDialog);
 
-    // export png
+    // Export png
     exportPngAction_ = new QAction(tr("Export &PNG..."), this);
     exportPngAction_->setDisabled(true);
     connect(exportPngAction_, &QAction::triggered, this, &Window::showExportPngDialog);

@@ -1,12 +1,12 @@
+#include "Rom.h"
+
 #include <stdexcept>
 #include <string>
 
 #include <QByteArray>
 #include <QString>
 
-#include "Rom.h"
 
-using namespace std;
 
 namespace {
 
@@ -22,7 +22,7 @@ constexpr uint32_t kInternationalNameOffset = kDomesticNameOffset + kDomesticNam
 
 }  // namespace
 
-bool Rom::open(const string& path)
+bool Rom::open(const std::string& path)
 {
     file_.setFileName(QString::fromStdString(path));
     return file_.open(QIODevice::ReadWrite);
@@ -97,7 +97,7 @@ void Rom::writeChecksum(uint16_t checksum)
     file_.flush();
 }
 
-string Rom::readDomesticName()
+std::string Rom::readDomesticName()
 {
     file_.seek(kDomesticNameOffset);
     QByteArray buffer = file_.read(kDomesticNameLength);
@@ -105,7 +105,7 @@ string Rom::readDomesticName()
     return buffer.constData();
 }
 
-string Rom::readInternationalName()
+std::string Rom::readInternationalName()
 {
     file_.seek(kInternationalNameOffset);
     QByteArray buffer = file_.read(kInternationalNameLength);
@@ -113,7 +113,7 @@ string Rom::readInternationalName()
     return buffer.constData();
 }
 
-uint8_t Rom::readByte(streamoff offset)
+uint8_t Rom::readByte(std::streamoff offset)
 {
     file_.seek(offset);
     char value = 0;
@@ -122,14 +122,14 @@ uint8_t Rom::readByte(streamoff offset)
     return static_cast<uint8_t>(value);
 }
 
-vector<char> Rom::readBytes(streamoff offset, size_t count)
+std::vector<char> Rom::readBytes(std::streamoff offset, size_t count)
 {
     file_.seek(offset);
     const QByteArray data = file_.read(static_cast<qint64>(count));
-    return vector<char>(data.begin(), data.end());
+    return std::vector<char>(data.begin(), data.end());
 }
 
-uint16_t Rom::read16BitAddr(streamoff offset)
+uint16_t Rom::read16BitAddr(std::streamoff offset)
 {
     file_.seek(offset);
 
@@ -142,7 +142,7 @@ uint16_t Rom::read16BitAddr(streamoff offset)
     return addr;
 }
 
-uint32_t Rom::read32BitAddr(streamoff offset)
+uint32_t Rom::read32BitAddr(std::streamoff offset)
 {
     file_.seek(offset);
 
@@ -159,7 +159,7 @@ uint32_t Rom::read32BitAddr(streamoff offset)
     return addr;
 }
 
-void Rom::write16BitAddr(uint16_t addr, streamoff offset)
+void Rom::write16BitAddr(uint16_t addr, std::streamoff offset)
 {
     file_.seek(offset);
 
@@ -170,7 +170,7 @@ void Rom::write16BitAddr(uint16_t addr, streamoff offset)
     file_.write(bytes, sizeof(bytes));
 }
 
-void Rom::write32BitAddr(uint32_t addr, streamoff offset)
+void Rom::write32BitAddr(uint32_t addr, std::streamoff offset)
 {
     file_.seek(offset);
 

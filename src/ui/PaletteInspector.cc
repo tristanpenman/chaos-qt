@@ -1,10 +1,11 @@
+#include "PaletteInspector.h"
+
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
 #include "../Level.h"
 #include "../Palette.h"
 
-#include "PaletteInspector.h"
 
 PaletteInspector::PaletteInspector(QWidget* parent, const std::shared_ptr<Level>& level)
     : QDialog(parent)
@@ -24,7 +25,7 @@ PaletteInspector::PaletteInspector(QWidget* parent, const std::shared_ptr<Level>
 
         for (size_t c = 0; c < palette.getColorCount(); c++) {
             const Palette::Color& color = palette.getColor(c);
-            const QString stylesheet = QString("background: rgb(%1,%2,%3)")
+            const QString stylesheet = QStringLiteral("background: rgb(%1,%2,%3)")
           .arg(color.r)
           .arg(color.g)
           .arg(color.b);

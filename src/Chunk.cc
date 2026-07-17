@@ -1,7 +1,8 @@
+#include "Chunk.h"
+
 #include <cstring>
 #include <stdexcept>
 
-#include "Chunk.h"
 
 void Chunk::fromSegaFormat(uint8_t buffer[kChunkSizeInRom])
 {

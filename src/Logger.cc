@@ -1,14 +1,14 @@
+#include "Logger.h"
+
 #include <iostream>
 #include <mutex>
 #include <utility>
 
-#include "Logger.h"
 
-using namespace std;
 
-atomic<ostream*> Logger::os_ = nullptr;
-atomic<Logger::Level> Logger::minLevel_ = Level::kInfo;
-mutex Logger::mutex_;
+std::atomic<std::ostream*> Logger::os_ = nullptr;
+std::atomic<Logger::Level> Logger::minLevel_ = Level::kInfo;
+std::mutex Logger::mutex_;
 
 namespace {
 
@@ -30,17 +30,17 @@ const char* levelLabel(Logger::Level level)
 
 }  // namespace
 
-Logger::Logger(string name)
+Logger::Logger(std::string name)
     : name_(std::move(name))
 {
 }
 
 void Logger::configure()
 {
-    os_ = &cout;
+    os_ = &std::cout;
 }
 
-void Logger::configure(ostream& os)
+void Logger::configure(std::ostream& os)
 {
     os_ = &os;
 }
@@ -50,7 +50,7 @@ void Logger::configure(Level minLevel)
     minLevel_ = minLevel;
 }
 
-void Logger::configure(ostream& os, Level minLevel)
+void Logger::configure(std::ostream& os, Level minLevel)
 {
     os_ = &os;
     minLevel_ = minLevel;
@@ -81,11 +81,11 @@ Logger::Writer::~Writer()
         return;
     }
 
-    ostream* os = os_.load();
+    std::ostream* os = os_.load();
     if (!os) {
         return;
     }
 
-    lock_guard lock(mutex_);
+    std::lock_guard lock(mutex_);
     *os << ss_.str() << '\n';
 }

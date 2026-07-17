@@ -1,5 +1,6 @@
 #include "ChunkEditor.h"
 
+
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QComboBox>
@@ -20,19 +21,22 @@
 #include "../Palette.h"
 #include "../Pattern.h"
 
-using namespace std;
 
-static constexpr int kCanvasScale = 3;
-static constexpr int kBlockPreviewScale = 2;
-static constexpr uint16_t kHorizontalFlipMask = 0x400;
-static constexpr uint16_t kVerticalFlipMask = 0x800;
+namespace {
 
-static QColor toQColor(const Palette::Color& color)
+constexpr int kCanvasScale = 3;
+constexpr int kBlockPreviewScale = 2;
+constexpr uint16_t kHorizontalFlipMask = 0x400;
+constexpr uint16_t kVerticalFlipMask = 0x800;
+
+QColor toQColor(const Palette::Color& color)
 {
     return QColor(color.r, color.g, color.b);
 }
 
-ChunkCanvas::ChunkCanvas(QWidget* parent, const shared_ptr<Level>& level, Chunk* chunks)
+}  // namespace
+
+ChunkCanvas::ChunkCanvas(QWidget* parent, const std::shared_ptr<Level>& level, Chunk* chunks)
     : QWidget(parent)
     , level_(level)
     , chunks_(chunks)
@@ -202,7 +206,7 @@ void ChunkCanvas::drawPattern(QPainter& painter,
     }
 }
 
-ChunkEditor::ChunkEditor(QWidget* parent, const shared_ptr<Level>& level, size_t initialChunkIndex)
+ChunkEditor::ChunkEditor(QWidget* parent, const std::shared_ptr<Level>& level, size_t initialChunkIndex)
     : QDialog(parent)
     , level_(level)
     , chunks_(new Chunk[level->getChunkCount()])

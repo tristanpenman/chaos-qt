@@ -30,7 +30,7 @@ public:
      * if the buffer is too small. The second part of the return value will be the number of bytes
      * that were actually written to the buffer.
      *
-     * Any other errors will result in an exception being thrown.
+     * Any other errors will result in an std::exception being thrown.
      */
     Result decompress(QIODevice&, uint8_t buffer[], size_t bufferSize);
 
@@ -41,7 +41,7 @@ private:
     /// Get one bit from the bitfield, and reload the next bitfield if we run out of bits
     uint8_t getBit(QIODevice& file);
 
-    /// Read one byte from the input stream, and throw an exception if we reach eof
+    /// Read one byte from the input stream, and throw an std::exception if we reach eof
     uint8_t readByte(QIODevice& file);
 
     uint16_t bitfield_;

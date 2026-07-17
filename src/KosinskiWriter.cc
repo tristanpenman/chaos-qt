@@ -1,6 +1,6 @@
 #include "KosinskiWriter.h"
 
-using namespace std;
+
 
 void KosinskiWriter::writeByte(uint8_t byte)
 {
@@ -13,16 +13,16 @@ void KosinskiWriter::addBit(int bit)
     bitcount_++;
 
     if (bitcount_ == 16) {
-        // fill in bitfield
+        // Fill in bitfield
         buffer_[bitfieldPos_] = bitfield_ & 0xff;
         buffer_[bitfieldPos_ + 1] = (bitfield_ >> 8) & 0xff;
 
-        // prepare next bitfield
+        // Prepare next bitfield
         bitfieldPos_ = buffer_.size();
         buffer_.push_back(0);
         buffer_.push_back(0);
 
-        // reset bitfield
+        // Reset bitfield
         bitfield_ = 0;
         bitcount_ = 0;
     }
@@ -63,7 +63,7 @@ int32_t KosinskiWriter::findSegment(const uint8_t data[], int32_t pos, int32_t l
 KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
                                                 const uint8_t data[],
                                                 size_t dataSize,
-                                                optional<size_t> byteLimit)
+                                                std::optional<size_t> byteLimit)
 {
     if (!data) {
         throw std::runtime_error("Invalid data pointer");
@@ -80,7 +80,7 @@ KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
     int32_t length = 0;
     int32_t offset = 0;
 
-    // space for initial bitfield
+    // Space for initial bitfield
     buffer_.push_back(0);
     buffer_.push_back(0);
 
@@ -91,12 +91,12 @@ KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
         // 1. capture any repeating bytes
 
         while (pos + length < int32_t(dataSize)) {
-            // maximum run length is 256 bytes
+            // Maximum run length is 256 bytes
             if (length >= 256) {
                 break;
             }
 
-            // break once bytes stop repeating
+            // Break once bytes stop repeating
             if (data[pos] != data[pos + length]) {
                 break;
             }
@@ -147,7 +147,7 @@ KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
             }
         } else if (pos > 0 && data[pos - 1] == data[pos]) {
             // No copy loc... is the previous byte the same as
-            // this? If so, use it to do the replication.
+            // This? If so, use it to do the replication.
             offset = -1;
         }
 
@@ -216,7 +216,7 @@ KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
     writeByte(static_cast<uint8_t>(hi));
     writeByte(static_cast<uint8_t>(0));
 
-    // write final bitfield
+    // Write final bitfield
     buffer_[bitfieldPos_] = bitfield_ & 0xff;
     buffer_[bitfieldPos_ + 1] = (bitfield_ >> 8) & 0xff;
 

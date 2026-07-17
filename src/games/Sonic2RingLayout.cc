@@ -1,24 +1,24 @@
+#include "Sonic2RingLayout.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
 #include <vector>
 
-#include "Sonic2RingLayout.h"
 
-using namespace std;
 
 namespace {
 
-uint16_t readWord(const vector<uint8_t>& data, size_t offset)
+uint16_t readWord(const std::vector<uint8_t>& data, size_t offset)
 {
     return static_cast<uint16_t>(data[offset] << 8) | data[offset + 1];
 }
 
 }  // namespace
 
-vector<RingGroup> Sonic2RingLayout::read(const vector<uint8_t>& data)
+std::vector<RingGroup> Sonic2RingLayout::read(const std::vector<uint8_t>& data)
 {
-    vector<RingGroup> groups;
+    std::vector<RingGroup> groups;
 
     for (size_t offset = 0; offset + 1 < data.size();) {
         const uint16_t x = readWord(data, offset);
@@ -29,7 +29,7 @@ vector<RingGroup> Sonic2RingLayout::read(const vector<uint8_t>& data)
         }
 
         if (offset + 1 >= data.size()) {
-            throw runtime_error("Truncated Sonic 2 ring layout entry");
+            throw std::runtime_error("Truncated Sonic 2 ring layout entry");
         }
 
         const uint16_t encodedY = readWord(data, offset);
@@ -43,5 +43,5 @@ vector<RingGroup> Sonic2RingLayout::read(const vector<uint8_t>& data)
         });
     }
 
-    throw runtime_error("Sonic 2 ring layout has no terminator");
+    throw std::runtime_error("Sonic 2 ring layout has no terminator");
 }

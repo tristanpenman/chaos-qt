@@ -1,5 +1,6 @@
 #include "LevelSelect.h"
 
+
 #include <iostream>
 
 #include <QEvent>
@@ -25,16 +26,14 @@ LevelSelect::LevelSelect(QWidget* parent, const std::shared_ptr<Game>& game)
         stringList << QString::fromStdString(titleCard);
     }
 
-    // create model
     auto model = new QStringListModel(this);
     model->setStringList(stringList);
 
-    // create list view
     listView_ = new QListView();
     listView_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     listView_->setModel(model);
 
-    // enable OK button when selection is valid
+    // Enable OK button when selection is valid
     connect(listView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &LevelSelect::selectionChanged);
 

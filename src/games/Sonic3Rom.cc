@@ -1,3 +1,5 @@
+#include "Sonic3Rom.h"
+
 #include <cstdint>
 #include <stdexcept>
 #include <vector>
@@ -6,20 +8,21 @@
 #include "../Rom.h"
 
 #include "Sonic3Level.h"
-#include "Sonic3Rom.h"
 
 #undef LOG
 #define LOG Logger("Sonic3Rom")
 
-static constexpr uint32_t kLevelDataDirectory = 0x5AB0C;          // Level data pointers (patterns, blocks, chunks)
-static constexpr uint32_t kLevelDataDirectoryEntrySize = 24;      // Each pointer is 4 bytes, total of 3 pointers
-static constexpr uint32_t kLevelLayoutDirectoryAddress = 0x81360; // Layout pointers are found here
-static constexpr uint32_t kLevelPaletteDirectory = 0x8BF54;       // Directory of palette pointers
-static constexpr uint32_t kLevelSelectIndex = 0x6A8E;             // Level select order
+namespace {
 
-using namespace std;
+constexpr uint32_t kLevelDataDirectory = 0x5AB0C;          // Level data pointers (patterns, blocks, chunks)
+constexpr uint32_t kLevelDataDirectoryEntrySize = 24;      // Each pointer is 4 bytes, total of 3 pointers
+constexpr uint32_t kLevelLayoutDirectoryAddress = 0x81360; // Layout pointers are found here
+constexpr uint32_t kLevelPaletteDirectory = 0x8BF54;       // Directory of palette pointers
+constexpr uint32_t kLevelSelectIndex = 0x6A8E;             // Level select order
 
-Sonic3Rom::Sonic3Rom(const shared_ptr<Rom>& rom)
+}  // namespace
+
+Sonic3Rom::Sonic3Rom(const std::shared_ptr<Rom>& rom)
     : rom_(rom)
 {
 
@@ -37,7 +40,7 @@ const char* Sonic3Rom::getIdentifier() const
     return "Sonic3Rom";
 }
 
-vector<string> Sonic3Rom::getTitleCards()
+std::vector<std::string> Sonic3Rom::getTitleCards()
 {
     return {
         "Angel Island Zone - Act 1",
@@ -57,7 +60,7 @@ vector<string> Sonic3Rom::getTitleCards()
     };
 }
 
-shared_ptr<Level> Sonic3Rom::loadLevel(unsigned int levelIdx)
+std::shared_ptr<Level> Sonic3Rom::loadLevel(unsigned int levelIdx)
 {
     const auto characterPaletteAddr = getCharacterPaletteAddr();
     const auto levelPalettesAddr = getLevelPalettesAddr(levelIdx);
@@ -69,17 +72,17 @@ shared_ptr<Level> Sonic3Rom::loadLevel(unsigned int levelIdx)
     const auto extendedChunksAddr = getExtendedChunksAddr(levelIdx);
     const auto mapAddr = getTilesAddr(levelIdx);
 
-    LOG() << "Character palette addr: 0x" << hex << characterPaletteAddr;
-    LOG() << "Level palettes addr: 0x" << hex << levelPalettesAddr;
-    LOG() << "Patterns addr: 0x" << hex << patternsAddr;
-    LOG() << "Extended patterns addr: 0x" << hex << extendedPatternsAddr;
-    LOG() << "Blocks addr: 0x" << hex << blocksAddr;
-    LOG() << "Extended blocks addr: 0x" << hex << extendedBlocksAddr;
-    LOG() << "Chunks addr: 0x" << hex << chunksAddr;
-    LOG() << "Extended chunks addr: 0x" << hex << extendedChunksAddr;
-    LOG() << "Map addr: 0x" << hex << mapAddr;
+    LOG() << "Character palette addr: 0x" << std::hex << characterPaletteAddr;
+    LOG() << "Level palettes addr: 0x" << std::hex << levelPalettesAddr;
+    LOG() << "Patterns addr: 0x" << std::hex << patternsAddr;
+    LOG() << "Extended patterns addr: 0x" << std::hex << extendedPatternsAddr;
+    LOG() << "Blocks addr: 0x" << std::hex << blocksAddr;
+    LOG() << "Extended blocks addr: 0x" << std::hex << extendedBlocksAddr;
+    LOG() << "Chunks addr: 0x" << std::hex << chunksAddr;
+    LOG() << "Extended chunks addr: 0x" << std::hex << extendedChunksAddr;
+    LOG() << "Map addr: 0x" << std::hex << mapAddr;
 
-    return make_shared<Sonic3Level>(*rom_,
+    return std::make_shared<Sonic3Level>(*rom_,
                                     characterPaletteAddr,
                                     levelPalettesAddr,
                                     patternsAddr,

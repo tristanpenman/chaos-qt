@@ -1,8 +1,9 @@
+#include "ProjectExplorer.h"
+
 #include <QHeaderView>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-#include "ProjectExplorer.h"
 
 namespace {
 

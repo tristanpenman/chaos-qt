@@ -34,7 +34,7 @@ private:
 
     uint32_t getDataAddress(uint32_t levelIdx, uint32_t entryOffset);
 
-    // uncompressed
+    // Uncompressed
     uint32_t getCharacterPaletteAddr();
     uint32_t getLevelPalettesAddr(uint32_t levelIdx);
 

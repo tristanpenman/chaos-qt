@@ -1,8 +1,8 @@
 #include "PencilCommand.h"
 
+
 #include "../Map.h"
 
-using namespace std;
 
 PencilCommand::PencilCommand(Map& map)
     : map_(map)
@@ -17,11 +17,10 @@ void PencilCommand::addChange(int layer, int x, int y, int value)
 
 PencilCommand::Result PencilCommand::commit()
 {
-    // make undo command
+    // Make undo command
     auto undoCommand = std::make_shared<PencilCommand>(map_);
 
-    // update the map
-    vector<Change> changes;
+    std::vector<Change> changes;
     for (auto& entry : changes_) {
         const auto layer = entry.first.layer;
         const auto x = entry.first.x;
@@ -33,11 +32,9 @@ PencilCommand::Result PencilCommand::commit()
         const auto yValue = static_cast<uint16_t>(y);
         const auto newValue = static_cast<uint8_t>(value);
 
-        // save old value to undo command
         const auto oldValue = map_.getValue(layerValue, xValue, yValue);
         undoCommand->addChange(layer, x, y, oldValue);
 
-        // commit changes
         map_.setValue(layerValue, xValue, yValue, newValue);
         changes.push_back({ layer, x, y, value });
     }

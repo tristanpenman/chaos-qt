@@ -1,8 +1,8 @@
-#include <cstring>
-
 #include "Pattern.h"
 
-using namespace std;
+#include <cstring>
+
+
 
 Pattern::Pattern()
 {
