@@ -45,7 +45,7 @@ private:
     Palette(const Palette&) = delete;
     Palette& operator=(const Palette&) = delete;
 
-    Color m_colors[PALETTE_SIZE];
+    Color colors_[PALETTE_SIZE];
 };
 
 inline size_t Palette::getColorCount() const

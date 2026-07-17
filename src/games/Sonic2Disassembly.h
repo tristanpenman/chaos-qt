@@ -56,6 +56,6 @@ private:
     static QString stripSpecArguments(const QString& spec);
     static bool usesKosinskiCompression(const QString& compression);
 
-    QDir m_rootDir;
-    QString m_iniPath;
+    QDir rootDir_;
+    QString iniPath_;
 };

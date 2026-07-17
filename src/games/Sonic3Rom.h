@@ -38,5 +38,5 @@ private:
     uint32_t getExtendedBlocksAddr(uint32_t levelIdx);
     uint32_t getExtendedPatternsAddr(uint32_t levelIdx);
 
-    std::shared_ptr<Rom> m_rom;
+    std::shared_ptr<Rom> rom_;
 };

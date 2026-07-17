@@ -40,36 +40,36 @@ public:
     void set(unsigned short); // naive (assumes correct bit layout)
 
 private:
-    unsigned short m_index;
+    unsigned short index_;
 };
 
 inline PatternDesc::PatternDesc()
-    : m_index(0)
+    : index_(0)
 {
 
 }
 
 inline PatternDesc::PatternDesc(const PatternDesc& desc)
-    : m_index(desc.m_index)
+    : index_(desc.index_)
 {
 
 }
 
 inline PatternDesc::PatternDesc(unsigned short patternIndex, unsigned short paletteIndex)
 {
-    m_index = (paletteIndex & 0x3) << 13;
-    m_index |= (patternIndex & 0x7FF);
+    index_ = (paletteIndex & 0x3) << 13;
+    index_ |= (patternIndex & 0x7FF);
 }
 
 inline PatternDesc& PatternDesc::operator=(const PatternDesc& rhs)
 {
-    m_index = rhs.m_index;
+    index_ = rhs.index_;
     return *this;
 }
 
 inline unsigned short PatternDesc::get() const
 {
-    return m_index;
+    return index_;
 }
 
 inline size_t PatternDesc::getIndexSize()
@@ -79,30 +79,30 @@ inline size_t PatternDesc::getIndexSize()
 
 inline unsigned short PatternDesc::getPaletteIndex() const
 {
-    return (m_index >> 13) & 0x3;
+    return (index_ >> 13) & 0x3;
 }
 
 inline unsigned short PatternDesc::getPatternIndex() const
 {
-    return m_index & 0x7FF;
+    return index_ & 0x7FF;
 }
 
 inline bool PatternDesc::getPriority() const
 {
-    return (m_index & 0x8000) != 0;
+    return (index_ & 0x8000) != 0;
 }
 
 inline bool PatternDesc::getHFlip() const
 {
-    return (m_index & 0x800) != 0;
+    return (index_ & 0x800) != 0;
 }
 
 inline bool PatternDesc::getVFlip() const
 {
-    return (m_index & 0x1000) != 0;
+    return (index_ & 0x1000) != 0;
 }
 
 inline void PatternDesc::set(unsigned short newIndex)
 {
-    m_index = newIndex;
+    index_ = newIndex;
 }

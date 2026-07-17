@@ -28,18 +28,18 @@ private:
     void handleClick(const QPoint& pos);
     void handleMove(const QPoint& pos);
 
-    QGraphicsScene* m_scene;
-    QGraphicsView* m_view;
-    QLabel* m_selected;
-    QPixmap** m_chunks;
-    QGraphicsPixmapItem** m_chunkItems;
+    QGraphicsScene* scene_;
+    QGraphicsView* view_;
+    QLabel* selected_;
+    QPixmap** chunks_;
+    QGraphicsPixmapItem** chunkItems_;
 
-    Rectangle* m_highlight;
+    Rectangle* highlight_;
 
-    size_t m_chunkCount;
+    size_t chunkCount_;
 
-    int m_selectedChunk;
-    int m_highlightedChunk;
+    int selectedChunk_;
+    int highlightedChunk_;
 
 signals:
     void chunkSelected(int);

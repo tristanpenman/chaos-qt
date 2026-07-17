@@ -12,63 +12,63 @@ Map::Map(uint8_t layers, uint16_t width, uint16_t height)
 }
 
 Map::Map(uint8_t layers, uint16_t width, uint16_t height, uint8_t* data)
-    : m_layers(layers)
-    , m_height(height)
-    , m_width(width)
+    : layers_(layers)
+    , height_(height)
+    , width_(width)
 {
     const size_t size = sizeof(uint8_t) * layers * width * height;
 
-    m_data = new uint8_t[size];
-    if (!m_data) {
+    data_ = new uint8_t[size];
+    if (!data_) {
         throw runtime_error("Failed to allocate memory for level map");
     }
 
     if (data) {
-        memcpy(m_data, data, size);
+        memcpy(data_, data, size);
     } else {
-        memset(m_data, 0, size);
+        memset(data_, 0, size);
     }
 
-    m_layers = layers;
-    m_width = width;
-    m_height = height;
+    layers_ = layers;
+    width_ = width;
+    height_ = height;
 }
 
 Map::~Map()
 {
-    if (m_data) {
-        delete[] m_data;
-        m_data = nullptr;
+    if (data_) {
+        delete[] data_;
+        data_ = nullptr;
     }
 }
 
 uint8_t Map::getValue(uint8_t layer, uint16_t x, uint16_t y) const
 {
-    if (layer >= m_layers) {
+    if (layer >= layers_) {
         throw runtime_error("Invalid map layer index");
     }
 
-    if (x >= m_width || y >= m_height) {
+    if (x >= width_ || y >= height_) {
         throw runtime_error("Invalid map tile index");
     }
 
-    return m_data[y * m_width * m_layers + layer * m_width + x];
+    return data_[y * width_ * layers_ + layer * width_ + x];
 }
 
 void Map::setValue(uint8_t layer, uint16_t x, uint16_t y, uint8_t value)
 {
-    if (layer >= m_layers) {
+    if (layer >= layers_) {
         throw runtime_error("Invalid map layer index");
     }
 
-    if (x >= m_width || y >= m_height) {
+    if (x >= width_ || y >= height_) {
         throw runtime_error("Invalid map tile index");
     }
 
-    m_data[y * m_width * m_layers + layer * m_width + x] = value;
+    data_[y * width_ * layers_ + layer * width_ + x] = value;
 }
 
 uint8_t* Map::getData()
 {
-    return m_data;
+    return data_;
 }

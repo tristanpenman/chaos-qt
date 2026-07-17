@@ -44,11 +44,11 @@ public:
 private:
     bool eventFilter(QObject* object, QEvent* event);
 
-    QGraphicsView* m_view;
-    Qt::KeyboardModifiers m_modifiers;
-    double m_zoomFactorBase;
-    QPointF m_targetScenePos;
-    QPointF m_targetViewportPos;
+    QGraphicsView* view_;
+    Qt::KeyboardModifiers modifiers_;
+    double zoomFactorBase_;
+    QPointF targetScenePos_;
+    QPointF targetViewportPos_;
 
 signals:
     void zoomed();

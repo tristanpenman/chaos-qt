@@ -39,13 +39,13 @@ private:
     void drawPattern(QPainter& painter, const Pattern& pattern, const Palette& palette, int dx, int dy, bool hFlip, bool vFlip);
     uint16_t selectedPatternDescValue() const;
 
-    std::shared_ptr<Level> m_level;
-    Block* m_blocks;
-    size_t m_blockIndex;
-    uint16_t m_selectedPatternIndex;
-    uint16_t m_selectedPaletteIndex;
-    bool m_hFlip;
-    bool m_vFlip;
+    std::shared_ptr<Level> level_;
+    Block* blocks_;
+    size_t blockIndex_;
+    uint16_t selectedPatternIndex_;
+    uint16_t selectedPaletteIndex_;
+    bool hFlip_;
+    bool vFlip_;
 
 signals:
     void blockModified();
@@ -69,10 +69,10 @@ private:
     QPixmap renderPatternPixmap(const Pattern& pattern, const Palette& palette) const;
     const QPixmap& cachedPixmap(size_t patternIndex, size_t paletteIndex) const;
 
-    std::shared_ptr<Level> m_level;
-    std::vector<QPixmap> m_pixmaps;
-    uint16_t m_selectedPatternIndex;
-    uint16_t m_selectedPaletteIndex;
+    std::shared_ptr<Level> level_;
+    std::vector<QPixmap> pixmaps_;
+    uint16_t selectedPatternIndex_;
+    uint16_t selectedPaletteIndex_;
 
 signals:
     void patternSelected(uint16_t patternIndex, uint16_t paletteIndex);
@@ -97,21 +97,21 @@ private:
     void updateCanvasSelection();
     void updateTitle();
 
-    std::shared_ptr<Level> m_level;
-    std::unique_ptr<Block[]> m_blocks;
+    std::shared_ptr<Level> level_;
+    std::unique_ptr<Block[]> blocks_;
 
-    QComboBox* m_blockCombo;
-    QCheckBox* m_hFlipCheckBox;
-    QCheckBox* m_vFlipCheckBox;
-    BlockCanvas* m_canvas;
-    PatternPaletteList* m_patternList;
-    QPushButton* m_saveButton;
-    QPushButton* m_discardButton;
+    QComboBox* blockCombo_;
+    QCheckBox* hFlipCheckBox_;
+    QCheckBox* vFlipCheckBox_;
+    BlockCanvas* canvas_;
+    PatternPaletteList* patternList_;
+    QPushButton* saveButton_;
+    QPushButton* discardButton_;
 
-    size_t m_blockIndex;
-    uint16_t m_selectedPatternIndex;
-    uint16_t m_selectedPaletteIndex;
-    bool m_dirty;
+    size_t blockIndex_;
+    uint16_t selectedPatternIndex_;
+    uint16_t selectedPaletteIndex_;
+    bool dirty_;
 
 private slots:
     void blockChanged(int blockIndex);

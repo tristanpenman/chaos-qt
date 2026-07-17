@@ -53,41 +53,41 @@ constexpr const char* RecentRomsKey = "recentRoms";
 
 Window::Window()
     : QMainWindow(nullptr)
-    , m_levelSelect(nullptr)
-    , m_paletteInspector(nullptr)
-    , m_patternInspector(nullptr)
-    , m_blockInspector(nullptr)
-    , m_chunkInspector(nullptr)
-    , m_projectExplorer(nullptr)
-    , m_romInfo(nullptr)
-    , m_mapEditor(nullptr)
-    , m_openRomAction(nullptr)
-    , m_openProjectAction(nullptr)
-    , m_levelSelectAction(nullptr)
-    , m_saveRomAction(nullptr)
-    , m_exportBinaryAction(nullptr)
-    , m_exportPngAction(nullptr)
-    , m_undoAction(nullptr)
-    , m_redoAction(nullptr)
-    , m_paletteEditorAction(nullptr)
-    , m_patternEditorAction(nullptr)
-    , m_blockEditorAction(nullptr)
-    , m_chunkEditorAction(nullptr)
-    , m_actualSizeAction(nullptr)
-    , m_zoomInAction(nullptr)
-    , m_zoomOutAction(nullptr)
-    , m_relocateLevelsAction(nullptr)
-    , m_romInfoAction(nullptr)
-    , m_projectExplorerAction(nullptr)
-    , m_openRecentMenu(nullptr)
-    , m_inspectorsMenu(nullptr)
-    , m_statusBar(nullptr)
-    , m_openLastRomButton(nullptr)
-    , m_rom(nullptr)
-    , m_game(nullptr)
-    , m_level(nullptr)
-    , m_levelIdx(0)
-    , m_hasUnsavedChanges(false)
+    , levelSelect_(nullptr)
+    , paletteInspector_(nullptr)
+    , patternInspector_(nullptr)
+    , blockInspector_(nullptr)
+    , chunkInspector_(nullptr)
+    , projectExplorer_(nullptr)
+    , romInfo_(nullptr)
+    , mapEditor_(nullptr)
+    , openRomAction_(nullptr)
+    , openProjectAction_(nullptr)
+    , levelSelectAction_(nullptr)
+    , saveRomAction_(nullptr)
+    , exportBinaryAction_(nullptr)
+    , exportPngAction_(nullptr)
+    , undoAction_(nullptr)
+    , redoAction_(nullptr)
+    , paletteEditorAction_(nullptr)
+    , patternEditorAction_(nullptr)
+    , blockEditorAction_(nullptr)
+    , chunkEditorAction_(nullptr)
+    , actualSizeAction_(nullptr)
+    , zoomInAction_(nullptr)
+    , zoomOutAction_(nullptr)
+    , relocateLevelsAction_(nullptr)
+    , romInfoAction_(nullptr)
+    , projectExplorerAction_(nullptr)
+    , openRecentMenu_(nullptr)
+    , inspectorsMenu_(nullptr)
+    , statusBar_(nullptr)
+    , openLastRomButton_(nullptr)
+    , rom_(nullptr)
+    , game_(nullptr)
+    , level_(nullptr)
+    , levelIdx_(0)
+    , hasUnsavedChanges_(false)
 {
     setWindowTitle("SpinDash");
     setMinimumSize(320, 240);
@@ -108,33 +108,33 @@ Window::Window()
     createMapMenu();
 
     // statusbar
-    m_statusBar = new QStatusBar(this);
-    m_statusBar->showMessage(tr("Ready"));
-    setStatusBar(m_statusBar);
+    statusBar_ = new QStatusBar(this);
+    statusBar_->showMessage(tr("Ready"));
+    setStatusBar(statusBar_);
 
     // open rom button
     const auto openRomButton = new QPushButton(tr("Open ROM..."));
     openRomButton->setMaximumWidth(250);
     connect(openRomButton, &QPushButton::clicked, this, &Window::showOpenRomDialog);
 
-    m_openLastRomButton = new QPushButton(tr("Open Last..."));
-    m_openLastRomButton->setMaximumWidth(250);
-    connect(m_openLastRomButton, &QPushButton::clicked, this, &Window::openLastRom);
+    openLastRomButton_ = new QPushButton(tr("Open Last..."));
+    openLastRomButton_->setMaximumWidth(250);
+    connect(openLastRomButton_, &QPushButton::clicked, this, &Window::openLastRom);
 
     const auto openButtonLayout = new QHBoxLayout();
     openButtonLayout->addWidget(openRomButton);
-    openButtonLayout->addWidget(m_openLastRomButton);
+    openButtonLayout->addWidget(openLastRomButton_);
     openButtonLayout->setAlignment(Qt::AlignHCenter);
 
     // level select button
-    m_levelSelectButton = new QPushButton(tr("Level Select..."));
-    m_levelSelectButton->setMaximumWidth(250);
-    m_levelSelectButton->setDisabled(true);
-    connect(m_levelSelectButton, &QPushButton::clicked, this, &Window::showLevelSelectDialog);
+    levelSelectButton_ = new QPushButton(tr("Level Select..."));
+    levelSelectButton_->setMaximumWidth(250);
+    levelSelectButton_->setDisabled(true);
+    connect(levelSelectButton_, &QPushButton::clicked, this, &Window::showLevelSelectDialog);
 
     const auto buttonLayout = new QVBoxLayout();
     buttonLayout->addLayout(openButtonLayout);
-    buttonLayout->addWidget(m_levelSelectButton);
+    buttonLayout->addWidget(levelSelectButton_);
     buttonLayout->setAlignment(Qt::AlignHCenter);
 
     const auto buttonsWidget = new QWidget();
@@ -146,42 +146,42 @@ Window::Window()
 
 bool Window::openRom(const QString& path)
 {
-    m_rom.reset();
-    m_game.reset();
+    rom_.reset();
+    game_.reset();
 
-    m_rom = make_shared<Rom>();
-    if (!m_rom->open(path.toStdString())) {
+    rom_ = make_shared<Rom>();
+    if (!rom_->open(path.toStdString())) {
         showError(tr("ROM Error"), tr("Failed to open ROM file"));
-        m_rom.reset();
+        rom_.reset();
         return false;
     }
 
-    m_game = GameFactory::build(m_rom);
-    if (!m_game) {
+    game_ = GameFactory::build(rom_);
+    if (!game_) {
         showError(tr("ROM Error"), tr("Failed to identify game"));
-        m_rom.reset();
+        rom_.reset();
         return false;
     }
 
     LOG() << "ROM identified";
-    LOG() << "Domestic name: '" << m_rom->readDomesticName() << "'";
+    LOG() << "Domestic name: '" << rom_->readDomesticName() << "'";
 
     addRecentRom(QFileInfo(path).absoluteFilePath());
 
-    m_levelSelectAction->setEnabled(true);
-    m_levelSelectButton->setEnabled(true);
-    m_saveRomAction->setEnabled(false);
-    m_relocateLevelsAction->setEnabled(m_game->canRelocateLevels());
-    m_romInfoAction->setEnabled(false);
-    m_projectExplorerAction->setEnabled(false);
-    m_projectExplorerAction->setChecked(false);
+    levelSelectAction_->setEnabled(true);
+    levelSelectButton_->setEnabled(true);
+    saveRomAction_->setEnabled(false);
+    relocateLevelsAction_->setEnabled(game_->canRelocateLevels());
+    romInfoAction_->setEnabled(false);
+    projectExplorerAction_->setEnabled(false);
+    projectExplorerAction_->setChecked(false);
 
-    delete m_projectExplorer;
-    m_projectExplorer = nullptr;
+    delete projectExplorer_;
+    projectExplorer_ = nullptr;
 
-    if (m_romInfo) {
-        delete m_romInfo;
-        m_romInfo = nullptr;
+    if (romInfo_) {
+        delete romInfo_;
+        romInfo_ = nullptr;
     }
 
     return true;
@@ -189,38 +189,38 @@ bool Window::openRom(const QString& path)
 
 bool Window::openProject(const QString& path)
 {
-    m_rom.reset();
-    m_game.reset();
+    rom_.reset();
+    game_.reset();
 
     try {
-        m_game = GameFactory::buildDisassembly(path.toStdString());
+        game_ = GameFactory::buildDisassembly(path.toStdString());
     } catch (const exception& e) {
         showError(tr("Project Error"), tr("Failed to open project: ") + e.what());
         return false;
     }
 
-    if (!m_game) {
+    if (!game_) {
         showError(tr("Project Error"),
                 tr("Failed to identify a supported Sonic 2 or Sonic 3 disassembly project."));
         return false;
     }
 
-    LOG() << "Project identified: " << m_game->getIdentifier();
+    LOG() << "Project identified: " << game_->getIdentifier();
 
-    m_levelSelectAction->setEnabled(true);
-    m_levelSelectButton->setEnabled(true);
-    m_saveRomAction->setEnabled(false);
-    m_relocateLevelsAction->setEnabled(false);
-    m_romInfoAction->setEnabled(false);
-    m_projectExplorerAction->setEnabled(!m_game->getProjectResources().empty());
-    m_projectExplorerAction->setChecked(false);
+    levelSelectAction_->setEnabled(true);
+    levelSelectButton_->setEnabled(true);
+    saveRomAction_->setEnabled(false);
+    relocateLevelsAction_->setEnabled(false);
+    romInfoAction_->setEnabled(false);
+    projectExplorerAction_->setEnabled(!game_->getProjectResources().empty());
+    projectExplorerAction_->setChecked(false);
 
-    delete m_projectExplorer;
-    m_projectExplorer = nullptr;
+    delete projectExplorer_;
+    projectExplorer_ = nullptr;
 
-    if (m_romInfo) {
-        delete m_romInfo;
-        m_romInfo = nullptr;
+    if (romInfo_) {
+        delete romInfo_;
+        romInfo_ = nullptr;
     }
 
     return true;
@@ -245,7 +245,7 @@ void Window::exportBinary(const QString& fileName)
         return;
     }
 
-    auto& map = m_level->getMap();
+    auto& map = level_->getMap();
 
     for (auto y = 0; y < map.getHeight(); y++) {
         for (auto x = 0; x < map.getWidth(); x++) {
@@ -262,8 +262,8 @@ void Window::exportBinary(const QString& fileName)
 
 void Window::exportPng(const QString& fileName)
 {
-    QImage image(m_mapEditor->getWidth(), m_mapEditor->getHeight(), QImage::Format_ARGB32);
-    m_mapEditor->drawToImage(image);
+    QImage image(mapEditor_->getWidth(), mapEditor_->getHeight(), QImage::Format_ARGB32);
+    mapEditor_->drawToImage(image);
     if (image.save(fileName, "PNG")) {
         showInfo(tr("Export PNG"), tr("Map exported successfully."));
     } else {
@@ -327,7 +327,7 @@ void Window::openRecentRom()
 
 void Window::showLevelSelectDialog()
 {
-    if (m_level) {
+    if (level_) {
         const QMessageBox::StandardButton reply = QMessageBox::question(this,
           tr("Close Level"),
           tr("Are you sure you want to close the current level?"),
@@ -337,15 +337,15 @@ void Window::showLevelSelectDialog()
         }
     }
 
-    if (m_levelSelect) {
-        delete m_levelSelect;
-        m_levelSelect = nullptr;
+    if (levelSelect_) {
+        delete levelSelect_;
+        levelSelect_ = nullptr;
     }
 
-    m_levelSelect = new LevelSelect(this, m_game);
-    connect(m_levelSelect, &LevelSelect::levelSelected, this, &Window::levelSelected);
+    levelSelect_ = new LevelSelect(this, game_);
+    connect(levelSelect_, &LevelSelect::levelSelected, this, &Window::levelSelected);
 
-    m_levelSelect->show();
+    levelSelect_->show();
 }
 
 void Window::saveRom()
@@ -355,7 +355,7 @@ void Window::saveRom()
 
 void Window::showExportBinaryDialog()
 {
-    if (!m_level) {
+    if (!level_) {
         return;
     }
 
@@ -377,7 +377,7 @@ void Window::showExportBinaryDialog()
 
 void Window::showExportPngDialog()
 {
-    if (!m_level) {
+    if (!level_) {
         return;
     }
 
@@ -399,43 +399,43 @@ void Window::showExportPngDialog()
 
 void Window::undo()
 {
-    m_mapEditor->undo();
+    mapEditor_->undo();
 }
 
 void Window::redo()
 {
-    m_mapEditor->redo();
+    mapEditor_->redo();
 }
 
 void Window::showPatternEditor()
 {
-    if (!m_level) {
+    if (!level_) {
         return;
     }
 
-    PatternEditor editor(this, m_level);
+    PatternEditor editor(this, level_);
     connect(&editor, &PatternEditor::patternModified, this, &Window::patternModified);
     editor.exec();
 }
 
 void Window::showPaletteEditor()
 {
-    if (!m_level) {
+    if (!level_) {
         return;
     }
 
-    PaletteEditor editor(this, m_level);
+    PaletteEditor editor(this, level_);
     connect(&editor, &PaletteEditor::paletteModified, this, &Window::paletteModified);
     editor.exec();
 }
 
 void Window::showBlockEditor()
 {
-    if (!m_level) {
+    if (!level_) {
         return;
     }
 
-    auto* editor = new BlockEditor(this, m_level);
+    auto* editor = new BlockEditor(this, level_);
     editor->setAttribute(Qt::WA_DeleteOnClose);
     connect(editor, &BlockEditor::blocksModified, this, &Window::blocksModified);
     editor->show();
@@ -443,12 +443,12 @@ void Window::showBlockEditor()
 
 void Window::showChunkEditor()
 {
-    if (!m_level) {
+    if (!level_) {
         return;
     }
 
-    const auto selectedChunk = m_mapEditor ? m_mapEditor->getSelectedChunk() : 0;
-    auto* editor = new ChunkEditor(this, m_level, selectedChunk);
+    const auto selectedChunk = mapEditor_ ? mapEditor_->getSelectedChunk() : 0;
+    auto* editor = new ChunkEditor(this, level_, selectedChunk);
     editor->setAttribute(Qt::WA_DeleteOnClose);
     connect(editor, &ChunkEditor::chunksModified, this, &Window::chunksModified);
     editor->show();
@@ -456,100 +456,100 @@ void Window::showChunkEditor()
 
 void Window::actualSize()
 {
-    if (!m_mapEditor) {
+    if (!mapEditor_) {
         return;
     }
 
-    m_mapEditor->actualSize();
+    mapEditor_->actualSize();
 }
 
 void Window::zoomIn()
 {
-    if (!m_mapEditor) {
+    if (!mapEditor_) {
         return;
     }
 
-    m_mapEditor->zoomIn();
+    mapEditor_->zoomIn();
 }
 
 void Window::zoomOut()
 {
-    if (!m_mapEditor) {
+    if (!mapEditor_) {
         return;
     }
 
-    m_mapEditor->zoomOut();
+    mapEditor_->zoomOut();
 }
 
 void Window::showPaletteInspector()
 {
-    if (!m_paletteInspector) {
-        m_paletteInspector = new PaletteInspector(this, m_level);
+    if (!paletteInspector_) {
+        paletteInspector_ = new PaletteInspector(this, level_);
     }
 
-    m_paletteInspector->show();
+    paletteInspector_->show();
 }
 
 void Window::showPatternInspector()
 {
-    if (!m_patternInspector) {
-        m_patternInspector = new PatternInspector(this, m_level);
+    if (!patternInspector_) {
+        patternInspector_ = new PatternInspector(this, level_);
     }
 
-    m_patternInspector->show();
+    patternInspector_->show();
 }
 
 void Window::showBlockInspector()
 {
-    if (!m_blockInspector) {
-        m_blockInspector = new BlockInspector(this, m_level);
+    if (!blockInspector_) {
+        blockInspector_ = new BlockInspector(this, level_);
     }
 
-    m_blockInspector->show();
+    blockInspector_->show();
 }
 
 void Window::showChunkInspector()
 {
-    if (!m_chunkInspector) {
-        m_chunkInspector = new ChunkInspector(this, m_level);
+    if (!chunkInspector_) {
+        chunkInspector_ = new ChunkInspector(this, level_);
     }
 
-    m_chunkInspector->show();
+    chunkInspector_->show();
 }
 
 void Window::toggleProjectExplorer()
 {
-    if (!m_game || !m_projectExplorerAction->isChecked()) {
-        delete m_projectExplorer;
-        m_projectExplorer = nullptr;
+    if (!game_ || !projectExplorerAction_->isChecked()) {
+        delete projectExplorer_;
+        projectExplorer_ = nullptr;
         return;
     }
 
-    if (!m_projectExplorer) {
-        m_projectExplorer = new ProjectExplorer(this, m_game->getProjectResources());
-        m_projectExplorer->setAttribute(Qt::WA_DeleteOnClose);
-        connect(m_projectExplorer, &QObject::destroyed, this, [this]() {
-            m_projectExplorer = nullptr;
-            m_projectExplorerAction->setChecked(false);
+    if (!projectExplorer_) {
+        projectExplorer_ = new ProjectExplorer(this, game_->getProjectResources());
+        projectExplorer_->setAttribute(Qt::WA_DeleteOnClose);
+        connect(projectExplorer_, &QObject::destroyed, this, [this]() {
+            projectExplorer_ = nullptr;
+            projectExplorerAction_->setChecked(false);
         });
     }
 
-    m_projectExplorer->show();
-    m_projectExplorer->raise();
-    m_projectExplorer->activateWindow();
+    projectExplorer_->show();
+    projectExplorer_->raise();
+    projectExplorer_->activateWindow();
 }
 
 void Window::showRomInfo()
 {
-    if (!m_rom || !m_game) {
+    if (!rom_ || !game_) {
         return;
     }
 
-    if (!m_romInfo) {
-        m_romInfo = new RomInfo(this, *m_rom, *m_game);
+    if (!romInfo_) {
+        romInfo_ = new RomInfo(this, *rom_, *game_);
     }
 
-    m_romInfo->show();
+    romInfo_->show();
 }
 
 void Window::relocateLevels()
@@ -565,11 +565,11 @@ void Window::relocateLevels()
             return;
         }
 
-        delete m_mapEditor;
-        m_mapEditor = nullptr;
-        m_level.reset();
+        delete mapEditor_;
+        mapEditor_ = nullptr;
+        level_.reset();
 
-        if (m_game->relocateLevels(false)) {
+        if (game_->relocateLevels(false)) {
             showInfo(tr("Relocate Levels"), tr("Levels relocated successfully."));
             return;
         }
@@ -582,7 +582,7 @@ void Window::relocateLevels()
             return;
         }
 
-        if (m_game->relocateLevels(true)) {
+        if (game_->relocateLevels(true)) {
             showInfo(tr("Relocate Levels"), tr("Levels relocated successfully (unsafe)."));
         } else {
             showError(tr("Relocate Levels"), tr("Level relocation was attempted but rolled back."));
@@ -596,48 +596,48 @@ void Window::levelSelected(int levelIdx)
 {
     closeCurrentLevel();
 
-    if (!m_game) {
+    if (!game_) {
         showError(tr("Level Error"), tr("Cannot load level until a ROM or project has been loaded"));
         return;
     }
 
-    LOG() << "Loading level: " << levelIdx << " (" << m_game->getTitleCards()[levelIdx] << ")";
+    LOG() << "Loading level: " << levelIdx << " (" << game_->getTitleCards()[levelIdx] << ")";
 
-    m_level = m_game->loadLevel(levelIdx);
-    if (!m_level) {
+    level_ = game_->loadLevel(levelIdx);
+    if (!level_) {
         showError(tr("Level Error"), tr("Failed to load level"));
         return;
     }
 
-    m_levelIdx = levelIdx;
+    levelIdx_ = levelIdx;
 
-    if (m_game->canSave()) {
-        m_saveRomAction->setEnabled(true);
+    if (game_->canSave()) {
+        saveRomAction_->setEnabled(true);
     }
 
-    m_exportBinaryAction->setEnabled(true);
-    m_exportPngAction->setEnabled(true);
-    m_paletteEditorAction->setEnabled(true);
-    m_patternEditorAction->setEnabled(true);
-    m_blockEditorAction->setEnabled(true);
-    m_chunkEditorAction->setEnabled(true);
+    exportBinaryAction_->setEnabled(true);
+    exportPngAction_->setEnabled(true);
+    paletteEditorAction_->setEnabled(true);
+    patternEditorAction_->setEnabled(true);
+    blockEditorAction_->setEnabled(true);
+    chunkEditorAction_->setEnabled(true);
 
-    m_inspectorsMenu->setEnabled(true);
-    m_romInfoAction->setEnabled(m_rom != nullptr);
+    inspectorsMenu_->setEnabled(true);
+    romInfoAction_->setEnabled(rom_ != nullptr);
 
-    m_mapEditor = new MapEditor(this, m_level);
-    connect(m_mapEditor, &MapEditor::currentTile, this, &Window::currentTile);
-    connect(m_mapEditor, &MapEditor::noTile, this, &Window::noTile);
-    connect(m_mapEditor, &MapEditor::undosRedosChanged, this, &Window::undosRedosChanged);
-    connect(m_mapEditor, &MapEditor::mapModified, this, &Window::mapModified);
-    this->setCentralWidget(m_mapEditor);
+    mapEditor_ = new MapEditor(this, level_);
+    connect(mapEditor_, &MapEditor::currentTile, this, &Window::currentTile);
+    connect(mapEditor_, &MapEditor::noTile, this, &Window::noTile);
+    connect(mapEditor_, &MapEditor::undosRedosChanged, this, &Window::undosRedosChanged);
+    connect(mapEditor_, &MapEditor::mapModified, this, &Window::mapModified);
+    this->setCentralWidget(mapEditor_);
 
-    m_hasUnsavedChanges = false;
+    hasUnsavedChanges_ = false;
 }
 
 void Window::currentTile(uint16_t x, uint16_t y, uint8_t value)
 {
-    m_statusBar->showMessage(
+    statusBar_->showMessage(
             QString("[%1, %2]: 0x%3")
           .arg(x)
           .arg(y)
@@ -649,84 +649,84 @@ void Window::currentTile(uint16_t x, uint16_t y, uint8_t value)
 
 void Window::noTile()
 {
-    m_statusBar->showMessage(QString());
+    statusBar_->showMessage(QString());
 }
 
 void Window::undosRedosChanged(size_t undos, size_t redos)
 {
     LOG() << "Undos: " << undos << ", redos: " << redos;
 
-    m_undoAction->setEnabled(undos > 0);
-    m_redoAction->setEnabled(redos > 0);
+    undoAction_->setEnabled(undos > 0);
+    redoAction_->setEnabled(redos > 0);
 }
 
 void Window::mapModified()
 {
-    m_hasUnsavedChanges = true;
+    hasUnsavedChanges_ = true;
 }
 
 void Window::paletteModified()
 {
-    if (m_patternInspector) {
-        m_patternInspector->refresh();
+    if (patternInspector_) {
+        patternInspector_->refresh();
     }
-    if (m_blockInspector) {
-        m_blockInspector->refresh();
+    if (blockInspector_) {
+        blockInspector_->refresh();
     }
-    if (m_chunkInspector) {
-        m_chunkInspector->refresh();
+    if (chunkInspector_) {
+        chunkInspector_->refresh();
     }
-    if (m_mapEditor) {
-        m_mapEditor->refreshChunks();
+    if (mapEditor_) {
+        mapEditor_->refreshChunks();
     }
-    m_hasUnsavedChanges = true;
+    hasUnsavedChanges_ = true;
 }
 
 void Window::patternModified()
 {
-    if (m_patternInspector) {
-        m_patternInspector->refresh();
+    if (patternInspector_) {
+        patternInspector_->refresh();
     }
-    if (m_blockInspector) {
-        m_blockInspector->refresh();
+    if (blockInspector_) {
+        blockInspector_->refresh();
     }
-    if (m_chunkInspector) {
-        m_chunkInspector->refresh();
+    if (chunkInspector_) {
+        chunkInspector_->refresh();
     }
-    if (m_mapEditor) {
-        m_mapEditor->refreshChunks();
+    if (mapEditor_) {
+        mapEditor_->refreshChunks();
     }
-    m_hasUnsavedChanges = true;
+    hasUnsavedChanges_ = true;
 }
 
 void Window::blocksModified()
 {
-    if (m_blockInspector) {
-        m_blockInspector->refresh();
+    if (blockInspector_) {
+        blockInspector_->refresh();
     }
-    if (m_chunkInspector) {
-        m_chunkInspector->refresh();
+    if (chunkInspector_) {
+        chunkInspector_->refresh();
     }
-    if (m_mapEditor) {
-        m_mapEditor->refreshChunks();
+    if (mapEditor_) {
+        mapEditor_->refreshChunks();
     }
-    m_hasUnsavedChanges = true;
+    hasUnsavedChanges_ = true;
 }
 
 void Window::chunksModified()
 {
-    if (m_chunkInspector) {
-        m_chunkInspector->refresh();
+    if (chunkInspector_) {
+        chunkInspector_->refresh();
     }
-    if (m_mapEditor) {
-        m_mapEditor->refreshChunks();
+    if (mapEditor_) {
+        mapEditor_->refreshChunks();
     }
-    m_hasUnsavedChanges = true;
+    hasUnsavedChanges_ = true;
 }
 
 bool Window::confirmCloseCurrentLevel()
 {
-    if (!m_level) {
+    if (!level_) {
         return true;
     }
 
@@ -739,42 +739,42 @@ bool Window::confirmCloseCurrentLevel()
 
 void Window::closeCurrentLevel()
 {
-    m_inspectorsMenu->setEnabled(false);
+    inspectorsMenu_->setEnabled(false);
 
-    delete m_paletteInspector;
-    m_paletteInspector = nullptr;
+    delete paletteInspector_;
+    paletteInspector_ = nullptr;
 
-    delete m_patternInspector;
-    m_patternInspector = nullptr;
+    delete patternInspector_;
+    patternInspector_ = nullptr;
 
-    delete m_blockInspector;
-    m_blockInspector = nullptr;
+    delete blockInspector_;
+    blockInspector_ = nullptr;
 
-    delete m_chunkInspector;
-    m_chunkInspector = nullptr;
+    delete chunkInspector_;
+    chunkInspector_ = nullptr;
 
-    delete m_projectExplorer;
-    m_projectExplorer = nullptr;
-    m_projectExplorerAction->setChecked(false);
+    delete projectExplorer_;
+    projectExplorer_ = nullptr;
+    projectExplorerAction_->setChecked(false);
 
-    delete m_mapEditor;
-    m_mapEditor = nullptr;
+    delete mapEditor_;
+    mapEditor_ = nullptr;
 
-    m_level.reset();
-    m_hasUnsavedChanges = false;
+    level_.reset();
+    hasUnsavedChanges_ = false;
 
-    m_saveRomAction->setEnabled(false);
-    m_exportBinaryAction->setEnabled(false);
-    m_exportPngAction->setEnabled(false);
-    m_paletteEditorAction->setEnabled(false);
-    m_patternEditorAction->setEnabled(false);
-    m_blockEditorAction->setEnabled(false);
-    m_chunkEditorAction->setEnabled(false);
-    m_actualSizeAction->setEnabled(false);
-    m_zoomInAction->setEnabled(false);
-    m_zoomOutAction->setEnabled(false);
-    m_undoAction->setEnabled(false);
-    m_redoAction->setEnabled(false);
+    saveRomAction_->setEnabled(false);
+    exportBinaryAction_->setEnabled(false);
+    exportPngAction_->setEnabled(false);
+    paletteEditorAction_->setEnabled(false);
+    patternEditorAction_->setEnabled(false);
+    blockEditorAction_->setEnabled(false);
+    chunkEditorAction_->setEnabled(false);
+    actualSizeAction_->setEnabled(false);
+    zoomInAction_->setEnabled(false);
+    zoomOutAction_->setEnabled(false);
+    undoAction_->setEnabled(false);
+    redoAction_->setEnabled(false);
 }
 
 bool Window::openRomFromUserAction(const QString& path)
@@ -844,15 +844,15 @@ void Window::updateRecentRomActions()
     const QStringList paths = recentRoms();
     const bool hasRecentRoms = !paths.isEmpty();
 
-    if (m_openLastRomButton) {
-        m_openLastRomButton->setEnabled(hasRecentRoms);
+    if (openLastRomButton_) {
+        openLastRomButton_->setEnabled(hasRecentRoms);
     }
-    if (!m_openRecentMenu) {
+    if (!openRecentMenu_) {
         return;
     }
 
-    m_openRecentMenu->clear();
-    m_openRecentMenu->setEnabled(hasRecentRoms);
+    openRecentMenu_->clear();
+    openRecentMenu_->setEnabled(hasRecentRoms);
 
     for (int i = 0; i < paths.size(); i++) {
         const QString& path = paths.at(i);
@@ -862,27 +862,27 @@ void Window::updateRecentRomActions()
         }
         text.replace("&", "&&");
 
-        auto action = new QAction(tr("&%1 %2").arg(i + 1).arg(text), m_openRecentMenu);
+        auto action = new QAction(tr("&%1 %2").arg(i + 1).arg(text), openRecentMenu_);
         action->setData(path);
         action->setStatusTip(path);
         connect(action, &QAction::triggered, this, &Window::openRecentRom);
-        m_openRecentMenu->addAction(action);
+        openRecentMenu_->addAction(action);
     }
 }
 
 bool Window::trySaveRom()
 {
-    if (!m_game || !m_level) {
+    if (!game_ || !level_) {
         return false;
     }
 
     try {
-        if (m_game->save(m_levelIdx, *m_level)) {
+        if (game_->save(levelIdx_, *level_)) {
             QMessageBox::information(this,
           tr("Save ROM"),
           tr("Level saved successfully."),
           QMessageBox::StandardButton::Ok);
-            m_hasUnsavedChanges = false;
+            hasUnsavedChanges_ = false;
             return true;
         }
 
@@ -903,12 +903,12 @@ bool Window::trySaveRom()
 
 void Window::closeEvent(QCloseEvent* event)
 {
-    if (!m_hasUnsavedChanges || !m_level) {
+    if (!hasUnsavedChanges_ || !level_) {
         event->accept();
         return;
     }
 
-    if (!m_game || !m_game->canSave()) {
+    if (!game_ || !game_->canSave()) {
         const auto reply = QMessageBox::question(this,
                 tr("Quit"),
                 tr("You have unsaved changes that will be lost.\n\nAre you sure you want to quit?"),
@@ -947,85 +947,85 @@ void Window::closeEvent(QCloseEvent* event)
 void Window::createFileMenu()
 {
     // open rom
-    m_openRomAction = new QAction(tr("&Open ROM..."), this);
-    m_openRomAction->setShortcuts(QKeySequence::Open);
-    connect(m_openRomAction, &QAction::triggered, this, &Window::showOpenRomDialog);
+    openRomAction_ = new QAction(tr("&Open ROM..."), this);
+    openRomAction_->setShortcuts(QKeySequence::Open);
+    connect(openRomAction_, &QAction::triggered, this, &Window::showOpenRomDialog);
 
     // open project
-    m_openProjectAction = new QAction(tr("Open &Project..."), this);
-    connect(m_openProjectAction, &QAction::triggered, this, &Window::showOpenProjectDialog);
+    openProjectAction_ = new QAction(tr("Open &Project..."), this);
+    connect(openProjectAction_, &QAction::triggered, this, &Window::showOpenProjectDialog);
 
     // level select
-    m_levelSelectAction = new QAction(tr("&Level Select..."), this);
-    m_levelSelectAction->setDisabled(true);
-    connect(m_levelSelectAction, &QAction::triggered, this, &Window::showLevelSelectDialog);
+    levelSelectAction_ = new QAction(tr("&Level Select..."), this);
+    levelSelectAction_->setDisabled(true);
+    connect(levelSelectAction_, &QAction::triggered, this, &Window::showLevelSelectDialog);
 
     // save rom
-    m_saveRomAction = new QAction(tr("&Save ROM"), this);
-    m_saveRomAction->setDisabled(true);
-    connect(m_saveRomAction, &QAction::triggered, this, &Window::saveRom);
+    saveRomAction_ = new QAction(tr("&Save ROM"), this);
+    saveRomAction_->setDisabled(true);
+    connect(saveRomAction_, &QAction::triggered, this, &Window::saveRom);
 
     // file menu
     auto fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(m_openRomAction);
-    fileMenu->addAction(m_openProjectAction);
-    m_openRecentMenu = fileMenu->addMenu(tr("Open &Recent"));
+    fileMenu->addAction(openRomAction_);
+    fileMenu->addAction(openProjectAction_);
+    openRecentMenu_ = fileMenu->addMenu(tr("Open &Recent"));
     updateRecentRomActions();
     fileMenu->addSeparator()->setSeparator(true);
-    fileMenu->addAction(m_levelSelectAction);
+    fileMenu->addAction(levelSelectAction_);
     fileMenu->addSeparator();
-    fileMenu->addAction(m_saveRomAction);
+    fileMenu->addAction(saveRomAction_);
 }
 
 void Window::createEditMenu()
 {
     auto editMenu = menuBar()->addMenu(tr("&Edit"));
 
-    m_undoAction = new QAction(tr("Undo"), this);
-    m_undoAction->setShortcuts(QKeySequence::Undo);
-    m_undoAction->setDisabled(true);
-    connect(m_undoAction, &QAction::triggered, this, &Window::undo);
+    undoAction_ = new QAction(tr("Undo"), this);
+    undoAction_->setShortcuts(QKeySequence::Undo);
+    undoAction_->setDisabled(true);
+    connect(undoAction_, &QAction::triggered, this, &Window::undo);
 
-    m_redoAction = new QAction(tr("Redo"), this);
-    m_redoAction->setShortcuts(QKeySequence::Redo);
-    m_redoAction->setDisabled(true);
-    connect(m_redoAction, &QAction::triggered, this, &Window::redo);
+    redoAction_ = new QAction(tr("Redo"), this);
+    redoAction_->setShortcuts(QKeySequence::Redo);
+    redoAction_->setDisabled(true);
+    connect(redoAction_, &QAction::triggered, this, &Window::redo);
 
-    m_paletteEditorAction = new QAction(tr("Palette Editor..."), this);
-    m_paletteEditorAction->setDisabled(true);
-    connect(m_paletteEditorAction, &QAction::triggered, this, &Window::showPaletteEditor);
+    paletteEditorAction_ = new QAction(tr("Palette Editor..."), this);
+    paletteEditorAction_->setDisabled(true);
+    connect(paletteEditorAction_, &QAction::triggered, this, &Window::showPaletteEditor);
 
-    m_patternEditorAction = new QAction(tr("8x8 Pattern Editor..."), this);
-    m_patternEditorAction->setDisabled(true);
-    connect(m_patternEditorAction, &QAction::triggered, this, &Window::showPatternEditor);
+    patternEditorAction_ = new QAction(tr("8x8 Pattern Editor..."), this);
+    patternEditorAction_->setDisabled(true);
+    connect(patternEditorAction_, &QAction::triggered, this, &Window::showPatternEditor);
 
-    m_blockEditorAction = new QAction(tr("16x16 Block Editor..."), this);
-    m_blockEditorAction->setDisabled(true);
-    connect(m_blockEditorAction, &QAction::triggered, this, &Window::showBlockEditor);
+    blockEditorAction_ = new QAction(tr("16x16 Block Editor..."), this);
+    blockEditorAction_->setDisabled(true);
+    connect(blockEditorAction_, &QAction::triggered, this, &Window::showBlockEditor);
 
-    m_chunkEditorAction = new QAction(tr("128x128 Chunk Editor..."), this);
-    m_chunkEditorAction->setDisabled(true);
-    connect(m_chunkEditorAction, &QAction::triggered, this, &Window::showChunkEditor);
+    chunkEditorAction_ = new QAction(tr("128x128 Chunk Editor..."), this);
+    chunkEditorAction_->setDisabled(true);
+    connect(chunkEditorAction_, &QAction::triggered, this, &Window::showChunkEditor);
 
-    editMenu->addAction(m_undoAction);
-    editMenu->addAction(m_redoAction);
+    editMenu->addAction(undoAction_);
+    editMenu->addAction(redoAction_);
     editMenu->addSeparator();
-    editMenu->addAction(m_paletteEditorAction);
-    editMenu->addAction(m_patternEditorAction);
-    editMenu->addAction(m_blockEditorAction);
-    editMenu->addAction(m_chunkEditorAction);
+    editMenu->addAction(paletteEditorAction_);
+    editMenu->addAction(patternEditorAction_);
+    editMenu->addAction(blockEditorAction_);
+    editMenu->addAction(chunkEditorAction_);
 }
 
 void Window::createViewMenu()
 {
     auto viewMenu = menuBar()->addMenu(tr("&View"));
 
-    m_projectExplorerAction = new QAction(tr("Project Explorer"), this);
-    m_projectExplorerAction->setCheckable(true);
-    m_projectExplorerAction->setDisabled(true);
-    connect(m_projectExplorerAction, &QAction::triggered, this, &Window::toggleProjectExplorer);
+    projectExplorerAction_ = new QAction(tr("Project Explorer"), this);
+    projectExplorerAction_->setCheckable(true);
+    projectExplorerAction_->setDisabled(true);
+    connect(projectExplorerAction_, &QAction::triggered, this, &Window::toggleProjectExplorer);
 
-    viewMenu->addAction(m_projectExplorerAction);
+    viewMenu->addAction(projectExplorerAction_);
     viewMenu->addSeparator();
 
     // wire up inspectors
@@ -1039,46 +1039,46 @@ void Window::createViewMenu()
     connect(inspectChunksAction, &QAction::triggered, this, &Window::showChunkInspector);
 
     // build inspectors sub-menu
-    m_inspectorsMenu = viewMenu->addMenu(tr("&Inspectors"));
-    m_inspectorsMenu->setDisabled(true);
-    m_inspectorsMenu->addAction(inspectPalettesAction);
-    m_inspectorsMenu->addSeparator();
-    m_inspectorsMenu->addAction(inspectPatternsAction);
-    m_inspectorsMenu->addAction(inspectBlocksAction);
-    m_inspectorsMenu->addAction(inspectChunksAction);
+    inspectorsMenu_ = viewMenu->addMenu(tr("&Inspectors"));
+    inspectorsMenu_->setDisabled(true);
+    inspectorsMenu_->addAction(inspectPalettesAction);
+    inspectorsMenu_->addSeparator();
+    inspectorsMenu_->addAction(inspectPatternsAction);
+    inspectorsMenu_->addAction(inspectBlocksAction);
+    inspectorsMenu_->addAction(inspectChunksAction);
 
     // zoom
-    m_actualSizeAction = new QAction(tr("Actual Size"), this);
-    m_actualSizeAction->setDisabled(true);
-    connect(m_actualSizeAction, &QAction::triggered, this, &Window::actualSize);
-    m_zoomInAction = new QAction(tr("Zoom In"), this);
-    m_zoomInAction->setDisabled(true);
-    connect(m_zoomInAction, &QAction::triggered, this, &Window::zoomIn);
-    m_zoomOutAction = new QAction(tr("Zoom Out"), this);
-    m_zoomOutAction->setDisabled(true);
-    connect(m_zoomOutAction, &QAction::triggered, this, &Window::zoomOut);
+    actualSizeAction_ = new QAction(tr("Actual Size"), this);
+    actualSizeAction_->setDisabled(true);
+    connect(actualSizeAction_, &QAction::triggered, this, &Window::actualSize);
+    zoomInAction_ = new QAction(tr("Zoom In"), this);
+    zoomInAction_->setDisabled(true);
+    connect(zoomInAction_, &QAction::triggered, this, &Window::zoomIn);
+    zoomOutAction_ = new QAction(tr("Zoom Out"), this);
+    zoomOutAction_->setDisabled(true);
+    connect(zoomOutAction_, &QAction::triggered, this, &Window::zoomOut);
 
     viewMenu->addSeparator();
-    viewMenu->addAction(m_actualSizeAction);
-    viewMenu->addAction(m_zoomInAction);
-    viewMenu->addAction(m_zoomOutAction);
+    viewMenu->addAction(actualSizeAction_);
+    viewMenu->addAction(zoomInAction_);
+    viewMenu->addAction(zoomOutAction_);
 }
 
 void Window::createToolsMenu()
 {
     auto toolsMenu = menuBar()->addMenu(tr("&Tools"));
 
-    m_romInfoAction = new QAction(tr("ROM Info..."), this);
-    m_romInfoAction->setDisabled(true);
-    connect(m_romInfoAction, &QAction::triggered, this, &Window::showRomInfo);
+    romInfoAction_ = new QAction(tr("ROM Info..."), this);
+    romInfoAction_->setDisabled(true);
+    connect(romInfoAction_, &QAction::triggered, this, &Window::showRomInfo);
 
-    m_relocateLevelsAction = new QAction(tr("Relocate Levels"), this);
-    m_relocateLevelsAction->setDisabled(true);
-    connect(m_relocateLevelsAction, &QAction::triggered, this, &Window::relocateLevels);
+    relocateLevelsAction_ = new QAction(tr("Relocate Levels"), this);
+    relocateLevelsAction_->setDisabled(true);
+    connect(relocateLevelsAction_, &QAction::triggered, this, &Window::relocateLevels);
 
-    toolsMenu->addAction(m_romInfoAction);
+    toolsMenu->addAction(romInfoAction_);
     toolsMenu->addSeparator();
-    toolsMenu->addAction(m_relocateLevelsAction);
+    toolsMenu->addAction(relocateLevelsAction_);
 }
 
 void Window::createMapMenu()
@@ -1086,17 +1086,17 @@ void Window::createMapMenu()
     auto mapMenu = menuBar()->addMenu(tr("&Map"));
 
     // export binary
-    m_exportBinaryAction = new QAction(tr("Export &Binary..."), this);
-    m_exportBinaryAction->setDisabled(true);
-    connect(m_exportBinaryAction, &QAction::triggered, this, &Window::showExportBinaryDialog);
+    exportBinaryAction_ = new QAction(tr("Export &Binary..."), this);
+    exportBinaryAction_->setDisabled(true);
+    connect(exportBinaryAction_, &QAction::triggered, this, &Window::showExportBinaryDialog);
 
     // export png
-    m_exportPngAction = new QAction(tr("Export &PNG..."), this);
-    m_exportPngAction->setDisabled(true);
-    connect(m_exportPngAction, &QAction::triggered, this, &Window::showExportPngDialog);
+    exportPngAction_ = new QAction(tr("Export &PNG..."), this);
+    exportPngAction_->setDisabled(true);
+    connect(exportPngAction_, &QAction::triggered, this, &Window::showExportPngDialog);
 
-    mapMenu->addAction(m_exportBinaryAction);
-    mapMenu->addAction(m_exportPngAction);
+    mapMenu->addAction(exportBinaryAction_);
+    mapMenu->addAction(exportPngAction_);
 }
 
 void Window::showError(const QString& title, const QString& text)

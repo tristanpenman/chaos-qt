@@ -39,7 +39,7 @@ private:
         }
     };
 
-    Map& m_map;
+    Map& map_;
 
-    std::unordered_map<Location, int, LocationHash> m_changes;
+    std::unordered_map<Location, int, LocationHash> changes_;
 };

@@ -32,5 +32,5 @@ private:
     Block(const Block&) = delete;
     Block& operator=(const Block&) = delete;
 
-    std::array<PatternDesc, PATTERNS_PER_BLOCK> m_patternDescs;
+    std::array<PatternDesc, PATTERNS_PER_BLOCK> patternDescs_;
 };

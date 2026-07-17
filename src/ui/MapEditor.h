@@ -55,24 +55,24 @@ private:
     void drawBlock(QImage&, const Block&, int dx, int dy, bool hFlip, bool vFlip);
     void drawChunk(QPixmap&, size_t index);
 
-    std::shared_ptr<Level> m_level;
+    std::shared_ptr<Level> level_;
 
-    QGraphicsScene* m_scene;
-    QGraphicsView* m_view;
-    QGraphicsPixmapItem** m_tiles;
-    QPixmap** m_chunks;
-    ChunkSelector* m_chunkSelector;
-    Rectangle* m_highlight;
+    QGraphicsScene* scene_;
+    QGraphicsView* view_;
+    QGraphicsPixmapItem** tiles_;
+    QPixmap** chunks_;
+    ChunkSelector* chunkSelector_;
+    Rectangle* highlight_;
 
-    int m_highlightX;
-    int m_highlightY;
+    int highlightX_;
+    int highlightY_;
 
-    size_t m_selectedChunk;
+    size_t selectedChunk_;
 
-    std::deque<std::shared_ptr<Command>> m_undoCommands;
-    std::deque<std::shared_ptr<Command>> m_redoCommands;
+    std::deque<std::shared_ptr<Command>> undoCommands_;
+    std::deque<std::shared_ptr<Command>> redoCommands_;
 
-    std::shared_ptr<PencilCommand> m_pencilCommand;
+    std::shared_ptr<PencilCommand> pencilCommand_;
 
 private slots:
     void chunkSelected(int);

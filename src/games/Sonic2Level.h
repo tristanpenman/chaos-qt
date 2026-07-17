@@ -72,16 +72,16 @@ private:
     void loadRings(Rom& rom, uint32_t ringsAddr, size_t ringsSize);
     void loadRings(const std::vector<uint8_t>& data);
 
-    Palette* m_palettes;
-    Pattern* m_patterns;
-    Block* m_blocks;
-    Chunk* m_chunks;
-    Map* m_map;
-    std::vector<RingGroup> m_ringGroups;
+    Palette* palettes_;
+    Pattern* patterns_;
+    Block* blocks_;
+    Chunk* chunks_;
+    Map* map_;
+    std::vector<RingGroup> ringGroups_;
 
-    size_t m_patternCount;
-    size_t m_blockCount;
-    size_t m_chunkCount;
+    size_t patternCount_;
+    size_t blockCount_;
+    size_t chunkCount_;
 };
 
 inline size_t Sonic2Level::getPaletteCount() const
@@ -91,15 +91,15 @@ inline size_t Sonic2Level::getPaletteCount() const
 
 inline size_t Sonic2Level::getPatternCount() const
 {
-    return m_patternCount;
+    return patternCount_;
 }
 
 inline size_t Sonic2Level::getBlockCount() const
 {
-    return m_blockCount;
+    return blockCount_;
 }
 
 inline size_t Sonic2Level::getChunkCount() const
 {
-    return m_chunkCount;
+    return chunkCount_;
 }

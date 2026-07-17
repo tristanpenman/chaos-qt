@@ -51,15 +51,15 @@ private:
     void loadChunks(Rom& rom, uint32_t chunksAddr, uint32_t extendedChunksAddr);
     void loadMap(Rom& rom, uint32_t mapAddr);
 
-    Palette* m_palettes;
-    Pattern* m_patterns;
-    Block* m_blocks;
-    Chunk* m_chunks;
-    Map* m_map;
+    Palette* palettes_;
+    Pattern* patterns_;
+    Block* blocks_;
+    Chunk* chunks_;
+    Map* map_;
 
-    size_t m_patternCount;
-    size_t m_blockCount;
-    size_t m_chunkCount;
+    size_t patternCount_;
+    size_t blockCount_;
+    size_t chunkCount_;
 };
 
 inline size_t Sonic3Level::getPaletteCount() const
@@ -69,15 +69,15 @@ inline size_t Sonic3Level::getPaletteCount() const
 
 inline size_t Sonic3Level::getPatternCount() const
 {
-    return m_patternCount;
+    return patternCount_;
 }
 
 inline size_t Sonic3Level::getBlockCount() const
 {
-    return m_blockCount;
+    return blockCount_;
 }
 
 inline size_t Sonic3Level::getChunkCount() const
 {
-    return m_chunkCount;
+    return chunkCount_;
 }

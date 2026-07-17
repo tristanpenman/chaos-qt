@@ -39,5 +39,5 @@ public:
     void write32BitAddr(uint32_t addr, std::streamoff offset);
 
 private:
-    QFile m_file;
+    QFile file_;
 };

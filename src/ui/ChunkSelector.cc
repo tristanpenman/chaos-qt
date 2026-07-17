@@ -21,41 +21,41 @@ static constexpr int CHUNK_SPACING = 5;
 
 ChunkSelector::ChunkSelector(QWidget* parent, QPixmap** chunks, size_t chunkCount)
     : QWidget(parent)
-    , m_scene(nullptr)
-    , m_view(nullptr)
-    , m_selected(nullptr)
-    , m_chunks(chunks)
-    , m_chunkItems(nullptr)
-    , m_chunkCount(chunkCount)
-    , m_selectedChunk(0)
-    , m_highlightedChunk(-1)
+    , scene_(nullptr)
+    , view_(nullptr)
+    , selected_(nullptr)
+    , chunks_(chunks)
+    , chunkItems_(nullptr)
+    , chunkCount_(chunkCount)
+    , selectedChunk_(0)
+    , highlightedChunk_(-1)
 {
     // add chunks to scene
-    m_scene = new QGraphicsScene(this);
-    m_chunkItems = new QGraphicsPixmapItem*[chunkCount];
+    scene_ = new QGraphicsScene(this);
+    chunkItems_ = new QGraphicsPixmapItem*[chunkCount];
     for (size_t i = 0; i < chunkCount; i++) {
-        m_chunkItems[i] = m_scene->addPixmap(*chunks[i]);
-        m_chunkItems[i]->setPos(0, i * (128 + CHUNK_SPACING));
+        chunkItems_[i] = scene_->addPixmap(*chunks[i]);
+        chunkItems_[i]->setPos(0, i * (128 + CHUNK_SPACING));
     }
 
     // create view
-    m_view = new QGraphicsView(this);
-    m_view->setScene(m_scene);
+    view_ = new QGraphicsView(this);
+    view_->setScene(scene_);
 
     // no border and light background
-    m_view->setFrameStyle(QFrame::NoFrame);
-    m_view->setStyleSheet("background: #eee");
+    view_->setFrameStyle(QFrame::NoFrame);
+    view_->setStyleSheet("background: #eee");
 
     // disable dragging and move to first tile
-    m_view->setDragMode(QGraphicsView::DragMode::NoDrag);
-    m_view->centerOn(0, -m_scene->height() / 2);
+    view_->setDragMode(QGraphicsView::DragMode::NoDrag);
+    view_->centerOn(0, -scene_->height() / 2);
 
     // set width according to scrollbars...
     // TODO: not sure why height/2 works here, need to test across platforms
-    const auto scrollbarSize = m_view->verticalScrollBar()->height() / 2;
-    m_view->setFixedWidth(128 + scrollbarSize);
-    m_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    const auto scrollbarSize = view_->verticalScrollBar()->height() / 2;
+    view_->setFixedWidth(128 + scrollbarSize);
+    view_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     // styleable container for selected chunk
     auto selectedContainer = new QWidget(this);
@@ -67,58 +67,58 @@ ChunkSelector::ChunkSelector(QWidget* parent, QPixmap** chunks, size_t chunkCoun
     selectedContainer->setStyleSheet("background: #ccc");
 
     // selected chunk
-    m_selected = new QLabel(this);
-    m_selected->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-    m_selected->setAttribute(Qt::WA_TranslucentBackground);
-    m_selected->setPixmap(*m_chunks[0]);
-    selectedLayout->addWidget(m_selected);
+    selected_ = new QLabel(this);
+    selected_->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    selected_->setAttribute(Qt::WA_TranslucentBackground);
+    selected_->setPixmap(*chunks_[0]);
+    selectedLayout->addWidget(selected_);
 
     // layout
     auto vbox = new QVBoxLayout(this);
     vbox->addWidget(selectedContainer);
-    vbox->addWidget(m_view);
+    vbox->addWidget(view_);
     vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(8);
     setLayout(vbox);
 
     // highlight region
-    m_highlight = new Rectangle(128, 128, QColor(128, 192, 255, 64));
-    m_highlight->setPos(0, 0);
-    m_highlight->setVisible(false);
-    m_scene->addItem(m_highlight);
+    highlight_ = new Rectangle(128, 128, QColor(128, 192, 255, 64));
+    highlight_->setPos(0, 0);
+    highlight_->setVisible(false);
+    scene_->addItem(highlight_);
 
     // track mouse events
-    m_view->viewport()->installEventFilter(this);
-    m_view->setMouseTracking(true);
+    view_->viewport()->installEventFilter(this);
+    view_->setMouseTracking(true);
 }
 
 void ChunkSelector::refresh()
 {
-    for (size_t i = 0; i < m_chunkCount; i++) {
-        m_chunkItems[i]->setPixmap(*m_chunks[i]);
+    for (size_t i = 0; i < chunkCount_; i++) {
+        chunkItems_[i]->setPixmap(*chunks_[i]);
     }
-    m_selected->setPixmap(*m_chunks[m_selectedChunk]);
+    selected_->setPixmap(*chunks_[selectedChunk_]);
 }
 
 bool ChunkSelector::eventFilter(QObject* object, QEvent* ev)
 {
-    if (object != m_view->viewport()) {
+    if (object != view_->viewport()) {
         return false;
     }
 
     switch (ev->type()) {
     case QEvent::Leave:
-        m_highlightedChunk = -1;
-        m_highlight->setVisible(false);
+        highlightedChunk_ = -1;
+        highlight_->setVisible(false);
         break;
 
     case QEvent::MouseButtonPress:
-        handleClick(m_view->viewport()->mapFromGlobal(QCursor::pos()));
+        handleClick(view_->viewport()->mapFromGlobal(QCursor::pos()));
         return true;
 
     case QEvent::MouseMove:
     case QEvent::Wheel:
-        handleMove(m_view->viewport()->mapFromGlobal(QCursor::pos()));
+        handleMove(view_->viewport()->mapFromGlobal(QCursor::pos()));
         break;
 
     default:
@@ -130,32 +130,32 @@ bool ChunkSelector::eventFilter(QObject* object, QEvent* ev)
 
 void ChunkSelector::handleClick(const QPoint& pos)
 {
-    const int y = pos.y() - CHUNK_SPACING + m_view->verticalScrollBar()->value();
+    const int y = pos.y() - CHUNK_SPACING + view_->verticalScrollBar()->value();
     const int tileOffset = y % (128 + CHUNK_SPACING);
 
     if (tileOffset < 128) {
         const int tile = y / (128 + CHUNK_SPACING);
         LOG() << "Selected chunk " << tile;
-        m_selectedChunk = tile;
-        m_selected->setPixmap(*m_chunks[tile]);
+        selectedChunk_ = tile;
+        selected_->setPixmap(*chunks_[tile]);
         emit chunkSelected(tile);
     }
 }
 
 void ChunkSelector::handleMove(const QPoint& pos)
 {
-    const int y = pos.y() - CHUNK_SPACING + m_view->verticalScrollBar()->value();
+    const int y = pos.y() - CHUNK_SPACING + view_->verticalScrollBar()->value();
     const int tileOffset = y % (128 + CHUNK_SPACING);
     if (tileOffset >= 128) {
-        m_highlightedChunk = -1;
-        m_highlight->setVisible(false);
+        highlightedChunk_ = -1;
+        highlight_->setVisible(false);
         return;
     }
 
     const int tile = y / (128 + CHUNK_SPACING);
-    if (m_highlightedChunk != tile) {
-        m_highlightedChunk = tile;
-        m_highlight->setPos(0, tile * (128 + CHUNK_SPACING));
-        m_highlight->setVisible(true);
+    if (highlightedChunk_ != tile) {
+        highlightedChunk_ = tile;
+        highlight_->setPos(0, tile * (128 + CHUNK_SPACING));
+        highlight_->setVisible(true);
     }
 }

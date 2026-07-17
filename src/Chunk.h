@@ -28,5 +28,5 @@ private:
     Chunk(const Chunk&) = delete;
     Chunk& operator=(const Chunk&) = delete;
 
-    std::array<BlockDesc, BLOCKS_PER_CHUNK> m_blockDescs;
+    std::array<BlockDesc, BLOCKS_PER_CHUNK> blockDescs_;
 };

@@ -38,43 +38,43 @@ private:
     BlockDesc(const BlockDesc&) = delete;
     BlockDesc& operator=(const BlockDesc&) = delete;
 
-    uint16_t m_index;
+    uint16_t index_;
 };
 
 inline BlockDesc::BlockDesc()
-    : m_index(0)
+    : index_(0)
 {
 
 }
 
 inline uint16_t BlockDesc::get() const
 {
-    return m_index;
+    return index_;
 }
 
 inline uint16_t BlockDesc::getBlockIndex() const
 {
-    return m_index & 0x3FF;
+    return index_ & 0x3FF;
 }
 
 inline bool BlockDesc::getHFlip() const
 {
-    return (m_index & 0x400) != 0;
+    return (index_ & 0x400) != 0;
 }
 
 inline bool BlockDesc::getVFlip() const
 {
-    return (m_index & 0x800) != 0;
+    return (index_ & 0x800) != 0;
 }
 
 inline void BlockDesc::set(uint16_t value)
 {
-    m_index = value;
+    index_ = value;
 }
 
 inline void BlockDesc::set(BlockDesc& desc)
 {
-    m_index = desc.m_index;
+    index_ = desc.index_;
 }
 
 inline size_t BlockDesc::getIndexSize()

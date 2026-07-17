@@ -8,7 +8,7 @@
 
 PaletteInspector::PaletteInspector(QWidget* parent, const std::shared_ptr<Level>& level)
     : QDialog(parent)
-    , m_level(level)
+    , level_(level)
 {
     setWindowFlag(Qt::WindowStaysOnTopHint);
 
@@ -16,8 +16,8 @@ PaletteInspector::PaletteInspector(QWidget* parent, const std::shared_ptr<Level>
     vbox->setContentsMargins(8, 8, 8, 8);
     vbox->setSpacing(0);
 
-    for (size_t r = 0; r < m_level->getPaletteCount(); r++) {
-        const Palette& palette = m_level->getPalette(r);
+    for (size_t r = 0; r < level_->getPaletteCount(); r++) {
+        const Palette& palette = level_->getPalette(r);
 
         QHBoxLayout* hbox = new QHBoxLayout();
         hbox->setSpacing(0);

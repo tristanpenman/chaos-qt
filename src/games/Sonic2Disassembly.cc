@@ -40,14 +40,14 @@ vector<uint8_t> toBytes(const QByteArray& data)
 }  // namespace
 
 Sonic2Disassembly::Sonic2Disassembly(const string& iniPath)
-    : m_rootDir(QFileInfo(QString::fromStdString(iniPath)).absoluteDir())
-    , m_iniPath(QString::fromStdString(iniPath))
+    : rootDir_(QFileInfo(QString::fromStdString(iniPath)).absoluteDir())
+    , iniPath_(QString::fromStdString(iniPath))
 {
 }
 
 Sonic2Disassembly::Sonic2Disassembly(const string& rootDir, const string& iniPath)
-    : m_rootDir(QString::fromStdString(rootDir))
-    , m_iniPath(QFileInfo(QString::fromStdString(iniPath)).isAbsolute()
+    : rootDir_(QString::fromStdString(rootDir))
+    , iniPath_(QFileInfo(QString::fromStdString(iniPath)).isAbsolute()
                      ? QString::fromStdString(iniPath)
                      : QDir(QString::fromStdString(rootDir)).filePath(QString::fromStdString(iniPath)))
 {
@@ -55,7 +55,7 @@ Sonic2Disassembly::Sonic2Disassembly(const string& rootDir, const string& iniPat
 
 bool Sonic2Disassembly::isCompatible()
 {
-    if (!QFileInfo::exists(m_iniPath)) {
+    if (!QFileInfo::exists(iniPath_)) {
         return false;
     }
 
@@ -146,7 +146,7 @@ bool Sonic2Disassembly::save(unsigned int, Level&)
 
 vector<Sonic2Disassembly::LevelEntry> Sonic2Disassembly::readLevelEntries() const
 {
-    QSettings settings(m_iniPath, QSettings::IniFormat);
+    QSettings settings(iniPath_, QSettings::IniFormat);
     vector<LevelEntry> entries;
 
     const auto groups = settings.childGroups();
@@ -164,7 +164,7 @@ vector<Sonic2Disassembly::LevelEntry> Sonic2Disassembly::readLevelEntries() cons
 
 Sonic2Disassembly::LevelEntry Sonic2Disassembly::readLevelEntry(const QString& group) const
 {
-    QSettings settings(m_iniPath, QSettings::IniFormat);
+    QSettings settings(iniPath_, QSettings::IniFormat);
     settings.beginGroup(group);
 
     LevelEntry entry;
@@ -264,7 +264,7 @@ QString Sonic2Disassembly::resolvePath(const QString& spec) const
         return path;
     }
 
-    return m_rootDir.filePath(path);
+    return rootDir_.filePath(path);
 }
 
 QString Sonic2Disassembly::value(QSettings& settings, const QStringList& keys) const

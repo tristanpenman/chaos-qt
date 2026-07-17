@@ -25,11 +25,11 @@ private:
     void drawPattern(QImage& image, const Pattern&, const Palette&, int dx, int dy);
     void drawPatterns(size_t paletteIndex);
 
-    std::shared_ptr<Level> m_level;
+    std::shared_ptr<Level> level_;
 
-    QLabel* m_label;
-    QPixmap* m_pixmap;
-    size_t m_paletteIndex;
+    QLabel* label_;
+    QPixmap* pixmap_;
+    size_t paletteIndex_;
 
 private slots:
     void paletteChanged(int);

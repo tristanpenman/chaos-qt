@@ -14,5 +14,5 @@ public:
     PaletteInspector(QWidget* parent, const std::shared_ptr<Level>& level);
 
 private:
-    std::shared_ptr<Level> m_level;
+    std::shared_ptr<Level> level_;
 };

@@ -35,29 +35,29 @@ static QColor toQColor(const Palette::Color& color)
 
 BlockCanvas::BlockCanvas(QWidget* parent, const shared_ptr<Level>& level, Block* blocks)
     : QWidget(parent)
-    , m_level(level)
-    , m_blocks(blocks)
-    , m_blockIndex(0)
-    , m_selectedPatternIndex(0)
-    , m_selectedPaletteIndex(0)
-    , m_hFlip(false)
-    , m_vFlip(false)
+    , level_(level)
+    , blocks_(blocks)
+    , blockIndex_(0)
+    , selectedPatternIndex_(0)
+    , selectedPaletteIndex_(0)
+    , hFlip_(false)
+    , vFlip_(false)
 {
     setFixedSize(Block::BLOCK_WIDTH * CANVAS_SCALE, Block::BLOCK_HEIGHT * CANVAS_SCALE);
 }
 
 void BlockCanvas::setBlockIndex(size_t blockIndex)
 {
-    m_blockIndex = blockIndex;
+    blockIndex_ = blockIndex;
     update();
 }
 
 void BlockCanvas::setSelectedPattern(uint16_t patternIndex, uint16_t paletteIndex, bool hFlip, bool vFlip)
 {
-    m_selectedPatternIndex = patternIndex;
-    m_selectedPaletteIndex = paletteIndex;
-    m_hFlip = hFlip;
-    m_vFlip = vFlip;
+    selectedPatternIndex_ = patternIndex;
+    selectedPaletteIndex_ = paletteIndex;
+    hFlip_ = hFlip;
+    vFlip_ = vFlip;
 }
 
 void BlockCanvas::mousePressEvent(QMouseEvent* event)
@@ -80,7 +80,7 @@ void BlockCanvas::paintEvent(QPaintEvent*)
     painter.scale(CANVAS_SCALE, CANVAS_SCALE);
     painter.fillRect(QRect(0, 0, Block::BLOCK_WIDTH, Block::BLOCK_HEIGHT), Qt::black);
 
-    drawBlock(painter, m_blocks[m_blockIndex]);
+    drawBlock(painter, blocks_[blockIndex_]);
 
     painter.resetTransform();
     painter.setPen(QColor(55, 55, 55));
@@ -97,7 +97,7 @@ void BlockCanvas::drawAt(const QPoint& pos)
         return;
     }
 
-    Block& block = m_blocks[m_blockIndex];
+    Block& block = blocks_[blockIndex_];
     const uint16_t value = selectedPatternDescValue();
     if (block.getPatternDesc(static_cast<uint8_t>(x), static_cast<uint8_t>(y)).get() == value) {
         return;
@@ -113,8 +113,8 @@ void BlockCanvas::drawBlock(QPainter& painter, const Block& block)
     for (int py = 0; py < 2; py++) {
         for (int px = 0; px < 2; px++) {
             const auto& patternDesc = block.getPatternDesc(static_cast<uint8_t>(px), static_cast<uint8_t>(py));
-            const auto& pattern = m_level->getPattern(patternDesc.getPatternIndex());
-            const auto& palette = m_level->getPalette(patternDesc.getPaletteIndex());
+            const auto& pattern = level_->getPattern(patternDesc.getPatternIndex());
+            const auto& palette = level_->getPalette(patternDesc.getPaletteIndex());
             drawPattern(painter,
                   pattern,
                   palette,
@@ -146,12 +146,12 @@ void BlockCanvas::drawPattern(QPainter& painter,
 
 uint16_t BlockCanvas::selectedPatternDescValue() const
 {
-    uint16_t value = m_selectedPatternIndex & 0x7FF;
-    value |= (m_selectedPaletteIndex & 0x3) << 13;
-    if (m_hFlip) {
+    uint16_t value = selectedPatternIndex_ & 0x7FF;
+    value |= (selectedPaletteIndex_ & 0x3) << 13;
+    if (hFlip_) {
         value |= H_FLIP_MASK;
     }
-    if (m_vFlip) {
+    if (vFlip_) {
         value |= V_FLIP_MASK;
     }
     return value;
@@ -159,19 +159,19 @@ uint16_t BlockCanvas::selectedPatternDescValue() const
 
 PatternPaletteList::PatternPaletteList(QWidget* parent, const shared_ptr<Level>& level)
     : QWidget(parent)
-    , m_level(level)
-    , m_selectedPatternIndex(0)
-    , m_selectedPaletteIndex(0)
+    , level_(level)
+    , selectedPatternIndex_(0)
+    , selectedPaletteIndex_(0)
 {
     setMinimumWidth(PATTERN_LABEL_WIDTH + PATTERN_CELL_SIZE * 4 + 16);
-    setFixedHeight(static_cast<int>(m_level->getPatternCount()) * PATTERN_ROW_HEIGHT);
+    setFixedHeight(static_cast<int>(level_->getPatternCount()) * PATTERN_ROW_HEIGHT);
     buildPixmapCache();
 }
 
 void PatternPaletteList::setSelected(uint16_t patternIndex, uint16_t paletteIndex)
 {
-    m_selectedPatternIndex = patternIndex;
-    m_selectedPaletteIndex = paletteIndex;
+    selectedPatternIndex_ = patternIndex;
+    selectedPaletteIndex_ = paletteIndex;
     update();
 }
 
@@ -188,15 +188,15 @@ void PatternPaletteList::mousePressEvent(QMouseEvent* event)
 #endif
     const int patternIndex = pos.y() / PATTERN_ROW_HEIGHT;
     const int paletteIndex = (pos.x() - PATTERN_LABEL_WIDTH) / PATTERN_CELL_SIZE;
-    if (patternIndex < 0 || patternIndex >= static_cast<int>(m_level->getPatternCount()) ||
+    if (patternIndex < 0 || patternIndex >= static_cast<int>(level_->getPatternCount()) ||
             paletteIndex < 0 || paletteIndex >= 4) {
         return;
     }
 
-    m_selectedPatternIndex = static_cast<uint16_t>(patternIndex);
-    m_selectedPaletteIndex = static_cast<uint16_t>(paletteIndex);
+    selectedPatternIndex_ = static_cast<uint16_t>(patternIndex);
+    selectedPaletteIndex_ = static_cast<uint16_t>(paletteIndex);
     update();
-    emit patternSelected(m_selectedPatternIndex, m_selectedPaletteIndex);
+    emit patternSelected(selectedPatternIndex_, selectedPaletteIndex_);
 }
 
 void PatternPaletteList::paintEvent(QPaintEvent*)
@@ -205,7 +205,7 @@ void PatternPaletteList::paintEvent(QPaintEvent*)
     painter.fillRect(rect(), palette().base());
     painter.setRenderHint(QPainter::Antialiasing, false);
 
-    for (size_t patternIndex = 0; patternIndex < m_level->getPatternCount(); patternIndex++) {
+    for (size_t patternIndex = 0; patternIndex < level_->getPatternCount(); patternIndex++) {
         const int y = static_cast<int>(patternIndex) * PATTERN_ROW_HEIGHT;
         painter.setPen(palette().text().color());
         painter.drawText(QRect(0, y, PATTERN_LABEL_WIDTH - 8, PATTERN_ROW_HEIGHT), Qt::AlignVCenter | Qt::AlignRight, tr("Pattern %1").arg(patternIndex));
@@ -214,7 +214,7 @@ void PatternPaletteList::paintEvent(QPaintEvent*)
             const int x = PATTERN_LABEL_WIDTH + static_cast<int>(paletteIndex) * PATTERN_CELL_SIZE;
             painter.drawPixmap(x, y + 3, cachedPixmap(patternIndex, paletteIndex));
 
-            if (patternIndex == m_selectedPatternIndex && paletteIndex == m_selectedPaletteIndex) {
+            if (patternIndex == selectedPatternIndex_ && paletteIndex == selectedPaletteIndex_) {
                 painter.setPen(QPen(QColor(128, 192, 255), 2));
             } else {
                 painter.setPen(QColor(55, 55, 55));
@@ -226,11 +226,11 @@ void PatternPaletteList::paintEvent(QPaintEvent*)
 
 void PatternPaletteList::buildPixmapCache()
 {
-    m_pixmaps.clear();
-    m_pixmaps.reserve(m_level->getPatternCount() * 4);
-    for (size_t patternIndex = 0; patternIndex < m_level->getPatternCount(); patternIndex++) {
+    pixmaps_.clear();
+    pixmaps_.reserve(level_->getPatternCount() * 4);
+    for (size_t patternIndex = 0; patternIndex < level_->getPatternCount(); patternIndex++) {
         for (size_t paletteIndex = 0; paletteIndex < 4; paletteIndex++) {
-            m_pixmaps.push_back(renderPatternPixmap(m_level->getPattern(patternIndex), m_level->getPalette(paletteIndex)));
+            pixmaps_.push_back(renderPatternPixmap(level_->getPattern(patternIndex), level_->getPalette(paletteIndex)));
         }
     }
 }
@@ -253,24 +253,24 @@ QPixmap PatternPaletteList::renderPatternPixmap(const Pattern& pattern, const Pa
 
 const QPixmap& PatternPaletteList::cachedPixmap(size_t patternIndex, size_t paletteIndex) const
 {
-    return m_pixmaps[patternIndex * 4 + paletteIndex];
+    return pixmaps_[patternIndex * 4 + paletteIndex];
 }
 
 BlockEditor::BlockEditor(QWidget* parent, const shared_ptr<Level>& level)
     : QDialog(parent)
-    , m_level(level)
-    , m_blocks(new Block[level->getBlockCount()])
-    , m_blockCombo(nullptr)
-    , m_hFlipCheckBox(nullptr)
-    , m_vFlipCheckBox(nullptr)
-    , m_canvas(nullptr)
-    , m_patternList(nullptr)
-    , m_saveButton(nullptr)
-    , m_discardButton(nullptr)
-    , m_blockIndex(0)
-    , m_selectedPatternIndex(0)
-    , m_selectedPaletteIndex(0)
-    , m_dirty(false)
+    , level_(level)
+    , blocks_(new Block[level->getBlockCount()])
+    , blockCombo_(nullptr)
+    , hFlipCheckBox_(nullptr)
+    , vFlipCheckBox_(nullptr)
+    , canvas_(nullptr)
+    , patternList_(nullptr)
+    , saveButton_(nullptr)
+    , discardButton_(nullptr)
+    , blockIndex_(0)
+    , selectedPatternIndex_(0)
+    , selectedPaletteIndex_(0)
+    , dirty_(false)
 {
     setModal(false);
     loadBlocks();
@@ -283,30 +283,30 @@ BlockEditor::BlockEditor(QWidget* parent, const shared_ptr<Level>& level)
     auto* contentLayout = new QHBoxLayout();
     auto* leftLayout = new QVBoxLayout();
 
-    m_blockCombo = new QComboBox();
-    for (size_t i = 0; i < m_level->getBlockCount(); i++) {
-        m_blockCombo->addItem(tr("Block %1").arg(i), QVariant::fromValue(i));
+    blockCombo_ = new QComboBox();
+    for (size_t i = 0; i < level_->getBlockCount(); i++) {
+        blockCombo_->addItem(tr("Block %1").arg(i), QVariant::fromValue(i));
     }
-    leftLayout->addWidget(m_blockCombo);
+    leftLayout->addWidget(blockCombo_);
 
     auto* editorLayout = new QHBoxLayout();
-    m_canvas = new BlockCanvas(this, m_level, m_blocks.get());
-    editorLayout->addWidget(m_canvas);
+    canvas_ = new BlockCanvas(this, level_, blocks_.get());
+    editorLayout->addWidget(canvas_);
 
     auto* toolsLayout = new QVBoxLayout();
-    m_hFlipCheckBox = new QCheckBox(tr("Horizontal flip"));
-    m_vFlipCheckBox = new QCheckBox(tr("Vertical flip"));
-    toolsLayout->addWidget(m_hFlipCheckBox);
-    toolsLayout->addWidget(m_vFlipCheckBox);
+    hFlipCheckBox_ = new QCheckBox(tr("Horizontal flip"));
+    vFlipCheckBox_ = new QCheckBox(tr("Vertical flip"));
+    toolsLayout->addWidget(hFlipCheckBox_);
+    toolsLayout->addWidget(vFlipCheckBox_);
     toolsLayout->addStretch(1);
     editorLayout->addLayout(toolsLayout);
     leftLayout->addLayout(editorLayout);
     leftLayout->addStretch(1);
     contentLayout->addLayout(leftLayout);
 
-    m_patternList = new PatternPaletteList(this, m_level);
+    patternList_ = new PatternPaletteList(this, level_);
     auto* scrollArea = new QScrollArea();
-    scrollArea->setWidget(m_patternList);
+    scrollArea->setWidget(patternList_);
     scrollArea->setWidgetResizable(false);
     scrollArea->setMinimumSize(PATTERN_LABEL_WIDTH + PATTERN_CELL_SIZE * 4 + 36, 320);
     contentLayout->addWidget(scrollArea);
@@ -314,21 +314,21 @@ BlockEditor::BlockEditor(QWidget* parent, const shared_ptr<Level>& level)
 
     auto* buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch(1);
-    m_saveButton = new QPushButton(tr("Save"));
-    m_discardButton = new QPushButton(tr("Discard"));
+    saveButton_ = new QPushButton(tr("Save"));
+    discardButton_ = new QPushButton(tr("Discard"));
     auto* closeButton = new QPushButton(tr("Close"));
-    buttonLayout->addWidget(m_saveButton);
-    buttonLayout->addWidget(m_discardButton);
+    buttonLayout->addWidget(saveButton_);
+    buttonLayout->addWidget(discardButton_);
     buttonLayout->addWidget(closeButton);
     mainLayout->addLayout(buttonLayout);
 
-    connect(m_blockCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &BlockEditor::blockChanged);
-    connect(m_hFlipCheckBox, &QCheckBox::toggled, this, &BlockEditor::flipChanged);
-    connect(m_vFlipCheckBox, &QCheckBox::toggled, this, &BlockEditor::flipChanged);
-    connect(m_canvas, &BlockCanvas::blockModified, this, &BlockEditor::blockModified);
-    connect(m_patternList, &PatternPaletteList::patternSelected, this, &BlockEditor::patternSelected);
-    connect(m_saveButton, &QPushButton::clicked, this, &BlockEditor::saveChanges);
-    connect(m_discardButton, &QPushButton::clicked, this, &BlockEditor::discardChanges);
+    connect(blockCombo_, qOverload<int>(&QComboBox::currentIndexChanged), this, &BlockEditor::blockChanged);
+    connect(hFlipCheckBox_, &QCheckBox::toggled, this, &BlockEditor::flipChanged);
+    connect(vFlipCheckBox_, &QCheckBox::toggled, this, &BlockEditor::flipChanged);
+    connect(canvas_, &BlockCanvas::blockModified, this, &BlockEditor::blockModified);
+    connect(patternList_, &PatternPaletteList::patternSelected, this, &BlockEditor::patternSelected);
+    connect(saveButton_, &QPushButton::clicked, this, &BlockEditor::saveChanges);
+    connect(discardButton_, &QPushButton::clicked, this, &BlockEditor::discardChanges);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
     setDirty(false);
@@ -349,15 +349,15 @@ void BlockEditor::closeEvent(QCloseEvent* event)
 void BlockEditor::applyBlocks()
 {
     uint8_t buffer[Block::BLOCK_SIZE_IN_ROM];
-    for (size_t i = 0; i < m_level->getBlockCount(); i++) {
-        m_blocks[i].toSegaFormat(buffer);
-        m_level->getBlock(i).fromSegaFormat(buffer);
+    for (size_t i = 0; i < level_->getBlockCount(); i++) {
+        blocks_[i].toSegaFormat(buffer);
+        level_->getBlock(i).fromSegaFormat(buffer);
     }
 }
 
 bool BlockEditor::confirmDirtyChanges()
 {
-    if (!m_dirty) {
+    if (!dirty_) {
         return true;
     }
 
@@ -373,7 +373,7 @@ bool BlockEditor::confirmDirtyChanges()
         return true;
     case QMessageBox::Discard:
         loadBlocks();
-        m_canvas->update();
+        canvas_->update();
         setDirty(false);
         return true;
     default:
@@ -384,45 +384,45 @@ bool BlockEditor::confirmDirtyChanges()
 void BlockEditor::loadBlocks()
 {
     uint8_t buffer[Block::BLOCK_SIZE_IN_ROM];
-    for (size_t i = 0; i < m_level->getBlockCount(); i++) {
-        m_level->getBlock(i).toSegaFormat(buffer);
-        m_blocks[i].fromSegaFormat(buffer);
+    for (size_t i = 0; i < level_->getBlockCount(); i++) {
+        level_->getBlock(i).toSegaFormat(buffer);
+        blocks_[i].fromSegaFormat(buffer);
     }
 }
 
 void BlockEditor::setDirty(bool dirty)
 {
-    m_dirty = dirty;
-    m_saveButton->setEnabled(dirty);
-    m_discardButton->setEnabled(dirty);
+    dirty_ = dirty;
+    saveButton_->setEnabled(dirty);
+    discardButton_->setEnabled(dirty);
     updateTitle();
 }
 
 void BlockEditor::updateCanvasSelection()
 {
-    m_canvas->setSelectedPattern(m_selectedPatternIndex,
-                               m_selectedPaletteIndex,
-                               m_hFlipCheckBox->isChecked(),
-                               m_vFlipCheckBox->isChecked());
+    canvas_->setSelectedPattern(selectedPatternIndex_,
+                               selectedPaletteIndex_,
+                               hFlipCheckBox_->isChecked(),
+                               vFlipCheckBox_->isChecked());
 }
 
 void BlockEditor::updateTitle()
 {
     setWindowTitle(tr("%1Block Editor - Block %2")
-            .arg(m_dirty ? "*" : "")
-            .arg(m_blockIndex));
+            .arg(dirty_ ? "*" : "")
+            .arg(blockIndex_));
 }
 
 void BlockEditor::blockChanged(int blockIndex)
 {
     if (!confirmDirtyChanges()) {
-        QSignalBlocker blocker(m_blockCombo);
-        m_blockCombo->setCurrentIndex(static_cast<int>(m_blockIndex));
+        QSignalBlocker blocker(blockCombo_);
+        blockCombo_->setCurrentIndex(static_cast<int>(blockIndex_));
         return;
     }
 
-    m_blockIndex = static_cast<size_t>(blockIndex);
-    m_canvas->setBlockIndex(m_blockIndex);
+    blockIndex_ = static_cast<size_t>(blockIndex);
+    canvas_->setBlockIndex(blockIndex_);
     setDirty(false);
     updateTitle();
 }
@@ -435,7 +435,7 @@ void BlockEditor::blockModified()
 void BlockEditor::discardChanges()
 {
     loadBlocks();
-    m_canvas->update();
+    canvas_->update();
     setDirty(false);
 }
 
@@ -446,8 +446,8 @@ void BlockEditor::flipChanged(int)
 
 void BlockEditor::patternSelected(uint16_t patternIndex, uint16_t paletteIndex)
 {
-    m_selectedPatternIndex = patternIndex;
-    m_selectedPaletteIndex = paletteIndex;
+    selectedPatternIndex_ = patternIndex;
+    selectedPaletteIndex_ = paletteIndex;
     updateCanvasSelection();
 }
 

@@ -24,9 +24,9 @@ static constexpr int PATTERNS_PER_ROW = PIXMAP_WIDTH / Pattern::PATTERN_WIDTH;
 
 PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& level)
     : QDialog(parent)
-    , m_level(level)
-    , m_pixmap(nullptr)
-    , m_paletteIndex(0)
+    , level_(level)
+    , pixmap_(nullptr)
+    , paletteIndex_(0)
 {
     const auto patternCount = level->getPatternCount();
     const int pixmapHeight = ceilf(static_cast<float>(patternCount) / PATTERNS_PER_ROW) * Pattern::PATTERN_HEIGHT;
@@ -46,14 +46,14 @@ PatternInspector::PatternInspector(QWidget* parent, const shared_ptr<Level>& lev
     }
 
     // create widget to display pixmap
-    m_label = new QLabel();
-    m_label->setFixedSize(PIXMAP_WIDTH, pixmapHeight);
-    m_label->setMinimumWidth(PIXMAP_WIDTH);
-    vbox->addWidget(m_label);
+    label_ = new QLabel();
+    label_->setFixedSize(PIXMAP_WIDTH, pixmapHeight);
+    label_->setMinimumWidth(PIXMAP_WIDTH);
+    vbox->addWidget(label_);
 
     // create pixmap
-    m_pixmap = new QPixmap(PIXMAP_WIDTH, pixmapHeight);
-    m_label->setPixmap(*m_pixmap);
+    pixmap_ = new QPixmap(PIXMAP_WIDTH, pixmapHeight);
+    label_->setPixmap(*pixmap_);
     drawPatterns(0);
 
     // handle switching palettes
@@ -76,24 +76,24 @@ void PatternInspector::drawPatterns(size_t paletteIndex)
 {
     LOG() << "Drawing patterns using palette " << paletteIndex;
 
-    const Palette& palette = m_level->getPalette(paletteIndex);
+    const Palette& palette = level_->getPalette(paletteIndex);
 
     // image to draw to
-    QImage image(m_pixmap->width(), m_pixmap->height(), QImage::Format_RGB888);
+    QImage image(pixmap_->width(), pixmap_->height(), QImage::Format_RGB888);
     image.fill(qRgb(0, 0, 0));
 
     // draw individual patterns
-    for (size_t i = 0; i < m_level->getPatternCount(); i++) {
+    for (size_t i = 0; i < level_->getPatternCount(); i++) {
         const auto row = static_cast<int>(i / PATTERNS_PER_ROW);
         const auto col = static_cast<int>(i % PATTERNS_PER_ROW);
 
-        drawPattern(image, m_level->getPattern(i), palette, col * Pattern::PATTERN_WIDTH, row * Pattern::PATTERN_HEIGHT);
+        drawPattern(image, level_->getPattern(i), palette, col * Pattern::PATTERN_WIDTH, row * Pattern::PATTERN_HEIGHT);
     }
 
     // copy to pixmap
     LOG() << "Copying pattern image to pixmap";
-    if (m_pixmap->convertFromImage(image)) {
-        m_label->setPixmap(*m_pixmap);
+    if (pixmap_->convertFromImage(image)) {
+        label_->setPixmap(*pixmap_);
     } else {
         LOG() << "Failed to copy image to pixmap";
     }
@@ -101,11 +101,11 @@ void PatternInspector::drawPatterns(size_t paletteIndex)
 
 void PatternInspector::paletteChanged(int paletteIndex)
 {
-    m_paletteIndex = static_cast<size_t>(paletteIndex);
+    paletteIndex_ = static_cast<size_t>(paletteIndex);
     drawPatterns(paletteIndex);
 }
 
 void PatternInspector::refresh()
 {
-    drawPatterns(m_paletteIndex);
+    drawPatterns(paletteIndex_);
 }

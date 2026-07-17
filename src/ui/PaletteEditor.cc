@@ -24,32 +24,32 @@ uint8_t toSegaChannel(int value)
 
 PaletteEditor::PaletteEditor(QWidget* parent, const std::shared_ptr<Level>& level)
     : QDialog(parent)
-    , m_level(level)
-    , m_paletteCombo(new QComboBox())
-    , m_colorButtons(new QButtonGroup(this))
-    , m_saveButton(new QPushButton(tr("Save")))
-    , m_discardButton(new QPushButton(tr("Discard")))
-    , m_paletteIndex(0)
-    , m_dirty(false)
+    , level_(level)
+    , paletteCombo_(new QComboBox())
+    , colorButtons_(new QButtonGroup(this))
+    , saveButton_(new QPushButton(tr("Save")))
+    , discardButton_(new QPushButton(tr("Discard")))
+    , paletteIndex_(0)
+    , dirty_(false)
 {
     auto* mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(8, 8, 8, 8);
     mainLayout->setSpacing(8);
     setLayout(mainLayout);
 
-    for (size_t i = 0; i < m_level->getPaletteCount(); i++) {
-        m_paletteCombo->addItem(tr("Palette %1").arg(i), QVariant::fromValue(i));
+    for (size_t i = 0; i < level_->getPaletteCount(); i++) {
+        paletteCombo_->addItem(tr("Palette %1").arg(i), QVariant::fromValue(i));
     }
-    mainLayout->addWidget(m_paletteCombo);
+    mainLayout->addWidget(paletteCombo_);
 
     auto* paletteLayout = new QGridLayout();
     paletteLayout->setSpacing(4);
-    m_colorButtons->setExclusive(false);
+    colorButtons_->setExclusive(false);
     for (int i = 0; i < Palette::PALETTE_SIZE; i++) {
         auto* button = new QPushButton();
         button->setFixedSize(36, 36);
         button->setToolTip(tr("Colour %1").arg(i));
-        m_colorButtons->addButton(button, i);
+        colorButtons_->addButton(button, i);
         paletteLayout->addWidget(button, i / 8, i % 8);
     }
     mainLayout->addLayout(paletteLayout);
@@ -57,15 +57,15 @@ PaletteEditor::PaletteEditor(QWidget* parent, const std::shared_ptr<Level>& leve
     auto* buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch(1);
     auto* closeButton = new QPushButton(tr("Close"));
-    buttonLayout->addWidget(m_saveButton);
-    buttonLayout->addWidget(m_discardButton);
+    buttonLayout->addWidget(saveButton_);
+    buttonLayout->addWidget(discardButton_);
     buttonLayout->addWidget(closeButton);
     mainLayout->addLayout(buttonLayout);
 
-    connect(m_paletteCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PaletteEditor::paletteChanged);
-    connect(m_colorButtons, &QButtonGroup::idClicked, this, &PaletteEditor::colorClicked);
-    connect(m_saveButton, &QPushButton::clicked, this, &PaletteEditor::saveChanges);
-    connect(m_discardButton, &QPushButton::clicked, this, &PaletteEditor::discardChanges);
+    connect(paletteCombo_, qOverload<int>(&QComboBox::currentIndexChanged), this, &PaletteEditor::paletteChanged);
+    connect(colorButtons_, &QButtonGroup::idClicked, this, &PaletteEditor::colorClicked);
+    connect(saveButton_, &QPushButton::clicked, this, &PaletteEditor::saveChanges);
+    connect(discardButton_, &QPushButton::clicked, this, &PaletteEditor::discardChanges);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
     loadPalette(0);
@@ -83,14 +83,14 @@ void PaletteEditor::closeEvent(QCloseEvent* event)
 
 bool PaletteEditor::colorChanged(size_t colorIndex) const
 {
-    const auto& color = m_colors[colorIndex];
-    const auto& original = m_originalColors[colorIndex];
+    const auto& color = colors_[colorIndex];
+    const auto& original = originalColors_[colorIndex];
     return color.r != original.r || color.g != original.g || color.b != original.b;
 }
 
 bool PaletteEditor::confirmDirtyChanges()
 {
-    if (!m_dirty) {
+    if (!dirty_) {
         return true;
     }
 
@@ -114,11 +114,11 @@ bool PaletteEditor::confirmDirtyChanges()
 
 void PaletteEditor::loadPalette(size_t paletteIndex)
 {
-    m_paletteIndex = paletteIndex;
-    const Palette& palette = m_level->getPalette(paletteIndex);
+    paletteIndex_ = paletteIndex;
+    const Palette& palette = level_->getPalette(paletteIndex);
     for (size_t i = 0; i < Palette::PALETTE_SIZE; i++) {
-        m_colors[i] = palette.getColor(i);
-        m_originalColors[i] = m_colors[i];
+        colors_[i] = palette.getColor(i);
+        originalColors_[i] = colors_[i];
     }
     populateColorButtons();
     updateTitle();
@@ -127,21 +127,21 @@ void PaletteEditor::loadPalette(size_t paletteIndex)
 void PaletteEditor::populateColorButtons()
 {
     for (size_t i = 0; i < Palette::PALETTE_SIZE; i++) {
-        updateColorButton(m_colorButtons->button(static_cast<int>(i)), i);
+        updateColorButton(colorButtons_->button(static_cast<int>(i)), i);
     }
 }
 
 void PaletteEditor::setDirty(bool dirty)
 {
-    m_dirty = dirty;
-    m_saveButton->setEnabled(dirty);
-    m_discardButton->setEnabled(dirty);
+    dirty_ = dirty;
+    saveButton_->setEnabled(dirty);
+    discardButton_->setEnabled(dirty);
     updateTitle();
 }
 
 void PaletteEditor::updateColorButton(QAbstractButton* button, size_t colorIndex)
 {
-    const auto& color = m_colors[colorIndex];
+    const auto& color = colors_[colorIndex];
     const QString border = colorChanged(colorIndex)
             ? QStringLiteral("3px solid #f0a000")
             : QStringLiteral("1px solid palette(mid)");
@@ -155,13 +155,13 @@ void PaletteEditor::updateColorButton(QAbstractButton* button, size_t colorIndex
 void PaletteEditor::updateTitle()
 {
     setWindowTitle(tr("%1Palette Editor - Palette %2")
-            .arg(m_dirty ? "*" : "")
-            .arg(m_paletteIndex));
+            .arg(dirty_ ? "*" : "")
+            .arg(paletteIndex_));
 }
 
 void PaletteEditor::colorClicked(int colorIndex)
 {
-    auto& color = m_colors[static_cast<size_t>(colorIndex)];
+    auto& color = colors_[static_cast<size_t>(colorIndex)];
     const QColor selectedColor = QColorDialog::getColor(
             QColor(color.r, color.g, color.b), this, tr("Select Colour"));
     if (!selectedColor.isValid()) {
@@ -173,7 +173,7 @@ void PaletteEditor::colorClicked(int colorIndex)
         toSegaChannel(selectedColor.green()),
         toSegaChannel(selectedColor.blue())
     };
-    updateColorButton(m_colorButtons->button(colorIndex), static_cast<size_t>(colorIndex));
+    updateColorButton(colorButtons_->button(colorIndex), static_cast<size_t>(colorIndex));
 
     bool dirty = false;
     for (size_t i = 0; i < Palette::PALETTE_SIZE; i++) {
@@ -184,15 +184,15 @@ void PaletteEditor::colorClicked(int colorIndex)
 
 void PaletteEditor::discardChanges()
 {
-    loadPalette(m_paletteIndex);
+    loadPalette(paletteIndex_);
     setDirty(false);
 }
 
 void PaletteEditor::paletteChanged(int paletteIndex)
 {
     if (!confirmDirtyChanges()) {
-        QSignalBlocker blocker(m_paletteCombo);
-        m_paletteCombo->setCurrentIndex(static_cast<int>(m_paletteIndex));
+        QSignalBlocker blocker(paletteCombo_);
+        paletteCombo_->setCurrentIndex(static_cast<int>(paletteIndex_));
         return;
     }
 
@@ -202,10 +202,10 @@ void PaletteEditor::paletteChanged(int paletteIndex)
 
 void PaletteEditor::saveChanges()
 {
-    Palette& palette = m_level->getPalette(m_paletteIndex);
+    Palette& palette = level_->getPalette(paletteIndex_);
     for (size_t i = 0; i < Palette::PALETTE_SIZE; i++) {
-        palette.setColor(i, m_colors[i]);
-        m_originalColors[i] = m_colors[i];
+        palette.setColor(i, colors_[i]);
+        originalColors_[i] = colors_[i];
     }
     populateColorButtons();
     setDirty(false);

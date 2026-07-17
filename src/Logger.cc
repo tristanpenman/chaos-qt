@@ -6,9 +6,9 @@
 
 using namespace std;
 
-atomic<ostream*> Logger::m_os = nullptr;
-atomic<Logger::Level> Logger::m_minLevel = Level::Info;
-mutex Logger::m_mutex;
+atomic<ostream*> Logger::os_ = nullptr;
+atomic<Logger::Level> Logger::minLevel_ = Level::Info;
+mutex Logger::mutex_;
 
 namespace {
 
@@ -31,29 +31,29 @@ const char* levelLabel(Logger::Level level)
 }  // namespace
 
 Logger::Logger(string name)
-    : m_name(std::move(name))
+    : name_(std::move(name))
 {
 }
 
 void Logger::configure()
 {
-    m_os = &cout;
+    os_ = &cout;
 }
 
 void Logger::configure(ostream& os)
 {
-    m_os = &os;
+    os_ = &os;
 }
 
 void Logger::configure(Level minLevel)
 {
-    m_minLevel = minLevel;
+    minLevel_ = minLevel;
 }
 
 void Logger::configure(ostream& os, Level minLevel)
 {
-    m_os = &os;
-    m_minLevel = minLevel;
+    os_ = &os;
+    minLevel_ = minLevel;
 }
 
 //
@@ -61,31 +61,31 @@ void Logger::configure(ostream& os, Level minLevel)
 //
 
 Logger::Writer::Writer(Logger& logger, Level level)
-    : m_logger(logger)
+    : logger_(logger)
 {
-    m_enabled = m_os.load() && level >= m_minLevel.load();
-    if (!m_enabled) {
+    enabled_ = os_.load() && level >= minLevel_.load();
+    if (!enabled_) {
         return;
     }
 
-    m_ss << "[" << levelLabel(level) << "]";
-    if (!m_logger.m_name.empty()) {
-        m_ss << "[" << m_logger.m_name << "]";
+    ss_ << "[" << levelLabel(level) << "]";
+    if (!logger_.name_.empty()) {
+        ss_ << "[" << logger_.name_ << "]";
     }
-    m_ss << " ";
+    ss_ << " ";
 }
 
 Logger::Writer::~Writer()
 {
-    if (!m_enabled) {
+    if (!enabled_) {
         return;
     }
 
-    ostream* os = m_os.load();
+    ostream* os = os_.load();
     if (!os) {
         return;
     }
 
-    lock_guard lock(m_mutex);
-    *os << m_ss.str() << '\n';
+    lock_guard lock(mutex_);
+    *os << ss_.str() << '\n';
 }

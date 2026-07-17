@@ -28,11 +28,11 @@ private:
     void drawBlock(QImage&, const Block&, int dx, int dy, bool hFlip, bool vFlip);
     void drawChunk(size_t index);
 
-    std::shared_ptr<Level> m_level;
+    std::shared_ptr<Level> level_;
 
-    QLabel* m_label;
-    QPixmap* m_pixmap;
-    size_t m_chunkIndex;
+    QLabel* label_;
+    QPixmap* pixmap_;
+    size_t chunkIndex_;
 
 private slots:
     void chunkChanged(int);

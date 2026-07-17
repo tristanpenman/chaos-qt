@@ -31,13 +31,13 @@ Sonic3Level::Sonic3Level(Rom& rom,
                          uint32_t chunksAddr,
                          uint32_t extendedChunksAddr,
                          uint32_t mapAddr)
-    : m_palettes(nullptr)
-    , m_patterns(nullptr)
-    , m_blocks(nullptr)
-    , m_map(nullptr)
-    , m_patternCount(0)
-    , m_blockCount(0)
-    , m_chunkCount(0)
+    : palettes_(nullptr)
+    , patterns_(nullptr)
+    , blocks_(nullptr)
+    , map_(nullptr)
+    , patternCount_(0)
+    , blockCount_(0)
+    , chunkCount_(0)
 {
     loadPalettes(rom, sonicPaletteAddr, levelPalettesAddr);
     loadPatterns(rom, patternsAddr, extendedPatternsAddr);
@@ -52,7 +52,7 @@ const Palette& Sonic3Level::getPalette(size_t index) const
         throw runtime_error("Invalid palette index");
     }
 
-    return m_palettes[index];
+    return palettes_[index];
 }
 
 Palette& Sonic3Level::getPalette(size_t index)
@@ -61,81 +61,81 @@ Palette& Sonic3Level::getPalette(size_t index)
         throw runtime_error("Invalid palette index");
     }
 
-    return m_palettes[index];
+    return palettes_[index];
 }
 
 const Pattern& Sonic3Level::getPattern(size_t index) const
 {
-    if (index >= m_patternCount) {
+    if (index >= patternCount_) {
         throw runtime_error("Invalid pattern index");
     }
 
-    return m_patterns[index];
+    return patterns_[index];
 }
 
 Pattern& Sonic3Level::getPattern(size_t index)
 {
-    if (index >= m_patternCount) {
+    if (index >= patternCount_) {
         throw runtime_error("Invalid pattern index");
     }
 
-    return m_patterns[index];
+    return patterns_[index];
 }
 
 const Block& Sonic3Level::getBlock(size_t index) const
 {
-    if (index >= m_blockCount) {
+    if (index >= blockCount_) {
         throw runtime_error("Invalid block index");
     }
 
-    return m_blocks[index];
+    return blocks_[index];
 }
 
 Block& Sonic3Level::getBlock(size_t index)
 {
-    if (index >= m_blockCount) {
+    if (index >= blockCount_) {
         throw runtime_error("Invalid block index");
     }
 
-    return m_blocks[index];
+    return blocks_[index];
 }
 
 const Chunk& Sonic3Level::getChunk(size_t index) const
 {
-    if (index >= m_chunkCount) {
+    if (index >= chunkCount_) {
         throw runtime_error("Invalid chunk index");
     }
 
-    return m_chunks[index];
+    return chunks_[index];
 }
 
 Chunk& Sonic3Level::getChunk(size_t index)
 {
-    if (index >= m_chunkCount) {
+    if (index >= chunkCount_) {
         throw runtime_error("Invalid chunk index");
     }
 
-    return m_chunks[index];
+    return chunks_[index];
 }
 
 Map& Sonic3Level::getMap()
 {
-    return *m_map;
+    return *map_;
 }
 
 void Sonic3Level::loadPalettes(Rom& rom, uint32_t characterPaletteAddr, uint32_t levelPalettesAddr)
 {
-    m_palettes = new Palette[4];
+    palettes_ = new Palette[4];
 
     {
         auto buffer = rom.readBytes(characterPaletteAddr, Palette::PALETTE_SIZE_IN_ROM);
-        m_palettes[0].fromSegaFormat(buffer.data());
+        palettes_[0].fromSegaFormat(buffer.data());
     }
 
     {
         auto buffer = rom.readBytes(levelPalettesAddr, Palette::PALETTE_SIZE_IN_ROM * 3);
         for (int i = 0; i < 3; i++) {
-            m_palettes[i + 1].fromSegaFormat(&buffer[Palette::PALETTE_SIZE_IN_ROM * i]);
+            palettes_[i + 1].fromSegaFormat(&buffer[Palette::PALETTE_SIZE_IN_ROM * i]);
         }
     }
 }
@@ -149,8 +149,8 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
     const uint16_t extDataSize = rom.read16BitAddr(extPatternsAddr);
 
     // total number of patterns
-    m_patternCount = (baseDataSize + extDataSize) / Pattern::PATTERN_SIZE_IN_ROM;
-    m_patterns = new Pattern[m_patternCount];
+    patternCount_ = (baseDataSize + extDataSize) / Pattern::PATTERN_SIZE_IN_ROM;
+    patterns_ = new Pattern[patternCount_];
 
     // setup decompression
     auto& file = rom.getFile();
@@ -175,7 +175,7 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
 
             const auto patternCount = result.second / Pattern::PATTERN_SIZE_IN_ROM;
             for (size_t i = 0; i < patternCount; i++) {
-                m_patterns[patternIndex++].fromSegaFormat(&buffer[i * Pattern::PATTERN_SIZE_IN_ROM]);
+                patterns_[patternIndex++].fromSegaFormat(&buffer[i * Pattern::PATTERN_SIZE_IN_ROM]);
             }
 
             // Find the beginning of the next module...
@@ -207,7 +207,7 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
 
             const auto patternCount = result.second / Pattern::PATTERN_SIZE_IN_ROM;
             for (size_t i = 0; i < patternCount; i++) {
-                m_patterns[patternIndex++].fromSegaFormat(&buffer[i * Pattern::PATTERN_SIZE_IN_ROM]);
+                patterns_[patternIndex++].fromSegaFormat(&buffer[i * Pattern::PATTERN_SIZE_IN_ROM]);
             }
 
             char b = 0;
@@ -222,7 +222,7 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
         }
     }
 
-    LOG() << "Pattern count: " << m_patternCount << " (total: " << total << " bytes)";
+    LOG() << "Pattern count: " << patternCount_ << " (total: " << total << " bytes)";
 }
 
 void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBlocksAddr)
@@ -247,7 +247,7 @@ void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBloc
             throw runtime_error("Inconsistent base block data");
         }
 
-        m_blockCount = result.second / Block::BLOCK_SIZE_IN_ROM;
+        blockCount_ = result.second / Block::BLOCK_SIZE_IN_ROM;
         total += result.second;
     }
 
@@ -263,17 +263,17 @@ void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBloc
             throw runtime_error("Inconsistent extended block data");
         }
 
-        m_blockCount += result.second / Block::BLOCK_SIZE_IN_ROM;
-        m_blocks = new Block[m_blockCount];
+        blockCount_ += result.second / Block::BLOCK_SIZE_IN_ROM;
+        blocks_ = new Block[blockCount_];
 
-        for (size_t i = 0; i < m_blockCount; i++) {
-            m_blocks[i].fromSegaFormat(&buffer[i * Block::BLOCK_SIZE_IN_ROM]);
+        for (size_t i = 0; i < blockCount_; i++) {
+            blocks_[i].fromSegaFormat(&buffer[i * Block::BLOCK_SIZE_IN_ROM]);
         }
 
         total += result.second;
     }
 
-    LOG() << "Block count: " << m_blockCount << " (total: " << total << " bytes)";
+    LOG() << "Block count: " << blockCount_ << " (total: " << total << " bytes)";
 }
 
 void Sonic3Level::loadChunks(Rom& rom, uint32_t baseChunksAddr, uint32_t extChunksAddr)
@@ -298,7 +298,7 @@ void Sonic3Level::loadChunks(Rom& rom, uint32_t baseChunksAddr, uint32_t extChun
             throw runtime_error("Inconsistent base chunk data");
         }
 
-        m_chunkCount = result.second / Chunk::CHUNK_SIZE_IN_ROM;
+        chunkCount_ = result.second / Chunk::CHUNK_SIZE_IN_ROM;
         total += result.second;
     }
 
@@ -314,15 +314,15 @@ void Sonic3Level::loadChunks(Rom& rom, uint32_t baseChunksAddr, uint32_t extChun
             throw runtime_error("Inconsistent extended chunk data");
         }
 
-        m_chunkCount += result.second / Chunk::CHUNK_SIZE_IN_ROM;
-        m_chunks = new Chunk[m_chunkCount];
+        chunkCount_ += result.second / Chunk::CHUNK_SIZE_IN_ROM;
+        chunks_ = new Chunk[chunkCount_];
 
-        for (size_t i = 0; i < m_chunkCount; i++) {
-            m_chunks[i].fromSegaFormat(&buffer[i * Chunk::CHUNK_SIZE_IN_ROM]);
+        for (size_t i = 0; i < chunkCount_; i++) {
+            chunks_[i].fromSegaFormat(&buffer[i * Chunk::CHUNK_SIZE_IN_ROM]);
         }
     }
 
-    LOG() << "Chunk count: " << m_chunkCount << " (total: " << total << " bytes)";
+    LOG() << "Chunk count: " << chunkCount_ << " (total: " << total << " bytes)";
 }
 
 void Sonic3Level::loadMap(Rom& rom, uint32_t mapAddr)
@@ -336,7 +336,7 @@ void Sonic3Level::loadMap(Rom& rom, uint32_t mapAddr)
     // create map
     const uint16_t mapWidth = max(rowSizeBg, rowSizeFg);
     const uint16_t mapHeight = max(rowCountBg, rowCountFg);
-    m_map = new Map(MAP_LAYERS, mapWidth, mapHeight);
+    map_ = new Map(MAP_LAYERS, mapWidth, mapHeight);
 
     // setup for reading values
     auto& file = rom.getFile();
@@ -352,7 +352,7 @@ void Sonic3Level::loadMap(Rom& rom, uint32_t mapAddr)
 
         // set tiles
         for (uint16_t colIndex = 0; colIndex < rowSizeFg; colIndex++) {
-            m_map->setValue(0, colIndex, rowIndex, buffer[colIndex]);
+            map_->setValue(0, colIndex, rowIndex, buffer[colIndex]);
         }
     }
 

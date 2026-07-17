@@ -20,14 +20,14 @@ static constexpr uint32_t levelPaletteDir = 0x8BF54;          // Directory of pa
 using namespace std;
 
 Sonic3Rom::Sonic3Rom(const shared_ptr<Rom>& rom)
-    : m_rom(rom)
+    : rom_(rom)
 {
 
 }
 
 bool Sonic3Rom::isCompatible()
 {
-    const auto name = m_rom->readDomesticName();
+    const auto name = rom_->readDomesticName();
 
     return name.find("SONIC THE") != name.npos && name.find("HEDGEHOG 3") != name.npos;
 }
@@ -79,7 +79,7 @@ shared_ptr<Level> Sonic3Rom::loadLevel(unsigned int levelIdx)
     LOG() << "Extended chunks addr: 0x" << hex << extendedChunksAddr;
     LOG() << "Map addr: 0x" << hex << mapAddr;
 
-    return make_shared<Sonic3Level>(*m_rom,
+    return make_shared<Sonic3Level>(*rom_,
                                     characterPaletteAddr,
                                     levelPalettesAddr,
                                     patternsAddr,
@@ -114,17 +114,17 @@ bool Sonic3Rom::save(unsigned int, Level&)
 uint32_t Sonic3Rom::getDataAddress(unsigned int levelIdx, unsigned int entryOffset)
 {
     const uint32_t zoneIndexLoc = levelSelectIndex + levelIdx * 2;
-    const uint32_t zoneIndex = m_rom->readByte(zoneIndexLoc);
+    const uint32_t zoneIndex = rom_->readByte(zoneIndexLoc);
 
     const uint32_t actIndexLoc = zoneIndexLoc + 1;
-    const uint32_t actIndex = m_rom->readByte(actIndexLoc);
+    const uint32_t actIndex = rom_->readByte(actIndexLoc);
 
     const uint32_t dataAddrLoc = levelDataDir +
         zoneIndex * levelDataDirEntrySize * 2 +
         actIndex * levelDataDirEntrySize +
         entryOffset;
 
-    return m_rom->read32BitAddr(dataAddrLoc);
+    return rom_->read32BitAddr(dataAddrLoc);
 }
 
 uint32_t Sonic3Rom::getCharacterPaletteAddr()
@@ -138,7 +138,7 @@ uint32_t Sonic3Rom::getLevelPalettesAddr(unsigned int levelIdx)
     const uint32_t paletteIdx = dataAddr >> 24;
     const uint32_t paletteAddrLoc = levelPaletteDir + paletteIdx * 8;
 
-    return m_rom->read32BitAddr(paletteAddrLoc);
+    return rom_->read32BitAddr(paletteAddrLoc);
 }
 
 uint32_t Sonic3Rom::getChunksAddr(unsigned int levelIdx)
@@ -160,7 +160,7 @@ uint32_t Sonic3Rom::getTilesAddr(unsigned int levelIdx)
 {
     const uint32_t tilesAddrLoc = levelLayoutDirAddr + levelIdx * 4;
 
-    return m_rom->read32BitAddr(tilesAddrLoc);
+    return rom_->read32BitAddr(tilesAddrLoc);
 }
 
 uint32_t Sonic3Rom::getExtendedChunksAddr(unsigned int levelIdx)

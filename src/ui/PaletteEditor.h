@@ -34,17 +34,17 @@ private:
     void updateColorButton(QAbstractButton* button, size_t colorIndex);
     void updateTitle();
 
-    std::shared_ptr<Level> m_level;
-    std::array<Palette::Color, Palette::PALETTE_SIZE> m_colors;
-    std::array<Palette::Color, Palette::PALETTE_SIZE> m_originalColors;
+    std::shared_ptr<Level> level_;
+    std::array<Palette::Color, Palette::PALETTE_SIZE> colors_;
+    std::array<Palette::Color, Palette::PALETTE_SIZE> originalColors_;
 
-    QComboBox* m_paletteCombo;
-    QButtonGroup* m_colorButtons;
-    QPushButton* m_saveButton;
-    QPushButton* m_discardButton;
+    QComboBox* paletteCombo_;
+    QButtonGroup* colorButtons_;
+    QPushButton* saveButton_;
+    QPushButton* discardButton_;
 
-    size_t m_paletteIndex;
-    bool m_dirty;
+    size_t paletteIndex_;
+    bool dirty_;
 
 private slots:
     void colorClicked(int colorIndex);

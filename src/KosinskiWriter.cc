@@ -4,27 +4,27 @@ using namespace std;
 
 void KosinskiWriter::writeByte(uint8_t byte)
 {
-    m_buffer.push_back(byte);
+    buffer_.push_back(byte);
 }
 
 void KosinskiWriter::addBit(int bit)
 {
-    m_bitfield |= bit << m_bitcount;
-    m_bitcount++;
+    bitfield_ |= bit << bitcount_;
+    bitcount_++;
 
-    if (m_bitcount == 16) {
+    if (bitcount_ == 16) {
         // fill in bitfield
-        m_buffer[m_bitfieldPos] = m_bitfield & 0xff;
-        m_buffer[m_bitfieldPos + 1] = (m_bitfield >> 8) & 0xff;
+        buffer_[bitfieldPos_] = bitfield_ & 0xff;
+        buffer_[bitfieldPos_ + 1] = (bitfield_ >> 8) & 0xff;
 
         // prepare next bitfield
-        m_bitfieldPos = m_buffer.size();
-        m_buffer.push_back(0);
-        m_buffer.push_back(0);
+        bitfieldPos_ = buffer_.size();
+        buffer_.push_back(0);
+        buffer_.push_back(0);
 
         // reset bitfield
-        m_bitfield = 0;
-        m_bitcount = 0;
+        bitfield_ = 0;
+        bitcount_ = 0;
     }
 }
 
@@ -69,20 +69,20 @@ KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
         throw std::runtime_error("Invalid data pointer");
     }
 
-    m_buffer.clear();
+    buffer_.clear();
 
-    m_bitcount = 0;
-    m_bitfield = 0;
-    m_bitfields = 0;
-    m_bitfieldPos = 0;
+    bitcount_ = 0;
+    bitfield_ = 0;
+    bitfields_ = 0;
+    bitfieldPos_ = 0;
 
     int32_t pos = 0;
     int32_t length = 0;
     int32_t offset = 0;
 
     // space for initial bitfield
-    m_buffer.push_back(0);
-    m_buffer.push_back(0);
+    buffer_.push_back(0);
+    buffer_.push_back(0);
 
     while (pos < int32_t(dataSize)) {
         length = 1;
@@ -217,14 +217,14 @@ KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
     writeByte(static_cast<uint8_t>(0));
 
     // write final bitfield
-    m_buffer[m_bitfieldPos] = m_bitfield & 0xff;
-    m_buffer[m_bitfieldPos + 1] = (m_bitfield >> 8) & 0xff;
+    buffer_[bitfieldPos_] = bitfield_ & 0xff;
+    buffer_[bitfieldPos_ + 1] = (bitfield_ >> 8) & 0xff;
 
-    if (byteLimit && m_buffer.size() > *byteLimit) {
-        return Result(false, m_buffer.size());
+    if (byteLimit && buffer_.size() > *byteLimit) {
+        return Result(false, buffer_.size());
     }
 
-    file.write(reinterpret_cast<const char*>(m_buffer.data()), static_cast<qint64>(m_buffer.size()));
+    file.write(reinterpret_cast<const char*>(buffer_.data()), static_cast<qint64>(buffer_.size()));
 
-    return Result(true, m_buffer.size());
+    return Result(true, buffer_.size());
 }

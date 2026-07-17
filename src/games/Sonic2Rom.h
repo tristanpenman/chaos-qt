@@ -45,5 +45,5 @@ private:
     uint32_t getTilesAddr(uint32_t levelIdx);
     DataRegion getRingsRegion(uint32_t levelIdx);
 
-    std::shared_ptr<Rom> m_rom;
+    std::shared_ptr<Rom> rom_;
 };

@@ -7,20 +7,20 @@ using namespace std;
 
 Palette::Palette()
 {
-    memset(m_colors, 0, sizeof(Color) * PALETTE_SIZE);
+    memset(colors_, 0, sizeof(Color) * PALETTE_SIZE);
 }
 
 void Palette::fromSegaFormat(char bytes[PALETTE_SIZE_IN_ROM])
 {
     for (int index = 0; index < PALETTE_SIZE; index++) {
-        m_colors[index].fromSegaFormat(&bytes[index * BYTES_PER_COLOR]);
+        colors_[index].fromSegaFormat(&bytes[index * BYTES_PER_COLOR]);
     }
 }
 
 void Palette::toSegaFormat(char bytes[PALETTE_SIZE_IN_ROM]) const
 {
     for (int index = 0; index < PALETTE_SIZE; index++) {
-        m_colors[index].toSegaFormat(&bytes[index * BYTES_PER_COLOR]);
+        colors_[index].toSegaFormat(&bytes[index * BYTES_PER_COLOR]);
     }
 }
 
@@ -30,7 +30,7 @@ const Palette::Color& Palette::getColor(size_t index) const
         throw runtime_error("Invalid palette index");
     }
 
-    return m_colors[index];
+    return colors_[index];
 }
 
 void Palette::setColor(size_t index, const Color& color)
@@ -39,7 +39,7 @@ void Palette::setColor(size_t index, const Color& color)
         throw runtime_error("Invalid palette index");
     }
 
-    memcpy(&m_colors[index], &color, sizeof(Color));
+    memcpy(&colors_[index], &color, sizeof(Color));
 }
 
 void Palette::Color::fromSegaFormat(char bytes[BYTES_PER_COLOR])

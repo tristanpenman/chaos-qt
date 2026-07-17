@@ -21,9 +21,9 @@ signals:
     void levelSelected(int levelIdx);
 
 private:
-    std::shared_ptr<Game> m_game;
-    QListView* m_listView;
-    QPushButton* m_okButton;
+    std::shared_ptr<Game> game_;
+    QListView* listView_;
+    QPushButton* okButton_;
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;

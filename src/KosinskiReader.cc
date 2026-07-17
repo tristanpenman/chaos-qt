@@ -5,21 +5,21 @@
 using namespace std;
 
 KosinskiReader::KosinskiReader()
-    : m_bitfield(0)
-    , m_bitcount(0)
+    : bitfield_(0)
+    , bitcount_(0)
 {
 
 }
 
 uint8_t KosinskiReader::getBit(QIODevice& file)
 {
-    const uint8_t bit = static_cast<uint8_t>(m_bitfield) & 1;
+    const uint8_t bit = static_cast<uint8_t>(bitfield_) & 1;
 
-    m_bitfield >>= 1;
-    m_bitcount--;
+    bitfield_ >>= 1;
+    bitcount_--;
 
     // Ensure that there are more bits to read
-    if (m_bitcount == 0) {
+    if (bitcount_ == 0) {
         loadBitfield(file);
         if (file.atEnd()) {
             std::stringstream ss("Unexpected end of file at offset ");
@@ -33,10 +33,10 @@ uint8_t KosinskiReader::getBit(QIODevice& file)
 
 void KosinskiReader::loadBitfield(QIODevice& file)
 {
-    m_bitfield  = static_cast<uint16_t>(readByte(file));
-    m_bitfield |= static_cast<uint16_t>(readByte(file)) << 8;
+    bitfield_  = static_cast<uint16_t>(readByte(file));
+    bitfield_ |= static_cast<uint16_t>(readByte(file)) << 8;
 
-    m_bitcount = 16;
+    bitcount_ = 16;
 }
 
 uint8_t KosinskiReader::readByte(QIODevice& file)

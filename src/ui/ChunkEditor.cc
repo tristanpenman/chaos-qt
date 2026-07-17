@@ -34,14 +34,14 @@ static QColor toQColor(const Palette::Color& color)
 
 ChunkCanvas::ChunkCanvas(QWidget* parent, const shared_ptr<Level>& level, Chunk* chunks)
     : QWidget(parent)
-    , m_level(level)
-    , m_chunks(chunks)
-    , m_chunkIndex(0)
-    , m_selectedBlockIndex(0)
-    , m_hFlip(false)
-    , m_vFlip(false)
-    , m_highlightX(-1)
-    , m_highlightY(-1)
+    , level_(level)
+    , chunks_(chunks)
+    , chunkIndex_(0)
+    , selectedBlockIndex_(0)
+    , hFlip_(false)
+    , vFlip_(false)
+    , highlightX_(-1)
+    , highlightY_(-1)
 {
     setFixedSize(Chunk::CHUNK_WIDTH * CANVAS_SCALE, Chunk::CHUNK_HEIGHT * CANVAS_SCALE);
     setMouseTracking(true);
@@ -49,23 +49,23 @@ ChunkCanvas::ChunkCanvas(QWidget* parent, const shared_ptr<Level>& level, Chunk*
 
 void ChunkCanvas::setChunkIndex(size_t chunkIndex)
 {
-    m_chunkIndex = chunkIndex;
+    chunkIndex_ = chunkIndex;
     update();
 }
 
 void ChunkCanvas::setSelectedBlock(uint16_t blockIndex)
 {
-    m_selectedBlockIndex = blockIndex;
+    selectedBlockIndex_ = blockIndex;
 }
 
 void ChunkCanvas::setHorizontalFlip(bool enabled)
 {
-    m_hFlip = enabled;
+    hFlip_ = enabled;
 }
 
 void ChunkCanvas::setVerticalFlip(bool enabled)
 {
-    m_vFlip = enabled;
+    vFlip_ = enabled;
 }
 
 void ChunkCanvas::mouseMoveEvent(QMouseEvent* event)
@@ -75,11 +75,11 @@ void ChunkCanvas::mouseMoveEvent(QMouseEvent* event)
 #else
     const QPoint pos = event->pos();
 #endif
-    m_highlightX = pos.x() / (Block::BLOCK_WIDTH * CANVAS_SCALE);
-    m_highlightY = pos.y() / (Block::BLOCK_HEIGHT * CANVAS_SCALE);
-    if (m_highlightX < 0 || m_highlightX >= 8 || m_highlightY < 0 || m_highlightY >= 8) {
-        m_highlightX = -1;
-        m_highlightY = -1;
+    highlightX_ = pos.x() / (Block::BLOCK_WIDTH * CANVAS_SCALE);
+    highlightY_ = pos.y() / (Block::BLOCK_HEIGHT * CANVAS_SCALE);
+    if (highlightX_ < 0 || highlightX_ >= 8 || highlightY_ < 0 || highlightY_ >= 8) {
+        highlightX_ = -1;
+        highlightY_ = -1;
     }
 
     if (event->buttons() & Qt::LeftButton) {
@@ -109,7 +109,7 @@ void ChunkCanvas::paintEvent(QPaintEvent*)
     painter.scale(CANVAS_SCALE, CANVAS_SCALE);
     painter.fillRect(QRect(0, 0, Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT), Qt::black);
 
-    drawChunk(painter, m_chunks[m_chunkIndex]);
+    drawChunk(painter, chunks_[chunkIndex_]);
 
     painter.setPen(QColor(55, 55, 55));
     for (int i = 0; i <= 8; i++) {
@@ -117,9 +117,9 @@ void ChunkCanvas::paintEvent(QPaintEvent*)
         painter.drawLine(0, i * Block::BLOCK_HEIGHT, Chunk::CHUNK_WIDTH, i * Block::BLOCK_HEIGHT);
     }
 
-    if (m_highlightX >= 0 && m_highlightY >= 0) {
-        painter.fillRect(m_highlightX * Block::BLOCK_WIDTH,
-                     m_highlightY * Block::BLOCK_HEIGHT,
+    if (highlightX_ >= 0 && highlightY_ >= 0) {
+        painter.fillRect(highlightX_ * Block::BLOCK_WIDTH,
+                     highlightY_ * Block::BLOCK_HEIGHT,
                      Block::BLOCK_WIDTH,
                      Block::BLOCK_HEIGHT,
                      QColor(128, 192, 255, 64));
@@ -134,15 +134,15 @@ void ChunkCanvas::drawAt(const QPoint& pos)
         return;
     }
 
-    uint16_t value = m_selectedBlockIndex & 0x3FF;
-    if (m_hFlip) {
+    uint16_t value = selectedBlockIndex_ & 0x3FF;
+    if (hFlip_) {
         value |= H_FLIP_MASK;
     }
-    if (m_vFlip) {
+    if (vFlip_) {
         value |= V_FLIP_MASK;
     }
 
-    Chunk& chunk = m_chunks[m_chunkIndex];
+    Chunk& chunk = chunks_[chunkIndex_];
     if (chunk.getBlockDesc(static_cast<uint8_t>(x), static_cast<uint8_t>(y)).get() == value) {
         return;
     }
@@ -158,7 +158,7 @@ void ChunkCanvas::drawChunk(QPainter& painter, const Chunk& chunk)
         for (int dx = 0; dx < 8; dx++) {
             const auto& blockDesc = chunk.getBlockDesc(static_cast<uint8_t>(dx), static_cast<uint8_t>(dy));
             try {
-                const auto& block = m_level->getBlock(blockDesc.getBlockIndex());
+                const auto& block = level_->getBlock(blockDesc.getBlockIndex());
                 drawBlock(painter, block, dx * Block::BLOCK_WIDTH, dy * Block::BLOCK_HEIGHT, blockDesc.getHFlip(), blockDesc.getVFlip());
             } catch (...) {
             }
@@ -171,8 +171,8 @@ void ChunkCanvas::drawBlock(QPainter& painter, const Block& block, int dx, int d
     for (int py = 0; py < 2; py++) {
         for (int px = 0; px < 2; px++) {
             const auto& patternDesc = block.getPatternDesc(hFlip ? 1 - px : px, vFlip ? 1 - py : py);
-            const auto& pattern = m_level->getPattern(patternDesc.getPatternIndex());
-            const auto& palette = m_level->getPalette(patternDesc.getPaletteIndex());
+            const auto& pattern = level_->getPattern(patternDesc.getPatternIndex());
+            const auto& palette = level_->getPalette(patternDesc.getPaletteIndex());
             drawPattern(painter,
                   pattern,
                   palette,
@@ -204,17 +204,17 @@ void ChunkCanvas::drawPattern(QPainter& painter,
 
 ChunkEditor::ChunkEditor(QWidget* parent, const shared_ptr<Level>& level, size_t initialChunkIndex)
     : QDialog(parent)
-    , m_level(level)
-    , m_chunks(new Chunk[level->getChunkCount()])
-    , m_chunkCombo(nullptr)
-    , m_blockList(nullptr)
-    , m_hFlipCheckBox(nullptr)
-    , m_vFlipCheckBox(nullptr)
-    , m_canvas(nullptr)
-    , m_saveButton(nullptr)
-    , m_discardButton(nullptr)
-    , m_chunkIndex(initialChunkIndex < level->getChunkCount() ? initialChunkIndex : 0)
-    , m_dirty(false)
+    , level_(level)
+    , chunks_(new Chunk[level->getChunkCount()])
+    , chunkCombo_(nullptr)
+    , blockList_(nullptr)
+    , hFlipCheckBox_(nullptr)
+    , vFlipCheckBox_(nullptr)
+    , canvas_(nullptr)
+    , saveButton_(nullptr)
+    , discardButton_(nullptr)
+    , chunkIndex_(initialChunkIndex < level->getChunkCount() ? initialChunkIndex : 0)
+    , dirty_(false)
 {
     setModal(false);
     loadChunks();
@@ -225,54 +225,54 @@ ChunkEditor::ChunkEditor(QWidget* parent, const shared_ptr<Level>& level, size_t
     setLayout(mainLayout);
 
     auto* selectorLayout = new QHBoxLayout();
-    m_chunkCombo = new QComboBox();
-    for (size_t i = 0; i < m_level->getChunkCount(); i++) {
-        m_chunkCombo->addItem(tr("Chunk %1").arg(i), QVariant::fromValue(i));
+    chunkCombo_ = new QComboBox();
+    for (size_t i = 0; i < level_->getChunkCount(); i++) {
+        chunkCombo_->addItem(tr("Chunk %1").arg(i), QVariant::fromValue(i));
     }
-    selectorLayout->addWidget(m_chunkCombo);
+    selectorLayout->addWidget(chunkCombo_);
     mainLayout->addLayout(selectorLayout);
 
     auto* editorLayout = new QHBoxLayout();
-    m_canvas = new ChunkCanvas(this, m_level, m_chunks.get());
-    m_canvas->setChunkIndex(m_chunkIndex);
-    editorLayout->addWidget(m_canvas);
+    canvas_ = new ChunkCanvas(this, level_, chunks_.get());
+    canvas_->setChunkIndex(chunkIndex_);
+    editorLayout->addWidget(canvas_);
 
     auto* toolsLayout = new QVBoxLayout();
-    m_blockList = new QListWidget();
-    m_blockList->setIconSize(QSize(Block::BLOCK_WIDTH * BLOCK_PREVIEW_SCALE, Block::BLOCK_HEIGHT * BLOCK_PREVIEW_SCALE));
-    m_blockList->setMinimumWidth(170);
+    blockList_ = new QListWidget();
+    blockList_->setIconSize(QSize(Block::BLOCK_WIDTH * BLOCK_PREVIEW_SCALE, Block::BLOCK_HEIGHT * BLOCK_PREVIEW_SCALE));
+    blockList_->setMinimumWidth(170);
     populateBlockSelector();
-    toolsLayout->addWidget(m_blockList);
+    toolsLayout->addWidget(blockList_);
 
-    m_hFlipCheckBox = new QCheckBox(tr("Horizontal flip"));
-    m_vFlipCheckBox = new QCheckBox(tr("Vertical flip"));
-    toolsLayout->addWidget(m_hFlipCheckBox);
-    toolsLayout->addWidget(m_vFlipCheckBox);
+    hFlipCheckBox_ = new QCheckBox(tr("Horizontal flip"));
+    vFlipCheckBox_ = new QCheckBox(tr("Vertical flip"));
+    toolsLayout->addWidget(hFlipCheckBox_);
+    toolsLayout->addWidget(vFlipCheckBox_);
     editorLayout->addLayout(toolsLayout);
     mainLayout->addLayout(editorLayout);
 
     auto* buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch(1);
-    m_saveButton = new QPushButton(tr("Save"));
-    m_discardButton = new QPushButton(tr("Discard"));
+    saveButton_ = new QPushButton(tr("Save"));
+    discardButton_ = new QPushButton(tr("Discard"));
     auto* closeButton = new QPushButton(tr("Close"));
-    buttonLayout->addWidget(m_saveButton);
-    buttonLayout->addWidget(m_discardButton);
+    buttonLayout->addWidget(saveButton_);
+    buttonLayout->addWidget(discardButton_);
     buttonLayout->addWidget(closeButton);
     mainLayout->addLayout(buttonLayout);
 
-    connect(m_chunkCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &ChunkEditor::chunkChanged);
-    connect(m_blockList, &QListWidget::currentItemChanged, this, &ChunkEditor::blockChanged);
-    connect(m_hFlipCheckBox, &QCheckBox::toggled, this, &ChunkEditor::horizontalFlipChanged);
-    connect(m_vFlipCheckBox, &QCheckBox::toggled, this, &ChunkEditor::verticalFlipChanged);
-    connect(m_canvas, &ChunkCanvas::chunkModified, this, &ChunkEditor::chunkModified);
-    connect(m_saveButton, &QPushButton::clicked, this, &ChunkEditor::saveChanges);
-    connect(m_discardButton, &QPushButton::clicked, this, &ChunkEditor::discardChanges);
+    connect(chunkCombo_, qOverload<int>(&QComboBox::currentIndexChanged), this, &ChunkEditor::chunkChanged);
+    connect(blockList_, &QListWidget::currentItemChanged, this, &ChunkEditor::blockChanged);
+    connect(hFlipCheckBox_, &QCheckBox::toggled, this, &ChunkEditor::horizontalFlipChanged);
+    connect(vFlipCheckBox_, &QCheckBox::toggled, this, &ChunkEditor::verticalFlipChanged);
+    connect(canvas_, &ChunkCanvas::chunkModified, this, &ChunkEditor::chunkModified);
+    connect(saveButton_, &QPushButton::clicked, this, &ChunkEditor::saveChanges);
+    connect(discardButton_, &QPushButton::clicked, this, &ChunkEditor::discardChanges);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
-    m_chunkCombo->setCurrentIndex(static_cast<int>(m_chunkIndex));
-    if (m_blockList->count() > 0) {
-        m_blockList->setCurrentRow(0);
+    chunkCombo_->setCurrentIndex(static_cast<int>(chunkIndex_));
+    if (blockList_->count() > 0) {
+        blockList_->setCurrentRow(0);
     }
     setDirty(false);
 }
@@ -291,15 +291,15 @@ void ChunkEditor::closeEvent(QCloseEvent* event)
 void ChunkEditor::applyChunks()
 {
     uint8_t buffer[Chunk::CHUNK_SIZE_IN_ROM];
-    for (size_t i = 0; i < m_level->getChunkCount(); i++) {
-        m_chunks[i].toSegaFormat(buffer);
-        m_level->getChunk(i).fromSegaFormat(buffer);
+    for (size_t i = 0; i < level_->getChunkCount(); i++) {
+        chunks_[i].toSegaFormat(buffer);
+        level_->getChunk(i).fromSegaFormat(buffer);
     }
 }
 
 bool ChunkEditor::confirmDirtyChanges()
 {
-    if (!m_dirty) {
+    if (!dirty_) {
         return true;
     }
 
@@ -324,9 +324,9 @@ bool ChunkEditor::confirmDirtyChanges()
 void ChunkEditor::loadChunks()
 {
     uint8_t buffer[Chunk::CHUNK_SIZE_IN_ROM];
-    for (size_t i = 0; i < m_level->getChunkCount(); i++) {
-        m_level->getChunk(i).toSegaFormat(buffer);
-        m_chunks[i].fromSegaFormat(buffer);
+    for (size_t i = 0; i < level_->getChunkCount(); i++) {
+        level_->getChunk(i).toSegaFormat(buffer);
+        chunks_[i].fromSegaFormat(buffer);
     }
 }
 
@@ -336,7 +336,7 @@ QPixmap ChunkEditor::renderBlockPreview(size_t blockIndex, int scale) const
     image.fill(Qt::black);
 
     try {
-        drawBlockPreview(image, m_level->getBlock(blockIndex), 0, 0);
+        drawBlockPreview(image, level_->getBlock(blockIndex), 0, 0);
     } catch (...) {
     }
 
@@ -369,8 +369,8 @@ void ChunkEditor::drawBlockPreview(QImage& image, const Block& block, int dx, in
     for (int py = 0; py < 2; py++) {
         for (int px = 0; px < 2; px++) {
             const auto& patternDesc = block.getPatternDesc(static_cast<uint8_t>(px), static_cast<uint8_t>(py));
-            const auto& pattern = m_level->getPattern(patternDesc.getPatternIndex());
-            const auto& palette = m_level->getPalette(patternDesc.getPaletteIndex());
+            const auto& pattern = level_->getPattern(patternDesc.getPatternIndex());
+            const auto& palette = level_->getPalette(patternDesc.getPaletteIndex());
             drawPattern(image,
                   pattern,
                   palette,
@@ -384,27 +384,27 @@ void ChunkEditor::drawBlockPreview(QImage& image, const Block& block, int dx, in
 
 void ChunkEditor::populateBlockSelector()
 {
-    m_blockList->clear();
-    for (size_t i = 0; i < m_level->getBlockCount(); i++) {
+    blockList_->clear();
+    for (size_t i = 0; i < level_->getBlockCount(); i++) {
         auto* item = new QListWidgetItem(QIcon(renderBlockPreview(i, BLOCK_PREVIEW_SCALE)), tr("Block %1").arg(i));
         item->setData(Qt::UserRole, QVariant::fromValue(static_cast<unsigned int>(i)));
-        m_blockList->addItem(item);
+        blockList_->addItem(item);
     }
 }
 
 void ChunkEditor::setDirty(bool dirty)
 {
-    m_dirty = dirty;
-    m_saveButton->setEnabled(dirty);
-    m_discardButton->setEnabled(dirty);
+    dirty_ = dirty;
+    saveButton_->setEnabled(dirty);
+    discardButton_->setEnabled(dirty);
     updateTitle();
 }
 
 void ChunkEditor::updateTitle()
 {
     setWindowTitle(tr("%1Chunk Editor - Chunk %2")
-            .arg(m_dirty ? "*" : "")
-            .arg(m_chunkIndex));
+            .arg(dirty_ ? "*" : "")
+            .arg(chunkIndex_));
 }
 
 void ChunkEditor::blockChanged(QListWidgetItem* current, QListWidgetItem*)
@@ -413,25 +413,25 @@ void ChunkEditor::blockChanged(QListWidgetItem* current, QListWidgetItem*)
         return;
     }
 
-    m_canvas->setSelectedBlock(static_cast<uint16_t>(current->data(Qt::UserRole).toUInt()));
+    canvas_->setSelectedBlock(static_cast<uint16_t>(current->data(Qt::UserRole).toUInt()));
 }
 
 void ChunkEditor::discardChanges()
 {
     loadChunks();
-    m_canvas->update();
+    canvas_->update();
     setDirty(false);
 }
 
 void ChunkEditor::horizontalFlipChanged(int state)
 {
-    m_canvas->setHorizontalFlip(state == Qt::Checked);
+    canvas_->setHorizontalFlip(state == Qt::Checked);
 }
 
 void ChunkEditor::chunkChanged(int chunkIndex)
 {
-    m_chunkIndex = static_cast<size_t>(chunkIndex);
-    m_canvas->setChunkIndex(m_chunkIndex);
+    chunkIndex_ = static_cast<size_t>(chunkIndex);
+    canvas_->setChunkIndex(chunkIndex_);
     updateTitle();
 }
 
@@ -449,5 +449,5 @@ void ChunkEditor::saveChanges()
 
 void ChunkEditor::verticalFlipChanged(int state)
 {
-    m_canvas->setVerticalFlip(state == Qt::Checked);
+    canvas_->setVerticalFlip(state == Qt::Checked);
 }

@@ -27,8 +27,8 @@ private:
     void drawBlock(QImage&, const Block&, int dx, int dy);
     void drawBlocks();
 
-    std::shared_ptr<Level> m_level;
+    std::shared_ptr<Level> level_;
 
-    QLabel* m_label;
-    QPixmap* m_pixmap;
+    QLabel* label_;
+    QPixmap* pixmap_;
 };

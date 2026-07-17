@@ -20,24 +20,24 @@ public:
     uint8_t* getData();
 
 protected:
-    uint8_t m_layers;
-    uint16_t m_height;
-    uint16_t m_width;
+    uint8_t layers_;
+    uint16_t height_;
+    uint16_t width_;
 
-    uint8_t* m_data;
+    uint8_t* data_;
 };
 
 inline uint16_t Map::getWidth() const
 {
-    return m_width;
+    return width_;
 }
 
 inline uint16_t Map::getHeight() const
 {
-    return m_height;
+    return height_;
 }
 
 inline uint8_t Map::getLayerCount() const
 {
-    return m_layers;
+    return layers_;
 }

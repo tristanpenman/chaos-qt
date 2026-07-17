@@ -113,47 +113,47 @@ private:
     static void showInfo(const QString& title, const QString& text);
 
     // dialogs
-    LevelSelect* m_levelSelect;
-    PaletteInspector* m_paletteInspector;
-    PatternInspector* m_patternInspector;
-    BlockInspector* m_blockInspector;
-    ChunkInspector* m_chunkInspector;
-    ProjectExplorer* m_projectExplorer;
-    RomInfo* m_romInfo;
+    LevelSelect* levelSelect_;
+    PaletteInspector* paletteInspector_;
+    PatternInspector* patternInspector_;
+    BlockInspector* blockInspector_;
+    ChunkInspector* chunkInspector_;
+    ProjectExplorer* projectExplorer_;
+    RomInfo* romInfo_;
 
     // editor
-    MapEditor* m_mapEditor;
+    MapEditor* mapEditor_;
 
     // actions
-    QAction* m_openRomAction;
-    QAction* m_openProjectAction;
-    QAction* m_levelSelectAction;
-    QAction* m_saveRomAction;
-    QAction* m_exportBinaryAction;
-    QAction* m_exportPngAction;
-    QAction* m_undoAction;
-    QAction* m_redoAction;
-    QAction* m_paletteEditorAction;
-    QAction* m_patternEditorAction;
-    QAction* m_blockEditorAction;
-    QAction* m_chunkEditorAction;
-    QAction* m_actualSizeAction;
-    QAction* m_zoomInAction;
-    QAction* m_zoomOutAction;
-    QAction* m_relocateLevelsAction;
-    QAction* m_romInfoAction;
-    QAction* m_projectExplorerAction;
+    QAction* openRomAction_;
+    QAction* openProjectAction_;
+    QAction* levelSelectAction_;
+    QAction* saveRomAction_;
+    QAction* exportBinaryAction_;
+    QAction* exportPngAction_;
+    QAction* undoAction_;
+    QAction* redoAction_;
+    QAction* paletteEditorAction_;
+    QAction* patternEditorAction_;
+    QAction* blockEditorAction_;
+    QAction* chunkEditorAction_;
+    QAction* actualSizeAction_;
+    QAction* zoomInAction_;
+    QAction* zoomOutAction_;
+    QAction* relocateLevelsAction_;
+    QAction* romInfoAction_;
+    QAction* projectExplorerAction_;
 
     // misc
-    QMenu* m_openRecentMenu;
-    QMenu* m_inspectorsMenu;
-    QStatusBar* m_statusBar;
-    QPushButton* m_openLastRomButton;
-    QPushButton* m_levelSelectButton;
+    QMenu* openRecentMenu_;
+    QMenu* inspectorsMenu_;
+    QStatusBar* statusBar_;
+    QPushButton* openLastRomButton_;
+    QPushButton* levelSelectButton_;
 
-    std::shared_ptr<Rom> m_rom;
-    std::shared_ptr<Game> m_game;
-    std::shared_ptr<Level> m_level;
-    unsigned int m_levelIdx;
-    bool m_hasUnsavedChanges;
+    std::shared_ptr<Rom> rom_;
+    std::shared_ptr<Game> game_;
+    std::shared_ptr<Level> level_;
+    unsigned int levelIdx_;
+    bool hasUnsavedChanges_;
 };

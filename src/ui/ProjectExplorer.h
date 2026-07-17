@@ -14,5 +14,5 @@ public:
     explicit ProjectExplorer(QWidget* parent, const std::vector<ProjectResource>& resources);
 
 private:
-    QTableWidget* m_table;
+    QTableWidget* table_;
 };

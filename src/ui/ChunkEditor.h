@@ -44,14 +44,14 @@ private:
     void drawBlock(QPainter& painter, const Block& block, int dx, int dy, bool hFlip, bool vFlip);
     void drawPattern(QPainter& painter, const Pattern& pattern, const Palette& palette, int dx, int dy, bool hFlip, bool vFlip);
 
-    std::shared_ptr<Level> m_level;
-    Chunk* m_chunks;
-    size_t m_chunkIndex;
-    uint16_t m_selectedBlockIndex;
-    bool m_hFlip;
-    bool m_vFlip;
-    int m_highlightX;
-    int m_highlightY;
+    std::shared_ptr<Level> level_;
+    Chunk* chunks_;
+    size_t chunkIndex_;
+    uint16_t selectedBlockIndex_;
+    bool hFlip_;
+    bool vFlip_;
+    int highlightX_;
+    int highlightY_;
 
 signals:
     void chunkModified();
@@ -79,19 +79,19 @@ private:
     void setDirty(bool dirty);
     void updateTitle();
 
-    std::shared_ptr<Level> m_level;
-    std::unique_ptr<Chunk[]> m_chunks;
+    std::shared_ptr<Level> level_;
+    std::unique_ptr<Chunk[]> chunks_;
 
-    QComboBox* m_chunkCombo;
-    QListWidget* m_blockList;
-    QCheckBox* m_hFlipCheckBox;
-    QCheckBox* m_vFlipCheckBox;
-    ChunkCanvas* m_canvas;
-    QPushButton* m_saveButton;
-    QPushButton* m_discardButton;
+    QComboBox* chunkCombo_;
+    QListWidget* blockList_;
+    QCheckBox* hFlipCheckBox_;
+    QCheckBox* vFlipCheckBox_;
+    ChunkCanvas* canvas_;
+    QPushButton* saveButton_;
+    QPushButton* discardButton_;
 
-    size_t m_chunkIndex;
-    bool m_dirty;
+    size_t chunkIndex_;
+    bool dirty_;
 
 private slots:
     void blockChanged(QListWidgetItem* current, QListWidgetItem* previous);

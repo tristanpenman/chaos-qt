@@ -35,9 +35,9 @@ protected:
 private:
     void paintPixelAt(const QPoint& pos);
 
-    std::array<uint8_t, Pattern::PATTERN_SIZE_IN_MEM>& m_pixels;
-    const Palette* m_palette;
-    uint8_t m_selectedColor;
+    std::array<uint8_t, Pattern::PATTERN_SIZE_IN_MEM>& pixels_;
+    const Palette* palette_;
+    uint8_t selectedColor_;
 
 signals:
     void patternChanged();
@@ -63,23 +63,23 @@ private:
     void setDirty(bool dirty);
     void updateTitle();
 
-    std::shared_ptr<Level> m_level;
-    std::array<uint8_t, Pattern::PATTERN_SIZE_IN_MEM> m_pixels;
+    std::shared_ptr<Level> level_;
+    std::array<uint8_t, Pattern::PATTERN_SIZE_IN_MEM> pixels_;
 
-    QComboBox* m_patternCombo;
-    QComboBox* m_paletteCombo;
-    QButtonGroup* m_colorButtons;
-    PatternCanvas* m_canvas;
-    QLabel* m_preview2x;
-    QLabel* m_preview4x;
-    QLabel* m_preview8x;
-    QPushButton* m_saveButton;
-    QPushButton* m_discardButton;
+    QComboBox* patternCombo_;
+    QComboBox* paletteCombo_;
+    QButtonGroup* colorButtons_;
+    PatternCanvas* canvas_;
+    QLabel* preview2x_;
+    QLabel* preview4x_;
+    QLabel* preview8x_;
+    QPushButton* saveButton_;
+    QPushButton* discardButton_;
 
-    size_t m_currentPatternIndex;
-    size_t m_currentPaletteIndex;
-    uint8_t m_currentColorIndex;
-    bool m_dirty;
+    size_t currentPatternIndex_;
+    size_t currentPaletteIndex_;
+    uint8_t currentColorIndex_;
+    bool dirty_;
 
 private slots:
     void colorSelected(int colorIndex);

@@ -60,17 +60,17 @@ public:
         template<typename T>
         Writer& operator<<(const T& value)
         {
-            if (m_enabled) {
-                m_ss << value;
+            if (enabled_) {
+                ss_ << value;
             }
 
             return *this;
         }
 
     private:
-        Logger& m_logger;
-        std::stringstream m_ss;
-        bool m_enabled{false};
+        Logger& logger_;
+        std::stringstream ss_;
+        bool enabled_{false};
     };
 
     explicit Logger(std::string name = {});
@@ -87,15 +87,15 @@ public:
 
     static bool verbose()
     {
-        return m_minLevel.load() <= Level::Verbose;
+        return minLevel_.load() <= Level::Verbose;
     }
 
 private:
-    static std::atomic<std::ostream*> m_os;
-    static std::atomic<Level> m_minLevel;
-    static std::mutex m_mutex;
+    static std::atomic<std::ostream*> os_;
+    static std::atomic<Level> minLevel_;
+    static std::mutex mutex_;
 
-    std::string m_name;
+    std::string name_;
 };
 
 #define LOG     Logger()

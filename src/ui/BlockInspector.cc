@@ -25,8 +25,8 @@ static constexpr int BLOCKS_PER_ROW = PIXMAP_WIDTH / Block::BLOCK_WIDTH;
 
 BlockInspector::BlockInspector(QWidget* parent, const shared_ptr<Level>& level)
     : QDialog(parent)
-    , m_level(level)
-    , m_pixmap(nullptr)
+    , level_(level)
+    , pixmap_(nullptr)
 {
     const auto blockCount = level->getBlockCount();
     const int pixmapHeight = ceilf(static_cast<float>(blockCount) / BLOCKS_PER_ROW) * Block::BLOCK_HEIGHT;
@@ -38,14 +38,14 @@ BlockInspector::BlockInspector(QWidget* parent, const shared_ptr<Level>& level)
     setLayout(vbox);
 
     // create widget to display pixmap
-    m_label = new QLabel();
-    m_label->setFixedSize(PIXMAP_WIDTH, pixmapHeight);
-    m_label->setMinimumWidth(PIXMAP_WIDTH);
-    vbox->addWidget(m_label);
+    label_ = new QLabel();
+    label_->setFixedSize(PIXMAP_WIDTH, pixmapHeight);
+    label_->setMinimumWidth(PIXMAP_WIDTH);
+    vbox->addWidget(label_);
 
     // create pixmap
-    m_pixmap = new QPixmap(PIXMAP_WIDTH, pixmapHeight);
-    m_label->setPixmap(*m_pixmap);
+    pixmap_ = new QPixmap(PIXMAP_WIDTH, pixmapHeight);
+    label_->setPixmap(*pixmap_);
     drawBlocks();
 }
 
@@ -79,8 +79,8 @@ void BlockInspector::drawBlock(QImage& image, const Block& block, int dx, int dy
             const auto paletteIndex = patternDesc.getPaletteIndex();
             const auto patternIndex = patternDesc.getPatternIndex();
 
-            const auto& pattern = m_level->getPattern(patternIndex);
-            const auto& palette = m_level->getPalette(paletteIndex);
+            const auto& pattern = level_->getPattern(patternIndex);
+            const auto& palette = level_->getPalette(paletteIndex);
 
             drawPattern(image,
                   pattern,
@@ -98,21 +98,21 @@ void BlockInspector::drawBlocks()
     LOG() << "Drawing blocks";
 
     // image to draw to
-    QImage image(m_pixmap->width(), m_pixmap->height(), QImage::Format_RGB888);
+    QImage image(pixmap_->width(), pixmap_->height(), QImage::Format_RGB888);
     image.fill(qRgb(0, 0, 0));
 
     // draw individual blocks
-    for (size_t i = 0; i < m_level->getBlockCount(); i++) {
+    for (size_t i = 0; i < level_->getBlockCount(); i++) {
         const auto row = static_cast<int>(i / BLOCKS_PER_ROW);
         const auto col = static_cast<int>(i % BLOCKS_PER_ROW);
 
-        drawBlock(image, m_level->getBlock(i), col * Block::BLOCK_WIDTH, row * Block::BLOCK_HEIGHT);
+        drawBlock(image, level_->getBlock(i), col * Block::BLOCK_WIDTH, row * Block::BLOCK_HEIGHT);
     }
 
     // copy to pixmap
     LOG() << "Copying pattern image to pixmap";
-    if (m_pixmap->convertFromImage(image)) {
-        m_label->setPixmap(*m_pixmap);
+    if (pixmap_->convertFromImage(image)) {
+        label_->setPixmap(*pixmap_);
     } else {
         LOG() << "Failed to copy image to pixmap";
     }

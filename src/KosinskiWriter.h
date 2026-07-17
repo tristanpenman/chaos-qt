@@ -44,10 +44,10 @@ private:
     /// Attempt to find a copy of a segment
     int32_t findSegment(const uint8_t data[], int32_t pos, int32_t length);
 
-    int m_bitcount;
-    uint16_t m_bitfield;
-    int m_bitfields;
-    std::vector<uint8_t> m_buffer;
+    int bitcount_;
+    uint16_t bitfield_;
+    int bitfields_;
+    std::vector<uint8_t> buffer_;
 
-    std::streamoff m_bitfieldPos;
+    std::streamoff bitfieldPos_;
 };

@@ -44,6 +44,6 @@ private:
     /// Read one byte from the input stream, and throw an exception if we reach eof
     uint8_t readByte(QIODevice& file);
 
-    uint16_t m_bitfield;
-    uint16_t m_bitcount;
+    uint16_t bitfield_;
+    uint16_t bitcount_;
 };

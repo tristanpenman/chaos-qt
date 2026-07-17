@@ -29,9 +29,9 @@ static QColor toQColor(const Palette::Color& color)
 
 PatternCanvas::PatternCanvas(QWidget* parent, array<uint8_t, Pattern::PATTERN_SIZE_IN_MEM>& pixels)
     : QWidget(parent)
-    , m_pixels(pixels)
-    , m_palette(nullptr)
-    , m_selectedColor(0)
+    , pixels_(pixels)
+    , palette_(nullptr)
+    , selectedColor_(0)
 {
     setFixedSize(Pattern::PATTERN_WIDTH * EDITOR_SCALE, Pattern::PATTERN_HEIGHT * EDITOR_SCALE);
     setMouseTracking(true);
@@ -39,13 +39,13 @@ PatternCanvas::PatternCanvas(QWidget* parent, array<uint8_t, Pattern::PATTERN_SI
 
 void PatternCanvas::setPalette(const Palette* palette)
 {
-    m_palette = palette;
+    palette_ = palette;
     update();
 }
 
 void PatternCanvas::setSelectedColor(uint8_t colorIndex)
 {
-    m_selectedColor = colorIndex;
+    selectedColor_ = colorIndex;
 }
 
 void PatternCanvas::mousePressEvent(QMouseEvent* event)
@@ -78,9 +78,9 @@ void PatternCanvas::paintEvent(QPaintEvent*)
     for (int y = 0; y < Pattern::PATTERN_HEIGHT; y++) {
         for (int x = 0; x < Pattern::PATTERN_WIDTH; x++) {
             const QRect pixelRect(x * EDITOR_SCALE, y * EDITOR_SCALE, EDITOR_SCALE, EDITOR_SCALE);
-            const auto colorIndex = m_pixels[static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x)];
-            if (m_palette) {
-                painter.fillRect(pixelRect, toQColor(m_palette->getColor(colorIndex)));
+            const auto colorIndex = pixels_[static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x)];
+            if (palette_) {
+                painter.fillRect(pixelRect, toQColor(palette_->getColor(colorIndex)));
             }
             painter.setPen(QColor(40, 40, 40));
             painter.drawRect(pixelRect.adjusted(0, 0, -1, -1));
@@ -97,31 +97,31 @@ void PatternCanvas::paintPixelAt(const QPoint& pos)
     }
 
     const auto offset = static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x);
-    if (m_pixels[offset] == m_selectedColor) {
+    if (pixels_[offset] == selectedColor_) {
         return;
     }
 
-    m_pixels[offset] = m_selectedColor;
+    pixels_[offset] = selectedColor_;
     update();
     emit patternChanged();
 }
 
 PatternEditor::PatternEditor(QWidget* parent, const shared_ptr<Level>& level)
     : QDialog(parent)
-    , m_level(level)
-    , m_patternCombo(nullptr)
-    , m_paletteCombo(nullptr)
-    , m_colorButtons(nullptr)
-    , m_canvas(nullptr)
-    , m_preview2x(nullptr)
-    , m_preview4x(nullptr)
-    , m_preview8x(nullptr)
-    , m_saveButton(nullptr)
-    , m_discardButton(nullptr)
-    , m_currentPatternIndex(0)
-    , m_currentPaletteIndex(0)
-    , m_currentColorIndex(0)
-    , m_dirty(false)
+    , level_(level)
+    , patternCombo_(nullptr)
+    , paletteCombo_(nullptr)
+    , colorButtons_(nullptr)
+    , canvas_(nullptr)
+    , preview2x_(nullptr)
+    , preview4x_(nullptr)
+    , preview8x_(nullptr)
+    , saveButton_(nullptr)
+    , discardButton_(nullptr)
+    , currentPatternIndex_(0)
+    , currentPaletteIndex_(0)
+    , currentColorIndex_(0)
+    , dirty_(false)
 {
     setModal(true);
 
@@ -131,65 +131,65 @@ PatternEditor::PatternEditor(QWidget* parent, const shared_ptr<Level>& level)
     setLayout(mainLayout);
 
     auto* selectorLayout = new QHBoxLayout();
-    m_patternCombo = new QComboBox();
-    for (size_t i = 0; i < m_level->getPatternCount(); i++) {
-        m_patternCombo->addItem(tr("Pattern %1").arg(i), QVariant::fromValue(i));
+    patternCombo_ = new QComboBox();
+    for (size_t i = 0; i < level_->getPatternCount(); i++) {
+        patternCombo_->addItem(tr("Pattern %1").arg(i), QVariant::fromValue(i));
     }
-    selectorLayout->addWidget(m_patternCombo);
+    selectorLayout->addWidget(patternCombo_);
 
-    m_paletteCombo = new QComboBox();
-    for (size_t i = 0; i < m_level->getPaletteCount(); i++) {
-        m_paletteCombo->addItem(tr("Palette %1").arg(i), QVariant::fromValue(i));
+    paletteCombo_ = new QComboBox();
+    for (size_t i = 0; i < level_->getPaletteCount(); i++) {
+        paletteCombo_->addItem(tr("Palette %1").arg(i), QVariant::fromValue(i));
     }
-    selectorLayout->addWidget(m_paletteCombo);
+    selectorLayout->addWidget(paletteCombo_);
     mainLayout->addLayout(selectorLayout);
 
     auto* editorLayout = new QHBoxLayout();
-    m_canvas = new PatternCanvas(this, m_pixels);
-    editorLayout->addWidget(m_canvas);
+    canvas_ = new PatternCanvas(this, pixels_);
+    editorLayout->addWidget(canvas_);
 
     auto* paletteLayout = new QGridLayout();
     paletteLayout->setSpacing(4);
-    m_colorButtons = new QButtonGroup(this);
-    m_colorButtons->setExclusive(true);
+    colorButtons_ = new QButtonGroup(this);
+    colorButtons_->setExclusive(true);
     for (int i = 0; i < Palette::PALETTE_SIZE; i++) {
         auto* button = new QPushButton();
         button->setCheckable(true);
         button->setFixedSize(28, 28);
-        m_colorButtons->addButton(button, i);
+        colorButtons_->addButton(button, i);
         paletteLayout->addWidget(button, i / 4, i % 4);
     }
     editorLayout->addLayout(paletteLayout);
     mainLayout->addLayout(editorLayout);
 
     auto* previewLayout = new QHBoxLayout();
-    m_preview2x = new QLabel();
-    m_preview4x = new QLabel();
-    m_preview8x = new QLabel();
-    previewLayout->addWidget(m_preview2x);
-    previewLayout->addWidget(m_preview4x);
-    previewLayout->addWidget(m_preview8x);
+    preview2x_ = new QLabel();
+    preview4x_ = new QLabel();
+    preview8x_ = new QLabel();
+    previewLayout->addWidget(preview2x_);
+    previewLayout->addWidget(preview4x_);
+    previewLayout->addWidget(preview8x_);
     mainLayout->addLayout(previewLayout);
 
     auto* buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch(1);
-    m_saveButton = new QPushButton(tr("Save"));
-    m_discardButton = new QPushButton(tr("Discard"));
+    saveButton_ = new QPushButton(tr("Save"));
+    discardButton_ = new QPushButton(tr("Discard"));
     auto* closeButton = new QPushButton(tr("Close"));
-    buttonLayout->addWidget(m_saveButton);
-    buttonLayout->addWidget(m_discardButton);
+    buttonLayout->addWidget(saveButton_);
+    buttonLayout->addWidget(discardButton_);
     buttonLayout->addWidget(closeButton);
     mainLayout->addLayout(buttonLayout);
 
-    connect(m_patternCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PatternEditor::patternChanged);
-    connect(m_paletteCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, &PatternEditor::paletteChanged);
-    connect(m_colorButtons, &QButtonGroup::idClicked, this, &PatternEditor::colorSelected);
-    connect(m_canvas, &PatternCanvas::patternChanged, this, &PatternEditor::patternEdited);
-    connect(m_saveButton, &QPushButton::clicked, this, &PatternEditor::saveChanges);
-    connect(m_discardButton, &QPushButton::clicked, this, &PatternEditor::discardChanges);
+    connect(patternCombo_, qOverload<int>(&QComboBox::currentIndexChanged), this, &PatternEditor::patternChanged);
+    connect(paletteCombo_, qOverload<int>(&QComboBox::currentIndexChanged), this, &PatternEditor::paletteChanged);
+    connect(colorButtons_, &QButtonGroup::idClicked, this, &PatternEditor::colorSelected);
+    connect(canvas_, &PatternCanvas::patternChanged, this, &PatternEditor::patternEdited);
+    connect(saveButton_, &QPushButton::clicked, this, &PatternEditor::saveChanges);
+    connect(discardButton_, &QPushButton::clicked, this, &PatternEditor::discardChanges);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
-    m_canvas->setPalette(&m_level->getPalette(m_currentPaletteIndex));
+    canvas_->setPalette(&level_->getPalette(currentPaletteIndex_));
     loadPattern(0);
     populatePaletteButtons();
     colorSelected(0);
@@ -207,18 +207,18 @@ void PatternEditor::closeEvent(QCloseEvent* event)
 
 void PatternEditor::applyPattern()
 {
-    Pattern& pattern = m_level->getPattern(m_currentPatternIndex);
+    Pattern& pattern = level_->getPattern(currentPatternIndex_);
     for (int y = 0; y < Pattern::PATTERN_HEIGHT; y++) {
         for (int x = 0; x < Pattern::PATTERN_WIDTH; x++) {
             const auto offset = static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x);
-            pattern.setPixel(static_cast<uint8_t>(x), static_cast<uint8_t>(y), m_pixels[offset]);
+            pattern.setPixel(static_cast<uint8_t>(x), static_cast<uint8_t>(y), pixels_[offset]);
         }
     }
 }
 
 bool PatternEditor::confirmDirtyChanges()
 {
-    if (!m_dirty) {
+    if (!dirty_) {
         return true;
     }
 
@@ -242,25 +242,25 @@ bool PatternEditor::confirmDirtyChanges()
 
 void PatternEditor::loadPattern(size_t patternIndex)
 {
-    m_currentPatternIndex = patternIndex;
-    const Pattern& pattern = m_level->getPattern(patternIndex);
+    currentPatternIndex_ = patternIndex;
+    const Pattern& pattern = level_->getPattern(patternIndex);
     for (int y = 0; y < Pattern::PATTERN_HEIGHT; y++) {
         for (int x = 0; x < Pattern::PATTERN_WIDTH; x++) {
             const auto offset = static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x);
-            m_pixels[offset] = pattern.getPixel(static_cast<uint8_t>(x), static_cast<uint8_t>(y));
+            pixels_[offset] = pattern.getPixel(static_cast<uint8_t>(x), static_cast<uint8_t>(y));
         }
     }
 
-    m_canvas->update();
+    canvas_->update();
     renderPreviews();
     updateTitle();
 }
 
 void PatternEditor::populatePaletteButtons()
 {
-    const Palette& palette = m_level->getPalette(m_currentPaletteIndex);
+    const Palette& palette = level_->getPalette(currentPaletteIndex_);
     for (int i = 0; i < Palette::PALETTE_SIZE; i++) {
-        auto* button = m_colorButtons->button(i);
+        auto* button = colorButtons_->button(i);
         const auto color = palette.getColor(static_cast<size_t>(i));
         button->setStyleSheet(QStringLiteral("background: rgb(%1,%2,%3)").arg(color.r).arg(color.g).arg(color.b));
     }
@@ -268,12 +268,12 @@ void PatternEditor::populatePaletteButtons()
 
 void PatternEditor::renderPreview(QLabel* label, int scale)
 {
-    const Palette& palette = m_level->getPalette(m_currentPaletteIndex);
+    const Palette& palette = level_->getPalette(currentPaletteIndex_);
     QImage image(Pattern::PATTERN_WIDTH, Pattern::PATTERN_HEIGHT, QImage::Format_RGB888);
     for (int y = 0; y < Pattern::PATTERN_HEIGHT; y++) {
         for (int x = 0; x < Pattern::PATTERN_WIDTH; x++) {
             const auto offset = static_cast<size_t>(y) * Pattern::PATTERN_WIDTH + static_cast<size_t>(x);
-            const auto color = palette.getColor(m_pixels[offset]);
+            const auto color = palette.getColor(pixels_[offset]);
             image.setPixel(x, y, qRgb(color.r, color.g, color.b));
         }
     }
@@ -285,45 +285,45 @@ void PatternEditor::renderPreview(QLabel* label, int scale)
 
 void PatternEditor::renderPreviews()
 {
-    renderPreview(m_preview2x, 2);
-    renderPreview(m_preview4x, 4);
-    renderPreview(m_preview8x, 8);
+    renderPreview(preview2x_, 2);
+    renderPreview(preview4x_, 4);
+    renderPreview(preview8x_, 8);
 }
 
 void PatternEditor::setDirty(bool dirty)
 {
-    m_dirty = dirty;
-    m_saveButton->setEnabled(dirty);
-    m_discardButton->setEnabled(dirty);
+    dirty_ = dirty;
+    saveButton_->setEnabled(dirty);
+    discardButton_->setEnabled(dirty);
     updateTitle();
 }
 
 void PatternEditor::updateTitle()
 {
     setWindowTitle(tr("%1Pattern Editor - Pattern %2")
-            .arg(m_dirty ? "*" : "")
-            .arg(m_currentPatternIndex));
+            .arg(dirty_ ? "*" : "")
+            .arg(currentPatternIndex_));
 }
 
 void PatternEditor::colorSelected(int colorIndex)
 {
-    m_currentColorIndex = static_cast<uint8_t>(colorIndex);
-    m_canvas->setSelectedColor(m_currentColorIndex);
-    if (auto* button = m_colorButtons->button(colorIndex)) {
+    currentColorIndex_ = static_cast<uint8_t>(colorIndex);
+    canvas_->setSelectedColor(currentColorIndex_);
+    if (auto* button = colorButtons_->button(colorIndex)) {
         button->setChecked(true);
     }
 }
 
 void PatternEditor::discardChanges()
 {
-    loadPattern(m_currentPatternIndex);
+    loadPattern(currentPatternIndex_);
     setDirty(false);
 }
 
 void PatternEditor::paletteChanged(int paletteIndex)
 {
-    m_currentPaletteIndex = static_cast<size_t>(paletteIndex);
-    m_canvas->setPalette(&m_level->getPalette(m_currentPaletteIndex));
+    currentPaletteIndex_ = static_cast<size_t>(paletteIndex);
+    canvas_->setPalette(&level_->getPalette(currentPaletteIndex_));
     populatePaletteButtons();
     renderPreviews();
 }
@@ -331,8 +331,8 @@ void PatternEditor::paletteChanged(int paletteIndex)
 void PatternEditor::patternChanged(int patternIndex)
 {
     if (!confirmDirtyChanges()) {
-        QSignalBlocker blocker(m_patternCombo);
-        m_patternCombo->setCurrentIndex(static_cast<int>(m_currentPatternIndex));
+        QSignalBlocker blocker(patternCombo_);
+        patternCombo_->setCurrentIndex(static_cast<int>(currentPatternIndex_));
         return;
     }
 

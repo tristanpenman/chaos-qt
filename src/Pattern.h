@@ -35,5 +35,5 @@ private:
     Pattern(const Pattern&) = delete;
     Pattern& operator=(const Pattern&) = delete;
 
-    uint8_t m_pixels[PATTERN_SIZE_IN_MEM];
+    uint8_t pixels_[PATTERN_SIZE_IN_MEM];
 };

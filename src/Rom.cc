@@ -19,18 +19,18 @@ using namespace std;
 
 bool Rom::open(const string& path)
 {
-    m_file.setFileName(QString::fromStdString(path));
-    return m_file.open(QIODevice::ReadWrite);
+    file_.setFileName(QString::fromStdString(path));
+    return file_.open(QIODevice::ReadWrite);
 }
 
 QFile& Rom::getFile()
 {
-    return m_file;
+    return file_;
 }
 
 size_t Rom::getSize()
 {
-    return static_cast<size_t>(m_file.size());
+    return static_cast<size_t>(file_.size());
 }
 
 uint32_t Rom::readAddrRange()
@@ -42,15 +42,15 @@ void Rom::writeSize(uint32_t size)
 {
     write32BitAddr(size, 0x1A4);
 
-    m_file.flush();
+    file_.flush();
 }
 
 uint16_t Rom::calculateChecksum()
 {
-    m_file.seek(512);
+    file_.seek(512);
     int count = 0;
-    while (!m_file.atEnd()) {
-        const QByteArray buffer = m_file.read(CHECKSUM_BUFFER_SIZE);
+    while (!file_.atEnd()) {
+        const QByteArray buffer = file_.read(CHECKSUM_BUFFER_SIZE);
         const auto readCount = buffer.size();
         for (auto i = 0; i < readCount; i += 2) {
             int num;
@@ -89,49 +89,49 @@ void Rom::writeChecksum(uint16_t checksum)
 {
     write16BitAddr(checksum, CHECKSUM_OFFSET);
 
-    m_file.flush();
+    file_.flush();
 }
 
 string Rom::readDomesticName()
 {
-    m_file.seek(DOMESTIC_NAME_OFFSET);
-    QByteArray buffer = m_file.read(DOMESTIC_NAME_LEN);
+    file_.seek(DOMESTIC_NAME_OFFSET);
+    QByteArray buffer = file_.read(DOMESTIC_NAME_LEN);
     buffer.append('\0');
     return buffer.constData();
 }
 
 string Rom::readInternationalName()
 {
-    m_file.seek(INTERNATIONAL_NAME_OFFSET);
-    QByteArray buffer = m_file.read(INTERNATIONAL_NAME_LEN);
+    file_.seek(INTERNATIONAL_NAME_OFFSET);
+    QByteArray buffer = file_.read(INTERNATIONAL_NAME_LEN);
     buffer.append('\0');
     return buffer.constData();
 }
 
 uint8_t Rom::readByte(streamoff offset)
 {
-    m_file.seek(offset);
+    file_.seek(offset);
     char value = 0;
-    m_file.getChar(&value);
+    file_.getChar(&value);
 
     return static_cast<uint8_t>(value);
 }
 
 vector<char> Rom::readBytes(streamoff offset, size_t count)
 {
-    m_file.seek(offset);
-    const QByteArray data = m_file.read(static_cast<qint64>(count));
+    file_.seek(offset);
+    const QByteArray data = file_.read(static_cast<qint64>(count));
     return vector<char>(data.begin(), data.end());
 }
 
 uint16_t Rom::read16BitAddr(streamoff offset)
 {
-    m_file.seek(offset);
+    file_.seek(offset);
 
     char byte = 0;
-    m_file.getChar(&byte);
+    file_.getChar(&byte);
     uint16_t addr = static_cast<uint8_t>(byte) << 8;
-    m_file.getChar(&byte);
+    file_.getChar(&byte);
     addr |= static_cast<uint8_t>(byte);
 
     return addr;
@@ -139,16 +139,16 @@ uint16_t Rom::read16BitAddr(streamoff offset)
 
 uint32_t Rom::read32BitAddr(streamoff offset)
 {
-    m_file.seek(offset);
+    file_.seek(offset);
 
     char byte = 0;
-    m_file.getChar(&byte);
+    file_.getChar(&byte);
     uint32_t addr = static_cast<uint32_t>(static_cast<uint8_t>(byte)) << 24;
-    m_file.getChar(&byte);
+    file_.getChar(&byte);
     addr |= static_cast<uint32_t>(static_cast<uint8_t>(byte)) << 16;
-    m_file.getChar(&byte);
+    file_.getChar(&byte);
     addr |= static_cast<uint32_t>(static_cast<uint8_t>(byte)) << 8;
-    m_file.getChar(&byte);
+    file_.getChar(&byte);
     addr |= static_cast<uint32_t>(static_cast<uint8_t>(byte));
 
     return addr;
@@ -156,18 +156,18 @@ uint32_t Rom::read32BitAddr(streamoff offset)
 
 void Rom::write16BitAddr(uint16_t addr, streamoff offset)
 {
-    m_file.seek(offset);
+    file_.seek(offset);
 
     const char bytes[] = {
         static_cast<char>((addr >> 8) & 0xFF),
         static_cast<char>((addr) & 0xFF)
     };
-    m_file.write(bytes, sizeof(bytes));
+    file_.write(bytes, sizeof(bytes));
 }
 
 void Rom::write32BitAddr(uint32_t addr, streamoff offset)
 {
-    m_file.seek(offset);
+    file_.seek(offset);
 
     const char bytes[] = {
         static_cast<char>((addr >> 24) & 0xFF),
@@ -175,5 +175,5 @@ void Rom::write32BitAddr(uint32_t addr, streamoff offset)
         static_cast<char>((addr >> 8) & 0xFF),
         static_cast<char>((addr) & 0xFF)
     };
-    m_file.write(bytes, sizeof(bytes));
+    file_.write(bytes, sizeof(bytes));
 }
