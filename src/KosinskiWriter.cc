@@ -162,6 +162,11 @@ KosinskiWriter::Result KosinskiWriter::compress(QIODevice& file,
             writeByte(data[pos++]);
             offset = -1;
 
+            if (pos >= int32_t(dataSize)) {
+                length = 0;
+                continue;
+            }
+
             if ((data[pos] != data[pos + length - 1]) || length == 1) {
                 length--;
             }

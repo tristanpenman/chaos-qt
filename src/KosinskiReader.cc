@@ -69,12 +69,11 @@ KosinskiReader::Result KosinskiReader::decompress(QIODevice& file, uint8_t buffe
 
     while (1) {
         if (getBit(file) == 1) {
-            buffer[pos++] = static_cast<uint8_t>(readByte(file));
-
-            // Don't write any more bytes if the buffer is full
             if (pos >= bufferSize) {
                 return Result(false, pos);
             }
+
+            buffer[pos++] = static_cast<uint8_t>(readByte(file));
 
             continue;
         }
@@ -122,14 +121,13 @@ KosinskiReader::Result KosinskiReader::decompress(QIODevice& file, uint8_t buffe
 
         // Copy 'count' bytes from the specified 'offset', relative to the current buffer position
         while (count > 0) {
+            if (pos >= bufferSize) {
+                return Result(false, pos);
+            }
+
             buffer[pos] = buffer[pos + offset];
             pos++;
             count--;
-
-            // Don't write any more bytes if the buffer is full
-            if (pos > bufferSize) {
-                return Result(false, pos);
-            }
         }
     }
 
