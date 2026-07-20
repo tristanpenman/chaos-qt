@@ -12,6 +12,31 @@ class TestKosinskiReader : public testing::Test
 
 };
 
+static QByteArray oneLiteralStream(uint8_t byte)
+{
+    QByteArray data;
+    data.append(char(0x05));
+    data.append(char(0x00));
+    data.append(char(byte));
+    data.append(char(0x00));
+    data.append(char(0x00));
+    data.append(char(0x00));
+    return data;
+}
+
+static QByteArray oneLiteralThenTwoByteBackReferenceStream(uint8_t byte)
+{
+    QByteArray data;
+    data.append(char(0x41));
+    data.append(char(0x00));
+    data.append(char(byte));
+    data.append(char(0xff));
+    data.append(char(0x00));
+    data.append(char(0x00));
+    data.append(char(0x00));
+    return data;
+}
+
 TEST_F(TestKosinskiReader, ThrowOnEmptyStream)
 {
     uint8_t buffer[16];
@@ -66,7 +91,7 @@ TEST_F(TestKosinskiReader, ReturnFalseOnNullBuffer)
 
 TEST_F(TestKosinskiReader, ReturnFalseOnBufferOverflow)
 {
-    uint8_t buffer[1];
+    uint8_t buffer[2] = { 0x00, 0xcc };
 
     // case 1: literal byte mode
     {
@@ -81,7 +106,55 @@ TEST_F(TestKosinskiReader, ReturnFalseOnBufferOverflow)
         auto result = reader.decompress(bufferDevice, buffer, 1);
         EXPECT_FALSE(result.first);
         EXPECT_EQ(1, result.second);
+        EXPECT_EQ(0xcc, buffer[1]);
     }
+}
+
+TEST_F(TestKosinskiReader, ReturnFalseOnZeroSizedLiteralBuffer)
+{
+    uint8_t buffer[1] = { 0xcc };
+    QByteArray data = oneLiteralStream(0x5a);
+    QBuffer bufferDevice(&data);
+    bufferDevice.open(QIODevice::ReadOnly);
+
+    KosinskiReader reader;
+    auto result = reader.decompress(bufferDevice, buffer, 0);
+
+    EXPECT_FALSE(result.first);
+    EXPECT_EQ(0, result.second);
+    EXPECT_EQ(0xcc, buffer[0]);
+}
+
+TEST_F(TestKosinskiReader, ReturnTrueWhenLiteralExactlyFillsBuffer)
+{
+    uint8_t buffer[1] = { 0x00 };
+    QByteArray data = oneLiteralStream(0x5a);
+    QBuffer bufferDevice(&data);
+    bufferDevice.open(QIODevice::ReadOnly);
+
+    KosinskiReader reader;
+    auto result = reader.decompress(bufferDevice, buffer, 1);
+
+    EXPECT_TRUE(result.first);
+    EXPECT_EQ(1, result.second);
+    EXPECT_EQ(0x5a, buffer[0]);
+}
+
+TEST_F(TestKosinskiReader, ReturnFalseBeforeBackReferenceOverwritesBuffer)
+{
+    uint8_t buffer[3] = { 0x00, 0x00, 0xcc };
+    QByteArray data = oneLiteralThenTwoByteBackReferenceStream(0x5a);
+    QBuffer bufferDevice(&data);
+    bufferDevice.open(QIODevice::ReadOnly);
+
+    KosinskiReader reader;
+    auto result = reader.decompress(bufferDevice, buffer, 2);
+
+    EXPECT_FALSE(result.first);
+    EXPECT_EQ(2, result.second);
+    EXPECT_EQ(0x5a, buffer[0]);
+    EXPECT_EQ(0x5a, buffer[1]);
+    EXPECT_EQ(0xcc, buffer[2]);
 }
 
 TEST_F(TestKosinskiReader, ReturnTrueOnHappyPath)

@@ -78,6 +78,50 @@ TEST_F(TestKosinskiWriter, ReturnTrueOnHappyPath)
     }
 }
 
+TEST_F(TestKosinskiWriter, ReturnTrueOnSingleByteInput)
+{
+    const uint8_t data[] = { 0x5a };
+    QBuffer os;
+    os.open(QIODevice::ReadWrite);
+
+    KosinskiWriter writer;
+    KosinskiWriter::Result result;
+    EXPECT_NO_THROW(result = writer.compress(os, data, sizeof(data)));
+
+    EXPECT_TRUE(result.first);
+    EXPECT_TRUE(os.isOpen());
+
+    const QByteArray expected = QByteArray()
+        .append(char(0x05))
+        .append(char(0x00))
+        .append(char(0x5a))
+        .append(char(0xff))
+        .append(char(0xf8))
+        .append(char(0x00));
+    EXPECT_EQ(expected, os.data());
+}
+
+TEST_F(TestKosinskiWriter, ReturnTrueWhenFinalByteIsLiteral)
+{
+    const uint8_t data[] = { 0x5a, 0xa5 };
+    QBuffer os;
+    os.open(QIODevice::ReadWrite);
+
+    KosinskiWriter writer;
+    KosinskiWriter::Result result;
+    EXPECT_NO_THROW(result = writer.compress(os, data, sizeof(data)));
+    EXPECT_TRUE(result.first);
+
+    std::vector<uint8_t> buffer(sizeof(data));
+    KosinskiReader reader;
+    os.seek(0);
+    EXPECT_NO_THROW(result = reader.decompress(os, buffer.data(), buffer.size()));
+    EXPECT_TRUE(result.first);
+    EXPECT_EQ(sizeof(data), result.second);
+    EXPECT_EQ(data[0], buffer[0]);
+    EXPECT_EQ(data[1], buffer[1]);
+}
+
 TEST_F(TestKosinskiWriter, ReturnTrueOnHappyPathWithByteLimit)
 {
     QBuffer os;
