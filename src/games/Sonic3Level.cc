@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 
@@ -14,10 +15,8 @@
 #include "../Pattern.h"
 #include "../Rom.h"
 
-
 #undef LOG
 #define LOG Logger("Sonic3Level")
-
 
 namespace {
 
@@ -38,6 +37,7 @@ Sonic3Level::Sonic3Level(Rom& rom,
     : palettes_(nullptr)
     , patterns_(nullptr)
     , blocks_(nullptr)
+    , chunks_(nullptr)
     , map_(nullptr)
     , patternCount_(0)
     , blockCount_(0)
@@ -49,6 +49,8 @@ Sonic3Level::Sonic3Level(Rom& rom,
     loadChunks(rom, chunksAddr, extendedChunksAddr);
     loadMap(rom, mapAddr);
 }
+
+Sonic3Level::~Sonic3Level() = default;
 
 const Palette& Sonic3Level::getPalette(size_t index) const
 {
@@ -129,7 +131,7 @@ Map& Sonic3Level::getMap()
 
 void Sonic3Level::loadPalettes(Rom& rom, uint32_t characterPaletteAddr, uint32_t levelPalettesAddr)
 {
-    palettes_ = new Palette[4];
+    palettes_ = std::make_unique<Palette[]>(kPaletteCount);
 
     {
         auto buffer = rom.readBytes(characterPaletteAddr, Palette::kPaletteSizeInRom);
@@ -154,7 +156,7 @@ void Sonic3Level::loadPatterns(Rom& rom, uint32_t basePatternsAddr, uint32_t ext
 
     // Total number of patterns
     patternCount_ = (baseDataSize + extDataSize) / Pattern::kPatternSizeInRom;
-    patterns_ = new Pattern[patternCount_];
+    patterns_ = std::make_unique<Pattern[]>(patternCount_);
 
     auto& file = rom.getFile();
     KosinskiReader reader;
@@ -266,7 +268,7 @@ void Sonic3Level::loadBlocks(Rom& rom, uint32_t baseBlocksAddr, uint32_t extBloc
         }
 
         blockCount_ += result.second / Block::kBlockSizeInRom;
-        blocks_ = new Block[blockCount_];
+        blocks_ = std::make_unique<Block[]>(blockCount_);
 
         for (size_t i = 0; i < blockCount_; i++) {
             blocks_[i].fromSegaFormat(&buffer[i * Block::kBlockSizeInRom]);
@@ -316,7 +318,7 @@ void Sonic3Level::loadChunks(Rom& rom, uint32_t baseChunksAddr, uint32_t extChun
         }
 
         chunkCount_ += result.second / Chunk::kChunkSizeInRom;
-        chunks_ = new Chunk[chunkCount_];
+        chunks_ = std::make_unique<Chunk[]>(chunkCount_);
 
         for (size_t i = 0; i < chunkCount_; i++) {
             chunks_[i].fromSegaFormat(&buffer[i * Chunk::kChunkSizeInRom]);
@@ -337,7 +339,7 @@ void Sonic3Level::loadMap(Rom& rom, uint32_t mapAddr)
     // Create map
     const uint16_t mapWidth = std::max(rowSizeBg, rowSizeFg);
     const uint16_t mapHeight = std::max(rowCountBg, rowCountFg);
-    map_ = new Map(kMapLayers, mapWidth, mapHeight);
+    map_ = std::make_unique<Map>(kMapLayers, mapWidth, mapHeight);
 
     // Setup for reading values
     auto& file = rom.getFile();

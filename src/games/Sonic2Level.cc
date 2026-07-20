@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -79,14 +80,7 @@ Sonic2Level::Sonic2Level(const std::vector<char>& paletteData,
     }
 }
 
-Sonic2Level::~Sonic2Level()
-{
-    delete[] palettes_;
-    delete[] patterns_;
-    delete[] blocks_;
-    delete[] chunks_;
-    delete map_;
-}
+Sonic2Level::~Sonic2Level() = default;
 
 const Palette& Sonic2Level::getPalette(size_t index) const
 {
@@ -193,7 +187,7 @@ void Sonic2Level::loadPalettes(const std::vector<char>& data)
         throw std::runtime_error("Inconsistent palette data");
     }
 
-    palettes_ = new Palette[kPaletteCount];
+    palettes_ = std::make_unique<Palette[]>(kPaletteCount);
     for (size_t i = 0; i < kPaletteCount; i++) {
         palettes_[i].fromSegaFormat(const_cast<char*>(&data[i * Palette::kPaletteSizeInRom]));
     }
@@ -224,7 +218,7 @@ void Sonic2Level::loadPatterns(const std::vector<uint8_t>& data)
         throw std::runtime_error("Inconsistent pattern data");
     }
 
-    patterns_ = new Pattern[patternCount_];
+    patterns_ = std::make_unique<Pattern[]>(patternCount_);
     for (size_t i = 0; i < patternCount_; i++) {
         patterns_[i].fromSegaFormat(const_cast<uint8_t*>(&data[i * Pattern::kPatternSizeInRom]));
     }
@@ -257,7 +251,7 @@ void Sonic2Level::loadBlocks(const std::vector<uint8_t>& data)
         throw std::runtime_error("Inconsistent block data");
     }
 
-    blocks_ = new Block[blockCount_];
+    blocks_ = std::make_unique<Block[]>(blockCount_);
     for (size_t i = 0; i < blockCount_; i++) {
         blocks_[i].fromSegaFormat(const_cast<uint8_t*>(&data[i * Block::kBlockSizeInRom]));
     }
@@ -290,7 +284,7 @@ void Sonic2Level::loadChunks(const std::vector<uint8_t>& data)
         throw std::runtime_error("Inconsistent chunk data");
     }
 
-    chunks_ = new Chunk[chunkCount_];
+    chunks_ = std::make_unique<Chunk[]>(chunkCount_);
     for (size_t i = 0; i < chunkCount_; i++) {
         chunks_[i].fromSegaFormat(const_cast<uint8_t*>(&data[i * Chunk::kChunkSizeInRom]));
     }
@@ -322,7 +316,7 @@ void Sonic2Level::loadMap(const std::vector<uint8_t>& data)
         throw std::runtime_error("Inconsistent map data");
     }
 
-    map_ = new Map(kMapLayers, kMapWidth, kMapHeight, const_cast<uint8_t*>(data.data()));
+    map_ = std::make_unique<Map>(kMapLayers, kMapWidth, kMapHeight, const_cast<uint8_t*>(data.data()));
 }
 
 void Sonic2Level::loadRings(Rom& rom, uint32_t ringsAddr, size_t ringsSize)

@@ -72,11 +72,11 @@ private:
     void loadRings(Rom& rom, uint32_t ringsAddr, size_t ringsSize);
     void loadRings(const std::vector<uint8_t>& data);
 
-    Palette* palettes_;
-    Pattern* patterns_;
-    Block* blocks_;
-    Chunk* chunks_;
-    Map* map_;
+    std::unique_ptr<Palette[]> palettes_;
+    std::unique_ptr<Pattern[]> patterns_;
+    std::unique_ptr<Block[]> blocks_;
+    std::unique_ptr<Chunk[]> chunks_;
+    std::unique_ptr<Map> map_;
     std::vector<RingGroup> ringGroups_;
 
     size_t patternCount_;

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 
 #include "../Level.h"
 
@@ -22,6 +23,7 @@ public:
                 uint32_t chunksAddr,
                 uint32_t extendedChunksAddr,
                 uint32_t mapAddr);
+    ~Sonic3Level() override;
 
     size_t getPaletteCount() const override;
     const Palette& getPalette(size_t index) const override;
@@ -51,11 +53,11 @@ private:
     void loadChunks(Rom& rom, uint32_t chunksAddr, uint32_t extendedChunksAddr);
     void loadMap(Rom& rom, uint32_t mapAddr);
 
-    Palette* palettes_;
-    Pattern* patterns_;
-    Block* blocks_;
-    Chunk* chunks_;
-    Map* map_;
+    std::unique_ptr<Palette[]> palettes_;
+    std::unique_ptr<Pattern[]> patterns_;
+    std::unique_ptr<Block[]> blocks_;
+    std::unique_ptr<Chunk[]> chunks_;
+    std::unique_ptr<Map> map_;
 
     size_t patternCount_;
     size_t blockCount_;
